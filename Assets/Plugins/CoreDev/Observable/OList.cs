@@ -48,9 +48,9 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* MODERATORS
-        //*====================
+//*====================
+//* MODERATORS
+//*====================
         public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
@@ -67,9 +67,9 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* EVENT REGISTRATION
-        //*====================
+//*====================
+//* EVENT REGISTRATION
+//*====================
         private event Action<OList<T>, T> FireElementAddedCallback = delegate { };
         public void RegisterForElementAdded(Action<OList<T>, T> callback, bool fireCallbackForExistingElements = true)
         {
@@ -117,9 +117,9 @@ namespace CoreDev.Observable
 
 
 
-        //*====================
-        //* ACTIONS
-        //*====================
+//*====================
+//* ACTIONS
+//*====================
         public new bool Add(T item)
         {
             bool moderationPassed = this.ModerateIncomingValue(ref item, OListOperation.ADD);
@@ -277,14 +277,28 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* QUERIES
-        //*====================
+//*====================
+//* QUERIES
+//*====================
         public new T this[int index]
         {
             get
             {
                 return base[index];
+            }
+            set
+            {
+                T itemToRemove = base[index];
+                bool removalModerationPassed = this.ModerateIncomingValue(ref itemToRemove, OListOperation.REMOVE);
+                bool additionModerationPassed = this.ModerateIncomingValue(ref value, OListOperation.ADD);
+
+                if (removalModerationPassed && additionModerationPassed)
+                {
+                    this.FireElementRemovedCallback(this, itemToRemove);
+                    base[index] = value;
+                    this.ValueChanged();
+                    this.FireElementAddedCallback(this, value);
+                }
             }
         }
 
@@ -297,9 +311,9 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* PRIVATE
-        //*====================
+//*====================
+//* PRIVATE
+//*====================
         private bool ModerateIncomingValue(ref T value, OListOperation operation)
         {
             foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)
