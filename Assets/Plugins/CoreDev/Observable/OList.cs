@@ -99,7 +99,7 @@ namespace CoreDev.Observable
 
         public void UnregisterFromElementRemoved(Action<OList<T>, T> callback)
         {
-            FireElementAddedCallback -= callback;
+            FireElementRemovedCallback -= callback;
         }
 
 
