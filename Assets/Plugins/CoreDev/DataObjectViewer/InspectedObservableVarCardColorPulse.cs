@@ -69,7 +69,7 @@ public class InspectedObservableVarCardColorPulse : MonoBehaviour, ISpawnee
             this.inspectedObservableVarDO.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
 
             this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, StartFade);
-            
+            this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, StartFade);
             this.ResetFadeToInactive();
 
             this.inspectedObservableVarDO = null;
