@@ -6,7 +6,7 @@ namespace CoreDev.Framework
 {
     public abstract class MonoBehaviourDO : MonoBehaviour, IDataObject
     {
-        private event Action<MonoBehaviourDO> destroying = delegate { };
+        protected event Action<MonoBehaviourDO> destroying = delegate { };
 
 
 //*====================
@@ -22,9 +22,13 @@ namespace CoreDev.Framework
         {
             DataObjectMasterRepository.DestroyDataObject(this);
             this.UnbindAspect(this);
-            this.destroying(this);
+            this.FireDestroyingEvent();
         }
 
+        protected void FireDestroyingEvent()
+        {
+            this.destroying(this);
+        }
 
 //*====================
 //* MonoBehaviourDataObject

@@ -5,17 +5,27 @@ using UnityEngine;
 
 namespace CoreDev.Observable
 {
+
+    public class InfiniteRecursionException : Exception
+    {
+        public InfiniteRecursionException(string message) : base(message)
+        {
+        }
+    }
+
     public abstract class ObservableVar<T> : IObservableVar
     {
+        private const bool warnOnRecursion = true;
         public delegate bool ModerationCheck(ref T incomingValue);
-        protected event Action ValueChanged = delegate { };
+        protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
         private event Action<ObservableVar<T>> FireCallbacks = delegate { };
         protected event Action ModeratorsChanged = delegate { };
 
         [SerializeField] protected T currentValue;
         protected T previousValue;
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
-        protected bool isValueLocked = false;
+        protected int recursionCount = 0;
+        protected const int recursionLimit = 1000;
 
         protected IDataObject dataObject;
         public IDataObject DataObject
@@ -42,12 +52,12 @@ namespace CoreDev.Observable
             get { return currentValue; }
             set
             {
-                if (isValueLocked) //Prevent recursion. None of the observers should be allowed to change value while ValueChanged is fired
+                if (recursionCount >= recursionLimit)
                 {
-                    return;
+                    throw new InfiniteRecursionException($"Possible infinite recursion. This variable has been edited {recursionCount} in a single call. \r\nIf this was intentional, please raise the value of \"RecursionLimit\" in BaseObservableVar.cs to avoid this Exception\r\n");
                 }
 
-                this.isValueLocked = true;
+                this.recursionCount++;
 
                 T moderatedValue = value;
                 bool isValueAcceptable = ModerateIncomingValue(ref moderatedValue);
@@ -58,18 +68,33 @@ namespace CoreDev.Observable
                     {
                         previousValue = currentValue;
                         currentValue = moderatedValue;
-                        ValueChanged();
+
+                        this.ValueChanged();
+
+                        Delegate[] invocationList = FireCallbacks.GetInvocationList();
+                        foreach (Delegate invocation in invocationList)
+                        {
+                            Action<ObservableVar<T>> action = invocation as Action<ObservableVar<T>>;
+                            try
+                            {
+                                action.Invoke(this);
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                            }
+                        }
                     }
                 }
 
-                this.isValueLocked = false;
+                this.recursionCount = 0;
             }
         }
 
 
-//*====================
-//* CONSTRUCTORS
-//*====================
+        //*====================
+        //* CONSTRUCTORS
+        //*====================
         public ObservableVar() : this(default(T)) { }
 
         public ObservableVar(T startValue) : this(startValue, default(IDataObject)) { }
@@ -80,19 +105,27 @@ namespace CoreDev.Observable
 
             this.previousValue = startValue;
             this.currentValue = startValue;
-
-            this.ValueChanged += () => { this.FireCallbacks(this); };
         }
 
 
-//*====================
-//* REGISTRATION FOR CHANGES
-//*====================
+        //*====================
+        //* REGISTRATION FOR CHANGES
+        //*====================
         public void RegisterForChanges(Action<ObservableVar<T>> callback, bool fireCallbackOnRegistration = true)
         {
             FireCallbacks -= callback;
             FireCallbacks += callback;
-            if (fireCallbackOnRegistration) { callback(this); }
+            if (fireCallbackOnRegistration)
+            {
+                try
+                {
+                    callback(this);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                }
+            }
         }
 
         public void UnregisterFromChanges(Action<ObservableVar<T>> callback)
@@ -101,9 +134,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* MODERATORS
-//*====================
+        //*====================
+        //* MODERATORS
+        //*====================
         public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0, bool applyModeratorImmediately = true)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
@@ -125,9 +158,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* UTILS
-//*====================
+        //*====================
+        //* UTILS
+        //*====================
         private bool ModerateIncomingValue(ref T value)
         {
             foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)

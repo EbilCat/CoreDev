@@ -100,14 +100,24 @@ public class DataObjectInspector : MonoBehaviour, ISpawnee
     private InspectedDataObjectDO currentSelectedInspectedDataObjectDO = null;
     private void OnIsInspectedChanged(ObservableVar<bool> oIsInspected)
     {
+        InspectedDataObjectDO dataObject = (InspectedDataObjectDO)oIsInspected.DataObject;
+        
         bool isInspected = oIsInspected.Value;
+
         if (isInspected)
         {
             if (currentSelectedInspectedDataObjectDO != null)
             {
                 this.currentSelectedInspectedDataObjectDO.isInspected.Value = false;
             }
-            this.currentSelectedInspectedDataObjectDO = (InspectedDataObjectDO)oIsInspected.DataObject;
+            this.currentSelectedInspectedDataObjectDO = dataObject;
+        }
+        else
+        {
+            if (this.currentSelectedInspectedDataObjectDO == dataObject)
+            {
+                this.currentSelectedInspectedDataObjectDO = null;
+            }
         }
     }
 

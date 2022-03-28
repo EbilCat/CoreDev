@@ -31,9 +31,9 @@ namespace CoreDev.Sequencing
         private static bool initPhaseCompleted = false;
 
 
-//*====================
-//* UNITY
-//*====================
+        //*====================
+        //* UNITY
+        //*====================
         protected void Start()
         {
             foreach (KeyValuePair<int, InitExecutor> kvp in initExecutors)
@@ -68,9 +68,9 @@ namespace CoreDev.Sequencing
         }
 
 
-//*====================
-//* PUBLIC
-//*====================
+        //*====================
+        //* PUBLIC
+        //*====================
         /// <summary>
         /// Registers a callback which is fired during Universal Timer's Start() function
         /// </summary>
@@ -124,7 +124,7 @@ namespace CoreDev.Sequencing
         /// <param name="timeElapsedHandler">Implementing class of TimeElapsedHandler to be unregistered</param>
         public static void UnregisterFromTimeElapsed(TimeElapsedHandler timeElapsedHandler)
         {
-            if(universalTimerInstance == null) { return; }
+            if (universalTimerInstance == null) { return; }
 
             foreach (KeyValuePair<int, TimeElapsedExecutor> kvp in timeElapsedExecutors)
             {
@@ -162,7 +162,7 @@ namespace CoreDev.Sequencing
             }
         }
 
-        
+
         /// <summary>
         /// Schedules a callback to be fired after a specified amount of time has passed. Registering a callback more than once
         /// replaces the previous callback.
@@ -198,14 +198,14 @@ namespace CoreDev.Sequencing
         /// <param name="callback">Callback to unschedule</param>
         public static void UnscheduleCallback(Action<object[]> callback)
         {
-            if(universalTimerInstance == null) { return; }
+            if (universalTimerInstance == null) { return; }
             unschedulingCallbacks.Add(callback);
         }
 
 
-//*====================
-//* PRIVATE
-//*====================
+        //*====================
+        //* PRIVATE
+        //*====================
         private static void ProcessTimeElapsedExecutors()
         {
             foreach (KeyValuePair<int, TimeElapsedExecutor> kvp in timeElapsedExecutors)
@@ -241,15 +241,19 @@ namespace CoreDev.Sequencing
 
         private static void FireCallbackIfCountdownReached(int callbackIndex)
         {
-            float countDownSecs = countDowns[callbackIndex];
-            float timeElapsed = useUnscaledTime[callbackIndex] ? Time.unscaledDeltaTime : Time.deltaTime;
-            countDownSecs -= timeElapsed;
-            
-            countDowns[callbackIndex] = countDownSecs;
-            if (countDownSecs <= 0.0f)
+            Action<object[]> timedCallback = timedCallbacks[callbackIndex];
+
+            if (unschedulingCallbacks.Contains(timedCallback) == false)
             {
-                Action<object[]> timedCallback = timedCallbacks[callbackIndex];
-                timedCallback(payloads[callbackIndex]);
+                float countDownSecs = countDowns[callbackIndex];
+                float timeElapsed = useUnscaledTime[callbackIndex] ? Time.unscaledDeltaTime : Time.deltaTime;
+                countDownSecs -= timeElapsed;
+
+                countDowns[callbackIndex] = countDownSecs;
+                if (countDownSecs <= 0.0f)
+                {
+                    timedCallback(payloads[callbackIndex]);
+                }
             }
         }
 
