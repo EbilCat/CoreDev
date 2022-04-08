@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CoreDev.Extensions;
 using CoreDev.Framework;
+using CoreDev.Observable;
 using UnityEngine;
 
 public class InspectedDataObjectCardSpawner : MonoBehaviour
@@ -25,10 +27,47 @@ public class InspectedDataObjectCardSpawner : MonoBehaviour
     }
 
 
-    //*====================
-    //* BINDING
-    //*====================
+//*====================
+//* BINDING
+//*====================
     private void DataObjectCreated(InspectedDataObjectDO inspectedDataObjectDO)
+    {
+        inspectedDataObjectDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
+    }
+
+    private void DataObjectDisposing(InspectedDataObjectDO inspectedDataObjectDO)
+    {
+        inspectedDataObjectDO?.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
+        this.DisposePrefab(inspectedDataObjectDO);
+    }
+
+
+//*====================
+//* CALLBACKS
+//*====================
+    private void OnIsInspectedChanged(ObservableVar<bool> obj)
+    {
+        if (obj.DataObject is InspectedDataObjectDO)
+        {
+            InspectedDataObjectDO inspectedDataObjectDO = obj.DataObject as InspectedDataObjectDO;
+            
+            if (obj.Value == true)
+            {
+                inspectedDataObjectDO.Inspect();
+                InstantiatePrefab(inspectedDataObjectDO);
+            }
+            else
+            {
+                DisposePrefab(inspectedDataObjectDO);
+            }
+        }
+    }
+
+
+//*====================
+//* PRIVATE
+//*====================
+    private void InstantiatePrefab(InspectedDataObjectDO inspectedDataObjectDO)
     {
         InspectedDataObjectCard prefabInstance = Instantiate<InspectedDataObjectCard>(prefab);
 
@@ -38,8 +77,8 @@ public class InspectedDataObjectCardSpawner : MonoBehaviour
         inspectedDataObjectCards.Add(inspectedDataObjectDO, prefabInstance);
         inspectedDataObjectDO.BindAspect(prefabInstance);
     }
-    
-    private void DataObjectDisposing(InspectedDataObjectDO inspectedDataObjectDO)
+
+    private void DisposePrefab(InspectedDataObjectDO inspectedDataObjectDO)
     {
         if (inspectedDataObjectCards.ContainsKey(inspectedDataObjectDO))
         {

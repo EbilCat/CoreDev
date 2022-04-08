@@ -106,6 +106,7 @@ public class DataObjectInspector : MonoBehaviour, ISpawnee
 
         if (isInspected)
         {
+            dataObject.Inspect();
             if (currentSelectedInspectedDataObjectDO != null)
             {
                 this.currentSelectedInspectedDataObjectDO.isInspected.Value = false;

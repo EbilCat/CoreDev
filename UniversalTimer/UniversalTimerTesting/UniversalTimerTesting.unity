@@ -438,6 +438,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: '[MovingCube]'
       objectReference: {fileID: 0}
+    - target: {fileID: 5274436714299864486, guid: 144808223a8bd82438f474b5d5e1e425,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5274436714663234683, guid: 144808223a8bd82438f474b5d5e1e425,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -466,6 +471,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: '[SmileyMaker]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5187667407333090188, guid: 7db1502fe1a8ca34bae0c2aafab98e6a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6554267406581554171, guid: 7db1502fe1a8ca34bae0c2aafab98e6a,
         type: 3}

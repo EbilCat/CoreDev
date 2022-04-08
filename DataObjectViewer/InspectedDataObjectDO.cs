@@ -33,28 +33,34 @@ public class InspectedDataObjectDO : IDataObject
         Type dataObjectType = dataObjectInstance.GetType();
         if (dataObjectInfoDOs.ContainsKey(dataObjectType) == false)
         {
-            DataObjectInfoDO newAttributes = new DataObjectInfoDO(dataObjectType.GetAllFieldInfo(bindingFlags));
-            dataObjectInfoDOs.Add(dataObjectType, newAttributes);
+            DataObjectInfoDO dataObjectInfoDO = new DataObjectInfoDO(dataObjectType.GetAllFieldInfo(bindingFlags));
+            dataObjectInfoDOs.Add(dataObjectType, dataObjectInfoDO);
         }
 
         this.dataObjectInfoDO = dataObjectInfoDOs[dataObjectType];
+    }
 
-        for (int i = 0; i < dataObjectInfoDO.observableVarInfos.Count; i++)
+    public void Inspect()
+    {
+        if (inspectedOVarDOs.Count == 0)
         {
-            ObservableVarInfoDO observableVarInfoDO = dataObjectInfoDO.observableVarInfos[i];
-
-            if (typeof(IObservableVar).IsAssignableFrom(observableVarInfoDO.FieldType))
+            for (int i = 0; i < dataObjectInfoDO.observableVarInfos.Count; i++)
             {
-                IObservableVar oVarInstance = observableVarInfoDO.GetObservableVarInstance(dataObjectInstance);
-                InspectedObservableVarDO reflectedObservableVar = new InspectedObservableVarDO(oVarInstance, observableVarInfoDO, this.isInspected);
-                inspectedOVarDOs.Add(reflectedObservableVar);
+                ObservableVarInfoDO observableVarInfoDO = dataObjectInfoDO.observableVarInfos[i];
+
+                if (typeof(IObservableVar).IsAssignableFrom(observableVarInfoDO.FieldType))
+                {
+                    IObservableVar oVarInstance = observableVarInfoDO.GetObservableVarInstance(dataObjectInstance);
+                    InspectedObservableVarDO reflectedObservableVar = new InspectedObservableVarDO(oVarInstance, observableVarInfoDO, this.isInspected);
+                    inspectedOVarDOs.Add(reflectedObservableVar);
+                }
             }
         }
     }
 
-        
-//*====================
-//* IDataObject
-//*====================
-        public void Dispose() { }
+
+    //*====================
+    //* IDataObject
+    //*====================
+    public void Dispose() { }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace CoreDev.Extensions
@@ -85,11 +84,31 @@ namespace CoreDev.Extensions
 
             for (int i = 1; i < points.Count; i++)
             {
-                centerPos +=  points[i];
+                centerPos += points[i];
             }
 
             centerPos /= points.Count;
             return centerPos;
+        }
+
+        public static bool HasLineOfSightTo(this Vector3 fromPos_World, Vector3 toPos_World, int obstructionsLayerMask = ~0)
+        {
+            Vector3 vecToPos = (toPos_World - fromPos_World).normalized;
+            float distance = Vector3.Distance(fromPos_World, toPos_World);
+
+            RaycastHit hitInfo;
+            if (Physics.Raycast(fromPos_World, vecToPos, out hitInfo, distance, obstructionsLayerMask))
+            {
+                Debug.Log(hitInfo.collider.name, hitInfo.collider.gameObject);
+                return false;
+            }
+            return true;
+        }
+
+        public static float DistanceTo(this Vector3 fromPos_World, Vector3 toPos_World)
+        {
+            float distance = Vector3.Distance(fromPos_World, toPos_World);
+            return distance;
         }
     }
 }

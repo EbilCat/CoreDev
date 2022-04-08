@@ -31,9 +31,9 @@ namespace CoreDev.Sequencing
         private static bool initPhaseCompleted = false;
 
 
-        //*====================
-        //* UNITY
-        //*====================
+//*====================
+//* UNITY
+//*====================
         protected void Start()
         {
             foreach (KeyValuePair<int, InitExecutor> kvp in initExecutors)
@@ -68,9 +68,9 @@ namespace CoreDev.Sequencing
         }
 
 
-        //*====================
-        //* PUBLIC
-        //*====================
+//*====================
+//* PUBLIC
+//*====================
         /// <summary>
         /// Registers a callback which is fired during Universal Timer's Start() function
         /// </summary>
@@ -145,21 +145,7 @@ namespace CoreDev.Sequencing
             InitDriverGO();
 
             int index = timedCallbacks.IndexOf(callback);
-
-            if (index != -1)
-            {
-                timedCallbacks[index] = callback;
-                countDowns[index] = countDownSecs;
-                useUnscaledTime[index] = false;
-                payloads[index] = payload;
-            }
-            else
-            {
-                timedCallbacks.Add(callback);
-                countDowns.Add(countDownSecs);
-                useUnscaledTime.Add(false);
-                payloads.Add(payload);
-            }
+            UpdateCallback(callback, countDownSecs, false, payload, index);
         }
 
 
@@ -175,21 +161,7 @@ namespace CoreDev.Sequencing
             InitDriverGO();
 
             int index = timedCallbacks.IndexOf(callback);
-
-            if (index != -1)
-            {
-                timedCallbacks[index] = callback;
-                countDowns[index] = countDownSecs;
-                useUnscaledTime[index] = true;
-                payloads[index] = payload;
-            }
-            else
-            {
-                timedCallbacks.Add(callback);
-                countDowns.Add(countDownSecs);
-                useUnscaledTime.Add(true);
-                payloads.Add(payload);
-            }
+            UpdateCallback(callback, countDownSecs, true, payload, index);
         }
 
         /// <summary>
@@ -203,9 +175,9 @@ namespace CoreDev.Sequencing
         }
 
 
-        //*====================
-        //* PRIVATE
-        //*====================
+//*====================
+//* PRIVATE
+//*====================
         private static void ProcessTimeElapsedExecutors()
         {
             foreach (KeyValuePair<int, TimeElapsedExecutor> kvp in timeElapsedExecutors)
@@ -231,9 +203,7 @@ namespace CoreDev.Sequencing
                 int index = timedCallbacks.IndexOf(unschedulingCallbacks[i]);
                 if (index != -1)
                 {
-                    timedCallbacks.RemoveAt(index);
-                    countDowns.RemoveAt(index);
-                    payloads.RemoveAt(index);
+                    RemoveCallback(index);
                 }
             }
             unschedulingCallbacks.Clear();
@@ -262,13 +232,39 @@ namespace CoreDev.Sequencing
             float countDownSecs = countDowns[callbackIndex];
             if (countDownSecs <= 0.0f)
             {
-                timedCallbacks.RemoveAt(callbackIndex);
-                countDowns.RemoveAt(callbackIndex);
-                useUnscaledTime.RemoveAt(callbackIndex);
-                payloads.RemoveAt(callbackIndex);
+                RemoveCallback(callbackIndex);
             }
         }
 
+
+//*====================
+//* PRIVATE
+//*====================
+        private static void UpdateCallback(Action<object[]> callback, float countDownSecs, bool usesUnscaledTime, object[] payload, int index = -1)
+        {
+            if (index != -1)
+            {
+                timedCallbacks[index] = callback;
+                countDowns[index] = countDownSecs;
+                useUnscaledTime[index] = usesUnscaledTime;
+                payloads[index] = payload;
+            }
+            else
+            {
+                timedCallbacks.Add(callback);
+                countDowns.Add(countDownSecs);
+                useUnscaledTime.Add(usesUnscaledTime);
+                payloads.Add(payload);
+            }
+        }
+
+        private static void RemoveCallback(int callbackIndex)
+        {
+            timedCallbacks.RemoveAt(callbackIndex);
+            countDowns.RemoveAt(callbackIndex);
+            useUnscaledTime.RemoveAt(callbackIndex);
+            payloads.RemoveAt(callbackIndex);
+        }
 
         [ContextMenu("PrintAllRegistered")]
         protected void PrintAllRegisteredCallbacks()

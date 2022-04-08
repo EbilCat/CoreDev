@@ -130,7 +130,7 @@ namespace CoreDev.Framework
             foreach (IDataObject item in typeSpecificList)
             {
                 T typedItem = (T)item;
-                
+
                 if (filterCondition == null || filterCondition(typedItem))
                 {
                     listToPopulate.Add(typedItem);
@@ -140,6 +140,12 @@ namespace CoreDev.Framework
 
         public static bool RegisterDataObject(IDataObject dataObject)
         {
+            if(dataObject == null)
+            {
+                Debug.LogWarning("Rejecting attempt to register a NULL DataObject");
+                return false;
+            }
+
             DataObjectDestroyer.Instance?.RegisterForDestruction(DestroyAllDataObjects);
 
             if (!IsDataObjectRegistered(dataObject))

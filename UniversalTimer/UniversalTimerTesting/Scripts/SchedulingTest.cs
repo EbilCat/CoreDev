@@ -9,10 +9,25 @@ namespace TimeElapsedTester
         private bool callback1Fired = false;
         private bool callback2Fired = false;
 
+        public void Awake()
+        {
+            Invoke("ScheduleCallback_CheckThatCallbackisFired", 5.0f);
+            Invoke("ScheduleCallbackUnscaled_CheckThatCallbackisFired", 10.0f);
+            Invoke("ReplaceCallback_CheckThatCallbackisFired", 15.0f);
+            Invoke("ReplaceCallbackUnscaled_CheckThatCallbackUnscaledisFired", 20.0f);
+            Invoke("UnscheduleCallback_CheckThatCallbackisNotFired", 25.0f);
+            Invoke("UnscheduleCallbackUnscaled_CheckThatCallbackUnscaledisNotFired", 30.0f);
+            Invoke("FireTwoCallbacks_CheckThatBothCallbacksAreFired", 35.0f);
+            Invoke("FireTwoCallbacksUnscaled_CheckThatBothCallbacksAreFired", 40.0f);
+            Invoke("FireScaledAndUnscaledCallbackWithTimeScaleHalved_CheckThatScaledTimeCallbackFiredLast", 45.0f);
+            Invoke("FireScaledAndUnscaledCallbackWithTimeScaleDoubled_CheckThatUnscaledTimeCallbackFiredLast", 50.0f);
+            Invoke("UnregisterCallbackWhenFired_NoExceptionsThrown", 55.0f);
+        }
 
-//*====================
-//* ScheduleCallback_CheckThatCallbackisFired
-//*====================
+
+    //*====================
+    //* ScheduleCallback_CheckThatCallbackisFired
+    //*====================
         [ContextMenu("ScheduleCallback_CheckThatCallbackisFired")]
         private void ScheduleCallback_CheckThatCallbackisFired()
         {
@@ -24,7 +39,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_ScheduleCallback_CheckThatCallbackisFired()
         {
-            if(callback1Fired == true && callback2Fired == false)
+            if (callback1Fired == true && callback2Fired == false)
             {
                 Debug.Log("ScheduleCallback_CheckThatCallbackisFired: Passed");
             }
@@ -33,11 +48,11 @@ namespace TimeElapsedTester
                 Debug.Log("ScheduleCallback_CheckThatCallbackisFired: Failed");
             }
         }
-        
 
-//*====================
-//* ScheduleCallbackUnscaled_CheckThatCallbackisFired
-//*====================
+
+    //*====================
+    //* ScheduleCallbackUnscaled_CheckThatCallbackisFired
+    //*====================
         [ContextMenu("ScheduleCallbackUnscaled_CheckThatCallbackisFired")]
         private void ScheduleCallbackUnscaled_CheckThatCallbackisFired()
         {
@@ -49,7 +64,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_ScheduleCallbackUnscaled_CheckThatCallbackisFired()
         {
-            if(callback1Fired == true && callback2Fired == false)
+            if (callback1Fired == true && callback2Fired == false)
             {
                 Debug.Log("ScheduleCallbackUnscaled_CheckThatCallbackisFired: Passed");
             }
@@ -59,9 +74,10 @@ namespace TimeElapsedTester
             }
         }
 
-//*====================
-//* ReplaceCallback_CheckThatCallbackisFired
-//*====================
+
+    //*====================
+    //* ReplaceCallback_CheckThatCallbackisFired
+    //*====================
         [ContextMenu("ReplaceCallback_CheckThatCallbackisFired")]
         private void ReplaceCallback_CheckThatCallbackisFired()
         {
@@ -80,7 +96,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_ReplaceCallback_CheckThatCallbackisFired()
         {
-            if(callback1Fired == false && callback2Fired == true)
+            if (callback1Fired == false && callback2Fired == true)
             {
                 Debug.Log("ReplaceCallback_CheckThatCallbackisFired: Passed");
             }
@@ -91,11 +107,9 @@ namespace TimeElapsedTester
         }
 
 
-
-
-//*====================
-//* ReplaceCallbackUnscaled_CheckThatCallbackUnscaledisFired
-//*====================
+    //*====================
+    //* ReplaceCallbackUnscaled_CheckThatCallbackUnscaledisFired
+    //*====================
         [ContextMenu("ReplaceCallbackUnscaled_CheckThatCallbackUnscaledisFired")]
         private void ReplaceCallbackUnscaled_CheckThatCallbackUnscaledisFired()
         {
@@ -114,7 +128,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_ReplaceCallbackUnscaled_CheckThatCallbackUnscaledisFired()
         {
-            if(callback1Fired == false && callback2Fired == true)
+            if (callback1Fired == false && callback2Fired == true)
             {
                 Debug.Log("ReplaceCallbackUnscaled_CheckThatCallbackUnscaledisFired: Passed");
             }
@@ -125,9 +139,9 @@ namespace TimeElapsedTester
         }
 
 
-//*====================
-//* UnscheduleCallback_CheckThatCallbackisNotFired
-//*====================
+    //*====================
+    //* UnscheduleCallback_CheckThatCallbackisNotFired
+    //*====================
         [ContextMenu("UnscheduleCallback_CheckThatCallbackisNotFired")]
         private void UnscheduleCallback_CheckThatCallbackisNotFired()
         {
@@ -146,7 +160,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_UnscheduleCallback_CheckThatCallbackisNotFired()
         {
-            if(callback1Fired == false && callback2Fired == false)
+            if (callback1Fired == false && callback2Fired == false)
             {
                 Debug.Log("UnscheduleCallback_CheckThatCallbackisNotFired: Passed");
             }
@@ -157,10 +171,10 @@ namespace TimeElapsedTester
         }
 
 
-//*====================
-//* UnscheduleCallback_CheckThatCallbackUnscaledisNotFired
-//*====================
-        [ContextMenu("UnscheduleCallback_CheckThatCallbackUnscaledisNotFired")]
+    //*====================
+    //* UnscheduleCallbackUnscaled_CheckThatCallbackUnscaledisNotFired
+    //*====================
+        [ContextMenu("UnscheduleCallbackUnscaled_CheckThatCallbackUnscaledisNotFired")]
         private void UnscheduleCallbackUnscaled_CheckThatCallbackUnscaledisNotFired()
         {
             Debug.Log("Running Test: UnscheduleCallbackUnscaled_CheckThatCallbackUnscaledisNotFired");
@@ -178,7 +192,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_UnscheduleCallbackUnscaled_CheckThatCallbackUnscaledisNotFired()
         {
-            if(callback1Fired == false && callback2Fired == false)
+            if (callback1Fired == false && callback2Fired == false)
             {
                 Debug.Log("UnscheduleCallbackUnscaled_CheckThatCallbackUnscaledisNotFired: Passed");
             }
@@ -189,9 +203,9 @@ namespace TimeElapsedTester
         }
 
 
-//*====================
-//* FireTwoCallbacks_CheckThatBothCallbacksAreFired
-//*====================
+    //*====================
+    //* FireTwoCallbacks_CheckThatBothCallbacksAreFired
+    //*====================
         [ContextMenu("FireTwoCallbacks_CheckThatBothCallbacksAreFired")]
         private void FireTwoCallbacks_CheckThatBothCallbacksAreFired()
         {
@@ -204,7 +218,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_FireTwoCallbacks_CheckThatBothCallbacksAreFired()
         {
-            if(callback1Fired == true && callback2Fired == true)
+            if (callback1Fired == true && callback2Fired == true)
             {
                 Debug.Log("FireTwoCallbacks_CheckThatBothCallbacksAreFired: Passed");
             }
@@ -215,9 +229,9 @@ namespace TimeElapsedTester
         }
 
 
-//*====================
-//* FireTwoCallbacksUnscaled_CheckThatBothCallbacksAreFired
-//*====================
+    //*====================
+    //* FireTwoCallbacksUnscaled_CheckThatBothCallbacksAreFired
+    //*====================
         [ContextMenu("FireTwoCallbacksUnscaled_CheckThatBothCallbacksAreFired")]
         private void FireTwoCallbacksUnscaled_CheckThatBothCallbacksAreFired()
         {
@@ -230,7 +244,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_FireTwoCallbacksUnscaled_CheckThatBothCallbacksAreFired()
         {
-            if(callback1Fired == true && callback2Fired == true)
+            if (callback1Fired == true && callback2Fired == true)
             {
                 Debug.Log("FireTwoCallbacksUnscaled_CheckThatBothCallbacksAreFired: Passed");
             }
@@ -241,9 +255,9 @@ namespace TimeElapsedTester
         }
 
 
-//*====================
-//* FireScaledAndUnscaledCallbackWithTimeScaleHalved_CheckThatScaledTimeCallbackFiredLast
-//*====================
+    //*====================
+    //* FireScaledAndUnscaledCallbackWithTimeScaleHalved_CheckThatScaledTimeCallbackFiredLast
+    //*====================
         [ContextMenu("FireScaledAndUnscaledCallbackWithTimeScaleHalved_CheckThatScaledTimeCallbackFiredLast")]
         private void FireScaledAndUnscaledCallbackWithTimeScaleHalved_CheckThatScaledTimeCallbackFiredLast()
         {
@@ -263,7 +277,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_FireScaledAndUnscaledCallbackWithTimeScaleHalved_CheckThatScaledTimeCallbackFiredLast()
         {
-            if(callback1Fired == true && callback2Fired == true && lastPayloadValue == 1)
+            if (callback1Fired == true && callback2Fired == true && lastPayloadValue == 1)
             {
                 Debug.Log("FireScaledAndUnscaledCallbackWithTimeScaleHalved_CheckThatScaledTimeCallbackFiredLast: Passed");
             }
@@ -274,10 +288,10 @@ namespace TimeElapsedTester
             this.Reset();
         }
 
-        
-//*====================
-//* FireScaledAndUnscaledCallbackWithTimeScaleDoubled_CheckThatUnscaledTimeCallbackFiredLast
-//*====================
+
+    //*====================
+    //* FireScaledAndUnscaledCallbackWithTimeScaleDoubled_CheckThatUnscaledTimeCallbackFiredLast
+    //*====================
         [ContextMenu("FireScaledAndUnscaledCallbackWithTimeScaleDoubled_CheckThatUnscaledTimeCallbackFiredLast")]
         private void FireScaledAndUnscaledCallbackWithTimeScaleDoubled_CheckThatUnscaledTimeCallbackFiredLast()
         {
@@ -297,7 +311,7 @@ namespace TimeElapsedTester
 
         private void CheckResultFor_FireScaledAndUnscaledCallbackWithTimeScaleDoubled_CheckThatUnscaledTimeCallbackFiredLast()
         {
-            if(callback1Fired == true && callback2Fired == true && lastPayloadValue == 2)
+            if (callback1Fired == true && callback2Fired == true && lastPayloadValue == 2)
             {
                 Debug.Log("FireScaledAndUnscaledCallbackWithTimeScaleDoubled_CheckThatUnscaledTimeCallbackFiredLast: Passed");
             }
@@ -311,9 +325,9 @@ namespace TimeElapsedTester
 
 
 
-//*====================
-//* UnregisterCallbackWhenFired_NoExceptionsThrown
-//*====================
+    //*====================
+    //* UnregisterCallbackWhenFired_NoExceptionsThrown
+    //*====================
         [ContextMenu("UnregisterCallbackWhenFired_NoExceptionsThrown")]
         private void UnregisterCallbackWhenFired_NoExceptionsThrown()
         {
@@ -334,9 +348,9 @@ namespace TimeElapsedTester
         }
 
 
-//*====================
-//* PRIVATE
-//*====================
+    //*====================
+    //* PRIVATE
+    //*====================
         private void CallbackFunction(object[] obj)
         {
             int payload = (int)obj[0];

@@ -98,8 +98,8 @@ public class InspectedObservableVarCard : MonoBehaviour, ISpawnee, IPointerDownH
         }
         else
         {
-            this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
-            this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
+            this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
+            this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
         }
     }
 

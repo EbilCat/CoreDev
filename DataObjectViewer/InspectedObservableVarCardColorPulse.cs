@@ -93,8 +93,8 @@ public class InspectedObservableVarCardColorPulse : MonoBehaviour, ISpawnee
         }
         else
         {
-            this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, StartFade);
-            this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, StartFade);
+            this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, StartFade);
+            this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, StartFade);
             this.ResetFadeToInactive();
         }
     }
