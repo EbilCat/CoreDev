@@ -1,104 +1,187 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using CoreDev.Framework;
+using UnityEngine;
 
 namespace CoreDev.Observable
 {
-    //*===========================
-    //* ODictionary
-    //*===========================
-    public class ODictionary<DO, KEY, VAL> where DO : IDataObject
+    public enum ODictionaryOperation { ADD, REMOVE };
+
+    public class ODictionary<TKey, TValue> : Dictionary<TKey, TValue>, IObservableVar
     {
-        private Dictionary<KEY, VAL> var = new Dictionary<KEY, VAL>();
-        private ReadOnlyDictionary<KEY, VAL> readOnlyVar;
-        private DO dataObject;
-        public DO DataObject
+        public delegate bool ModerationCheck(ref TKey incomingKey, ref TValue incomingValue, OListOperation op);
+
+        protected event Action ModeratorsChanged = delegate { };
+        protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
+
+        protected event Action ValueChanged = delegate { };
+        protected IDataObject dataObject;
+
+        public IDataObject DataObject
         {
             get { return dataObject; }
-        }
-        private event Action<ODictionary<DO, KEY, VAL>> DictionaryAltered = delegate { }; //Dictionary
-        private event Action<ODictionary<DO, KEY, VAL>, KEY, VAL> ElementAdded = delegate { }; //Dictionary, Key, Value
-        private event Action<ODictionary<DO, KEY, VAL>, KEY, VAL> RemovingElement = delegate { }; //Dictionary, Key, Value
-
-        public ReadOnlyDictionary<KEY, VAL> Value
-        {
-            get { return this.readOnlyVar; }
-        }
-
-        public int Count
-        {
-            get { return var.Count; }
-        }
-
-        public void Add(KEY key, VAL item)
-        {
-            this.var.Add(key, item);
-            this.DictionaryAltered(this);
-            this.ElementAdded(this, key, item);
-        }
-
-        public bool Remove(KEY key)
-        {
-            bool containsKey = this.var.ContainsKey(key);
-
-            if (containsKey)
+            set
             {
-                this.var.Remove(key);
-                this.DictionaryAltered(this);
-            }
-
-            return containsKey;
-        }
-
-        public void Clear()
-        {
-            if (this.var.Count > 0)
-            {
-                foreach (KeyValuePair<KEY, VAL> entry in var)
+                if (dataObject != null)
                 {
-                    this.RemovingElement(this, entry.Key, entry.Value);
+                    Debug.LogError("DataObject already assigned, all subsequent assignments are not allowed");
+                    return;
                 }
-                this.var.Clear();
-                this.DictionaryAltered(this);
+                this.dataObject = value;
             }
         }
 
-        public void RegisterForChanges(Action<ODictionary<DO, KEY, VAL>> callback, bool fireCallbackOnRegistration = true)
-        {
-            if (fireCallbackOnRegistration) { callback(this); }
-            DictionaryAltered -= callback;
-            DictionaryAltered += callback;
-        }
 
-        public void RegisterForElementAdded(Action<ODictionary<DO, KEY, VAL>, KEY, VAL> callback, bool fireCallbackOnRegistration = true) //Dictionary, Index, Count
+//*====================
+//* EVENT REGISTRATION
+//*====================
+        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementAddedCallback = delegate { };
+        public void RegisterForElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback, bool fireCallbackForExistingElements = true)
         {
-            if (fireCallbackOnRegistration && this.var.Count > 0)
+            if (fireCallbackForExistingElements)
             {
-                foreach (KeyValuePair<KEY, VAL> entry in var)
+                foreach (KeyValuePair<TKey, TValue> element in this)
                 {
-                    callback(this, entry.Key, entry.Value);
+                    callback(this, element.Key, element.Value);
                 }
             }
-            ElementAdded -= callback;
-            ElementAdded += callback;
+            FireElementAddedCallback -= callback;
+            FireElementAddedCallback += callback;
         }
 
-        public void RegisterForRemovingElement(Action<ODictionary<DO, KEY, VAL>, KEY, VAL> callback) //Dictionary, Index, Count
+        public void UnregisterFromElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
         {
-            RemovingElement -= callback;
-            RemovingElement += callback;
+            FireElementAddedCallback -= callback;
         }
 
-        public void UnregisterFromChanges(Action<ODictionary<DO, KEY, VAL>> callback) { DictionaryAltered -= callback; }
-        public void UnregisterFromElementAdded(Action<ODictionary<DO, KEY, VAL>, KEY, VAL> callback) { ElementAdded -= callback; }
-        public void UnregisterFromRemovingElement(Action<ODictionary<DO, KEY, VAL>, KEY, VAL> callback) { RemovingElement -= callback; }
 
-
-        public ODictionary(DO dataObject)
+        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementRemovedCallback = delegate { };
+        public void RegisterForElementRemoved(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
         {
-            this.dataObject = dataObject;
-            this.readOnlyVar = new ReadOnlyDictionary<KEY, VAL>(var);
+            FireElementRemovedCallback -= callback;
+            FireElementRemovedCallback += callback;
+        }
+
+        public void UnregisterFromElementRemoved(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
+        {
+            FireElementRemovedCallback -= callback;
+        }
+
+
+
+//*====================
+//* ACTIONS
+//*====================
+        public new void Add(TKey key, TValue value)
+        {
+            base.Add(key, value);
+        }
+
+        public new bool Remove(TKey key)
+        {
+            return base.Remove(key);
+        }
+
+        public new void Clear()
+        {
+            base.Clear();
+        }
+
+        // public bool ContainsKey(TKey key)
+        // {
+
+        // }
+
+        // public bool ContainsValue(TValue value)
+        // {
+
+        // }
+
+        // public Enumerator GetEnumerator()
+        // {
+
+        // }
+
+        // public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
+        // {
+
+        // }
+
+        // public virtual void OnDeserialization(object sender)
+        // {
+
+        // }
+
+        // public bool TryGetValue(TKey key, out TValue value)
+        // {
+
+        // }
+
+
+//*====================
+//* QUERIES
+//*====================
+        public new TValue this[TKey key]
+        {
+            get
+            {
+                return base[key];
+            }
+            set
+            {
+                TValue itemToRemove = base[key];
+                bool removalModerationPassed = this.ModerateIncomingValue(ref key, ref itemToRemove, OListOperation.REMOVE);
+                bool additionModerationPassed = this.ModerateIncomingValue(ref key, ref value, OListOperation.ADD);
+
+                if (removalModerationPassed && additionModerationPassed)
+                {
+                    this.FireElementRemovedCallback(this, key, itemToRemove);
+                    base[key] = value;
+                    this.ValueChanged();
+                    this.FireElementAddedCallback(this, key, value);
+                }
+            }
+        }
+
+        public ODictionary<TKey, TValue> Value
+        {
+            get
+            {
+                return this;
+            }
+        }
+
+
+//*====================
+//* PRIVATE
+//*====================
+        private bool ModerateIncomingValue(ref TKey key, ref TValue value, OListOperation operation)
+        {
+            foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)
+            {
+                List<ModerationCheck> moderatorList = kvp.Value;
+
+                for (int i = 0; i < moderatorList.Count; i++)
+                {
+                    bool isAcceptable = moderatorList[i](ref key, ref value, operation);
+                    if (isAcceptable == false)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private List<ModerationCheck> GetModerationChecks(int priority)
+        {
+            if (moderators.ContainsKey(priority) == false)
+            {
+                this.moderators.Add(priority, new List<ModerationCheck>());
+            }
+
+            List<ModerationCheck> moderationChecks = this.moderators[priority];
+            return moderationChecks;
         }
     }
 }
