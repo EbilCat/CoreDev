@@ -71,7 +71,7 @@ namespace TimeElapsedTester
         private void CalculateMovementDelta()
         {
             Vector3 movementDelta = this.followTransform.position - posAtStartOfFrame;
-            Debug.Log($"{this.name} Movement Delta: {movementDelta.ToString("0.00")}");
+            // Debug.Log($"{this.name} Movement Delta: {movementDelta.ToString("0.00")}");
         }
     }
 }

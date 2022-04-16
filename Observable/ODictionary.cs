@@ -9,7 +9,7 @@ namespace CoreDev.Observable
 
     public class ODictionary<TKey, TValue> : Dictionary<TKey, TValue>, IObservableVar
     {
-        public delegate bool ModerationCheck(ref TKey incomingKey, ref TValue incomingValue, OListOperation op);
+        public delegate bool ModerationCheck(ref TKey incomingKey, ref TValue incomingValue, ODictionaryOperation op);
 
         protected event Action ModeratorsChanged = delegate { };
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
@@ -32,9 +32,28 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* EVENT REGISTRATION
-//*====================
+        //*====================
+        //* MODERATORS
+        //*====================
+        public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0)
+        {
+            List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
+            moderationChecks.Remove(acceptanceCheck);
+            moderationChecks.Add(acceptanceCheck);
+            this.ModeratorsChanged();
+        }
+
+        public void RemoveModerator(ModerationCheck acceptanceCheck, int priority = 0)
+        {
+            List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
+            moderationChecks.Remove(acceptanceCheck);
+            this.ModeratorsChanged();
+        }
+
+
+        //*====================
+        //* EVENT REGISTRATION
+        //*====================
         private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementAddedCallback = delegate { };
         public void RegisterForElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback, bool fireCallbackForExistingElements = true)
         {
@@ -69,22 +88,57 @@ namespace CoreDev.Observable
 
 
 
-//*====================
-//* ACTIONS
-//*====================
-        public new void Add(TKey key, TValue value)
+        //*====================
+        //* ACTIONS
+        //*====================
+        public new bool Add(TKey key, TValue value)
         {
-            base.Add(key, value);
+            bool moderationPassed = this.ModerateIncomingValue(ref key, ref value, ODictionaryOperation.ADD);
+            if (moderationPassed)
+            {
+                base.Add(key, value);
+                this.ValueChanged();
+                this.FireElementAddedCallback(this, key, value);
+            }
+            return moderationPassed;
         }
 
         public new bool Remove(TKey key)
         {
-            return base.Remove(key);
+            TValue value;
+            bool entryExists = base.TryGetValue(key, out value);
+            bool isRemoved = false;
+
+            if (entryExists)
+            {
+                bool moderationPassed = this.ModerateIncomingValue(ref key, ref value, ODictionaryOperation.REMOVE);
+                if (moderationPassed)
+                {
+                    isRemoved = base.Remove(key);
+
+                    if (isRemoved)
+                    {
+                        this.ValueChanged();
+                        this.FireElementRemovedCallback(this, key, value);
+                    }
+                }
+            }
+
+            return isRemoved;
         }
 
+
+        private List<TKey> keys = new List<TKey>();
         public new void Clear()
         {
-            base.Clear();
+            keys.Clear();
+            keys.AddRange(base.Keys);
+            int keyCount = this.Count;
+            for (int i = 0; i < keyCount; i++)
+            {
+                Remove(keys[0]);
+                keys.RemoveAt(0);
+            }
         }
 
         // public bool ContainsKey(TKey key)
@@ -118,9 +172,9 @@ namespace CoreDev.Observable
         // }
 
 
-//*====================
-//* QUERIES
-//*====================
+        //*====================
+        //* QUERIES
+        //*====================
         public new TValue this[TKey key]
         {
             get
@@ -130,8 +184,8 @@ namespace CoreDev.Observable
             set
             {
                 TValue itemToRemove = base[key];
-                bool removalModerationPassed = this.ModerateIncomingValue(ref key, ref itemToRemove, OListOperation.REMOVE);
-                bool additionModerationPassed = this.ModerateIncomingValue(ref key, ref value, OListOperation.ADD);
+                bool removalModerationPassed = this.ModerateIncomingValue(ref key, ref itemToRemove, ODictionaryOperation.REMOVE);
+                bool additionModerationPassed = this.ModerateIncomingValue(ref key, ref value, ODictionaryOperation.ADD);
 
                 if (removalModerationPassed && additionModerationPassed)
                 {
@@ -152,10 +206,10 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* PRIVATE
-//*====================
-        private bool ModerateIncomingValue(ref TKey key, ref TValue value, OListOperation operation)
+        //*====================
+        //* PRIVATE
+        //*====================
+        private bool ModerateIncomingValue(ref TKey key, ref TValue value, ODictionaryOperation operation)
         {
             foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)
             {
