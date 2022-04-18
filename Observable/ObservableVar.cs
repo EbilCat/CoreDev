@@ -2,6 +2,7 @@
 using CoreDev.Extensions;
 using CoreDev.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace CoreDev.Observable
 {
@@ -484,6 +485,22 @@ namespace CoreDev.Observable
             {
                 Debug.Log("Error converting to Vector3");
             }
+        }
+    }
+
+    
+//*====================
+//* RaycastResult
+//*====================
+    [Serializable]
+    public class ORaycastResult : ObservableVar<RaycastResult>
+    {
+        public ORaycastResult() : base(default(RaycastResult)) { }
+        public ORaycastResult(RaycastResult initValue) : base(initValue) { }
+        public ORaycastResult(RaycastResult initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(RaycastResult var, RaycastResult value)
+        {
+            return var.Equals(value);
         }
     }
 
