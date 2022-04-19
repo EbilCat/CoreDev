@@ -31,9 +31,9 @@ public class RearrangeableScrollViewItem : MonoBehaviour, IPointerDownHandler, I
     private event Action<int> siblingIndexChanged = delegate { };
 
 
-    //*====================
-    //* UNITY
-    //*====================
+//*====================
+//* UNITY
+//*====================
     private void Start()
     {
         if (this.GetComponentInParent<Canvas>().renderMode == RenderMode.ScreenSpaceOverlay)
@@ -64,15 +64,10 @@ public class RearrangeableScrollViewItem : MonoBehaviour, IPointerDownHandler, I
         this.itemRectTransform = this.scrollViewItemTransform as RectTransform;
     }
 
-    private void OnDestroy()
-    {
-        UniversalTimer.UnregisterFromTimeElapsed(ProcessDrag);
-    }
 
-
-    //*====================
-    //* PUBLIC
-    //*====================
+//*====================
+//* PUBLIC
+//*====================
     public void RegisterForSiblingIndexChanged(Action<int> callback)
     {
         this.UnregisterFromSiblingIndexChanged(callback);
@@ -85,9 +80,9 @@ public class RearrangeableScrollViewItem : MonoBehaviour, IPointerDownHandler, I
     }
 
 
-    //*====================
-    //* EventSystems Interfaces
-    //*====================
+//*====================
+//* EventSystems Interfaces
+//*====================
     public void OnPointerDown(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Left)
@@ -111,45 +106,39 @@ public class RearrangeableScrollViewItem : MonoBehaviour, IPointerDownHandler, I
             this.canvasGroup.alpha = dragAlpha;
 
             this.scrollViewItemTransform.SetParent(this.scrollRectTransform);
-
-            UniversalTimer.RegisterForTimeElapsed(ProcessDrag);
         }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        //BLOCK
-    }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        //BLOCK
-    }
-
-
-    //*====================
-    //* UniversalTimer - TimeElapsed
-    //*====================
-    private void ProcessDrag(float deltaTime, float unscaledDeltaTime, int executionOrder)
-    {
-        Vector3 pointerPos_Screen = Input.mousePosition;
         Vector2 pointerPos_ScrollRect;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(this.scrollRectTransform, pointerPos_Screen, this.mainCam, out pointerPos_ScrollRect);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(this.scrollRectTransform, eventData.position, this.mainCam, out pointerPos_ScrollRect);
 
         this.UpdateScrollViewItemPos(pointerPos_ScrollRect);
         this.EvaluateSiblingIndex(pointerPos_ScrollRect);
         this.EvaluateScrolling(pointerPos_ScrollRect);
+    }
 
-        if (Input.GetMouseButtonUp(0))
-        {
-            this.EndDrag();
-        }
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        this.scrollViewItemTransform.SetParent(this.scrollViewContentTransform);
+        this.scrollViewItemTransform.localPosition = Vector3.zero;
+        this.scrollViewItemTransform.localRotation = Quaternion.identity;
+        this.scrollViewItemTransform.localScale = Vector3.one;
+        this.ReactivateRaycastTargets();
+
+        int siblingIndex = this.filler.transform.GetSiblingIndex();
+        this.scrollViewItemTransform.SetSiblingIndex(siblingIndex);
+        this.siblingIndexChanged(siblingIndex);
+
+        this.DestroyFiller();
+        this.canvasGroup.alpha = this.canvasGroupOriginalAlpha;
     }
 
 
-    //*====================
-    //* PRIVATE
-    //*====================
+//*====================
+//* PRIVATE
+//*====================
     private void CreateFiller()
     {
         this.filler = new GameObject("Placeholder");
@@ -236,23 +225,6 @@ public class RearrangeableScrollViewItem : MonoBehaviour, IPointerDownHandler, I
         }
     }
 
-    private void EndDrag()
-    {
-        this.scrollViewItemTransform.SetParent(this.scrollViewContentTransform);
-        this.scrollViewItemTransform.localPosition = Vector3.zero;
-        this.scrollViewItemTransform.localRotation = Quaternion.identity;
-        this.scrollViewItemTransform.localScale = Vector3.one;
-        this.ReactivateRaycastTargets();
-
-        int siblingIndex = this.filler.transform.GetSiblingIndex();
-        this.scrollViewItemTransform.SetSiblingIndex(siblingIndex);
-        this.siblingIndexChanged(siblingIndex);
-
-        this.DestroyFiller();
-        this.canvasGroup.alpha = this.canvasGroupOriginalAlpha;
-        UniversalTimer.UnregisterFromTimeElapsed(ProcessDrag);
-    }
-
     private float GetNeighbouringItemYPos_Canvas(int currentIndex, bool downwardTraversal)
     {
         int itemIndex = (downwardTraversal) ? currentIndex + 1 : currentIndex - 1;
@@ -275,7 +247,7 @@ public class RearrangeableScrollViewItem : MonoBehaviour, IPointerDownHandler, I
             itemIndex += (downwardTraversal) ? 1 : -1;
         }
 
-        float infinity = (downwardTraversal) ? float.NegativeInfinity : float.PositiveInfinity;        
+        float infinity = (downwardTraversal) ? float.NegativeInfinity : float.PositiveInfinity;
         return infinity;
     }
 
