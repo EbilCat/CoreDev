@@ -654,6 +654,19 @@ namespace CoreDev.Observable
         }
     }
 
+    
+//*====================
+//* Camera
+//*====================
+    [Serializable]
+    public class OCamera : ObservableVar<Camera>
+    {
+        public OCamera() : base(default(Camera)) { }
+        public OCamera(Camera initValue) : base(initValue) { }
+        public OCamera(Camera initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(Camera var, Camera value) { return var == value; }
+    }
+
 
 //*====================
 //* GameObject
