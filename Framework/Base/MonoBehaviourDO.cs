@@ -7,6 +7,9 @@ namespace CoreDev.Framework
     public abstract class MonoBehaviourDO : MonoBehaviour, IDataObject
     {
         protected event Action<MonoBehaviourDO> destroying = delegate { };
+        public Vector3 Pos_World => this.transform.position;
+        public Quaternion Rot_World => this.transform.rotation;
+        public Vector3 Scale_World => this.transform.lossyScale;
 
 
 //*====================
@@ -29,6 +32,7 @@ namespace CoreDev.Framework
         {
             this.destroying(this);
         }
+        
 
 //*====================
 //* MonoBehaviourDataObject
@@ -47,6 +51,30 @@ namespace CoreDev.Framework
         public virtual void Dispose()
         {
             Destroy(this.gameObject);
+        }
+
+
+//*====================
+//* UTILS
+//*====================
+        public Vector3 LocalToWorld(Vector3 pos_Local)
+        {
+            return this.transform.TransformPoint(pos_Local);
+        }
+
+        public Vector3 WorldToLocalSpace(Vector3 pos_World)
+        {
+            return this.transform.InverseTransformPoint(pos_World);
+        }
+
+        public Quaternion LocalToWorld(Quaternion rot_Local)
+        {
+            return this.transform.rotation * rot_Local;
+        }
+
+        public Quaternion WorldToLocal(Quaternion rot_World)
+        {
+            return Quaternion.Inverse(this.transform.rotation) * rot_World;
         }
     }
 }
