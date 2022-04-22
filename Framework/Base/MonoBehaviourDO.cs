@@ -65,22 +65,22 @@ namespace CoreDev.Framework
 //*====================
 //* CALLBACKS - ITransform
 //*====================
-        private void OnTransformNameChanged(ObservableVar<string> obj)
+        protected virtual void OnTransformNameChanged(ObservableVar<string> obj)
         {
             this.transform.name = obj.Value;
         }
 
-        private void OnPos_LocalChanged(ObservableVar<Vector3> obj)
+        protected virtual void OnPos_LocalChanged(ObservableVar<Vector3> obj)
         {
             this.transform.localPosition = obj.Value;
         }
 
-        private void OnRot_LocalChanged(ObservableVar<Quaternion> obj)
+        protected virtual void OnRot_LocalChanged(ObservableVar<Quaternion> obj)
         {
             this.transform.localRotation = obj.Value;
         }
 
-        private void OnScale_LocalChanged(ObservableVar<Vector3> obj)
+        protected virtual void OnScale_LocalChanged(ObservableVar<Vector3> obj)
         {
             this.transform.localScale = obj.Value;
         }
