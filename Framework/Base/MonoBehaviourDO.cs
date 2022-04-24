@@ -8,8 +8,27 @@ namespace CoreDev.Framework
     public abstract class MonoBehaviourDO : MonoBehaviour, ITransform
     {
         protected event Action<MonoBehaviourDO> destroying = delegate { };
-        public Vector3 Pos_World => this.transform.position;
-        public Quaternion Rot_World => this.transform.rotation;
+
+        public Vector3 Pos_World
+        {
+            get => this.transform.position;
+            set
+            {
+                Transform parent = this.transform.parent;
+                this.pos_Local.Value = (parent == null) ? value : parent.InverseTransformPoint(value);
+            }
+        }
+
+        public Quaternion Rot_World
+        {
+            get => this.transform.rotation;
+            set
+            {
+                Transform parent = this.transform.parent;
+                this.rot_Local.Value = (parent == null) ? value : Quaternion.Inverse(parent.rotation) * value;
+            }
+        }
+
         public Vector3 Scale_World => this.transform.lossyScale;
 
         private OString transformName;
@@ -24,10 +43,14 @@ namespace CoreDev.Framework
         private OVector3 scale_Local;
         public OVector3 Scale_Local => scale_Local;
 
+        public Vector3 Forward => this.transform.forward;
 
-//*====================
-//* UNITY
-//*====================
+        public Vector3 Right => this.transform.right;
+
+
+        //*====================
+        //* UNITY
+        //*====================
         protected virtual void Awake()
         {
             this.transformName = new OString(this.transform.name, this);
@@ -39,7 +62,6 @@ namespace CoreDev.Framework
             this.pos_Local.RegisterForChanges(OnPos_LocalChanged);
             this.rot_Local.RegisterForChanges(OnRot_LocalChanged);
             this.scale_Local.RegisterForChanges(OnScale_LocalChanged);
-
         }
 
         protected virtual void Start()
@@ -66,9 +88,9 @@ namespace CoreDev.Framework
         }
 
 
-//*====================
-//* CALLBACKS - ITransform
-//*====================
+        //*====================
+        //* CALLBACKS - ITransform
+        //*====================
         protected virtual void OnTransformNameChanged(ObservableVar<string> obj)
         {
             this.transform.name = obj.Value;
@@ -90,9 +112,9 @@ namespace CoreDev.Framework
         }
 
 
-//*====================
-//* MonoBehaviourDataObject
-//*====================
+        //*====================
+        //* MonoBehaviourDataObject
+        //*====================
         public virtual void RegisterForDestruction(Action<MonoBehaviourDO> callback)
         {
             destroying -= callback;
@@ -110,9 +132,9 @@ namespace CoreDev.Framework
         }
 
 
-//*====================
-//* UTILS
-//*====================
+        //*====================
+        //* UTILS
+        //*====================
         public Vector3 LocalToWorld(Vector3 pos_Local)
         {
             return this.transform.TransformPoint(pos_Local);
@@ -138,16 +160,19 @@ namespace CoreDev.Framework
     public interface ITransform : IDataObject
     {
         OString Name { get; }
+        Vector3 Pos_World { get; set; }
+        Quaternion Rot_World { get; set; }
+        Vector3 Scale_World { get; }
         OVector3 Pos_Local { get; }
         OQuaternion Rot_Local { get; }
         OVector3 Scale_Local { get; }
-        Vector3 Pos_World { get; }
-        Quaternion Rot_World { get; }
-        Vector3 Scale_World { get; }
 
         Vector3 WorldToLocalSpace(Vector3 pos_World);
         Vector3 LocalToWorld(Vector3 pos_Local);
         Quaternion WorldToLocal(Quaternion rot_World);
         Quaternion LocalToWorld(Quaternion rot_Local);
+
+        Vector3 Forward { get; }
+        Vector3 Right { get; }
     }
 }
