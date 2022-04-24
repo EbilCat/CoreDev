@@ -40,6 +40,10 @@ namespace CoreDev.Framework
             this.rot_Local.RegisterForChanges(OnRot_LocalChanged);
             this.scale_Local.RegisterForChanges(OnScale_LocalChanged);
 
+        }
+
+        protected virtual void Start()
+        {
             this.BindAspect(this);
             DataObjectMasterRepository.RegisterDataObject(this);
         }
