@@ -8,7 +8,7 @@ namespace CoreDev.Framework
 {
     public class DataObjectMasterRepository
     {
-        //* Static
+//* Static
         protected static List<IDataObject> dataObjects = new List<IDataObject>();
         protected static Dictionary<Type, List<IDataObject>> typeSegregatedDOs = new Dictionary<Type, List<IDataObject>>();
         protected static Action<IDataObject> CreatedDO = delegate { };
@@ -16,9 +16,9 @@ namespace CoreDev.Framework
         public static int DataObjectCount { get { return dataObjects.Count; } }
 
 
-        //*===========================
-        //* PUBLIC
-        //*===========================
+//*===========================
+//* PUBLIC
+//*===========================
         public static void RegisterForCreation(Action<IDataObject> callback, bool fireCallbackForExistingDOs = true)
         {
             if (fireCallbackForExistingDOs)
@@ -113,6 +113,28 @@ namespace CoreDev.Framework
                 typeSegregatedDOs.Add(typeof(T), typeSpecificList);
             }
             return typeSpecificList.AsReadOnly();
+        }
+
+        public static T GetDataObject<T>(Predicate<T> filterCondition = null) where T : class, IDataObject
+        {
+            List<IDataObject> typeSpecificList = null;
+            bool listExists = typeSegregatedDOs.TryGetValue(typeof(T), out typeSpecificList);
+            if (listExists == false)
+            {
+                typeSpecificList = new List<IDataObject>();
+                typeSegregatedDOs.Add(typeof(T), typeSpecificList);
+            }
+
+            foreach (IDataObject item in typeSpecificList)
+            {
+                T typedItem = (T)item;
+
+                if (filterCondition == null || filterCondition(typedItem))
+                {
+                    return typedItem;
+                }
+            }
+            return null;
         }
 
         public static void GetDataObjects<T>(List<T> listToPopulate, Predicate<T> filterCondition = null)
