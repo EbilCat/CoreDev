@@ -17,7 +17,11 @@ namespace CoreDev.Framework
             }
             else
             {
-                aspectRoot.GetComponent<ISpawnee>()?.BindDO(dataObject);
+                ISpawnee[] spawnees = aspectRoot.GetComponents<ISpawnee>();
+                for (int i = 0; i < spawnees.Length; i++)
+                {
+                    spawnees[i].BindDO(dataObject);
+                }
             }
         }
 
@@ -33,7 +37,11 @@ namespace CoreDev.Framework
             }
             else
             {
-                aspectRoot.GetComponent<ISpawnee>()?.UnbindDO(dataObject);
+                ISpawnee[] spawnees = aspectRoot.GetComponents<ISpawnee>();
+                for (int i = 0; i < spawnees.Length; i++)
+                {
+                    spawnees[i].UnbindDO(dataObject);
+                }
             }
         }
 
