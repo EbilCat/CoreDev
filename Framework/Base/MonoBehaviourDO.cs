@@ -140,9 +140,19 @@ namespace CoreDev.Framework
             return this.transform.TransformPoint(pos_Local);
         }
 
-        public Vector3 WorldToLocalSpace(Vector3 pos_World)
+        public Vector3 LocalToWorldUnscaled(Vector3 pos_Local)
+        {
+            return this.transform.TransformPointUnscaled(pos_Local);
+        }
+
+        public Vector3 WorldToLocal(Vector3 pos_World)
         {
             return this.transform.InverseTransformPoint(pos_World);
+        }
+
+        public Vector3 WorldToLocalUnscaled(Vector3 pos_World)
+        {
+            return this.transform.InverseTransformPointUnscaled(pos_World);
         }
 
         public Quaternion LocalToWorld(Quaternion rot_Local)
@@ -167,8 +177,10 @@ namespace CoreDev.Framework
         OQuaternion Rot_Local { get; }
         OVector3 Scale_Local { get; }
 
-        Vector3 WorldToLocalSpace(Vector3 pos_World);
+        Vector3 WorldToLocal(Vector3 pos_World);
+        Vector3 WorldToLocalUnscaled(Vector3 pos_World);
         Vector3 LocalToWorld(Vector3 pos_Local);
+        Vector3 LocalToWorldUnscaled(Vector3 pos_Local);
         Quaternion WorldToLocal(Quaternion rot_World);
         Quaternion LocalToWorld(Quaternion rot_Local);
 
