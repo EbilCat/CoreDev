@@ -167,9 +167,13 @@ namespace CoreDev.Framework
     }
 
 
-    public interface ITransform : IDataObject
+    public interface IName : IDataObject
     {
         OString Name { get; }
+    }
+
+    public interface ITransform : IName, IDataObject
+    {
         Vector3 Pos_World { get; set; }
         Quaternion Rot_World { get; set; }
         Vector3 Scale_World { get; }
