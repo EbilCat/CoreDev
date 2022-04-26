@@ -48,9 +48,9 @@ namespace CoreDev.Framework
         public Vector3 Right => this.transform.right;
 
 
-        //*====================
-        //* UNITY
-        //*====================
+//*====================
+//* UNITY
+//*====================
         protected virtual void Awake()
         {
             this.transformName = new OString(this.transform.name, this);
@@ -88,9 +88,9 @@ namespace CoreDev.Framework
         }
 
 
-        //*====================
-        //* CALLBACKS - ITransform
-        //*====================
+//*====================
+//* CALLBACKS - ITransform
+//*====================
         protected virtual void OnTransformNameChanged(ObservableVar<string> obj)
         {
             this.transform.name = obj.Value;
@@ -112,9 +112,9 @@ namespace CoreDev.Framework
         }
 
 
-        //*====================
-        //* MonoBehaviourDataObject
-        //*====================
+//*====================
+//* MonoBehaviourDataObject
+//*====================
         public virtual void RegisterForDestruction(Action<MonoBehaviourDO> callback)
         {
             destroying -= callback;
@@ -132,27 +132,17 @@ namespace CoreDev.Framework
         }
 
 
-        //*====================
-        //* UTILS
-        //*====================
+//*====================
+//* UTILS
+//*====================
         public Vector3 LocalToWorld(Vector3 pos_Local)
         {
             return this.transform.TransformPoint(pos_Local);
         }
 
-        public Vector3 LocalToWorldUnscaled(Vector3 pos_Local)
-        {
-            return this.transform.TransformPointUnscaled(pos_Local);
-        }
-
         public Vector3 WorldToLocal(Vector3 pos_World)
         {
             return this.transform.InverseTransformPoint(pos_World);
-        }
-
-        public Vector3 WorldToLocalUnscaled(Vector3 pos_World)
-        {
-            return this.transform.InverseTransformPointUnscaled(pos_World);
         }
 
         public Quaternion LocalToWorld(Quaternion rot_Local)
@@ -182,9 +172,7 @@ namespace CoreDev.Framework
         OVector3 Scale_Local { get; }
 
         Vector3 WorldToLocal(Vector3 pos_World);
-        Vector3 WorldToLocalUnscaled(Vector3 pos_World);
         Vector3 LocalToWorld(Vector3 pos_Local);
-        Vector3 LocalToWorldUnscaled(Vector3 pos_Local);
         Quaternion WorldToLocal(Quaternion rot_World);
         Quaternion LocalToWorld(Quaternion rot_Local);
 
