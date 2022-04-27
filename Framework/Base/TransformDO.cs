@@ -40,9 +40,9 @@ namespace CoreDev.Framework
         private OTransformVector3 scale_Local;
         public OVector3 Scale_Local => scale_Local;
 
-        public Vector3 Forward => this.transform.forward;
+        public Vector3 Forward_World => this.transform.forward;
 
-        public Vector3 Right => this.transform.right;
+        public Vector3 Right_World => this.transform.right;
 
 
 //*====================
@@ -141,7 +141,7 @@ namespace CoreDev.Framework
         Quaternion WorldToLocal(Quaternion rot_World);
         Quaternion LocalToWorld(Quaternion rot_Local);
 
-        Vector3 Forward { get; }
-        Vector3 Right { get; }
+        Vector3 Forward_World { get; }
+        Vector3 Right_World { get; }
     }
 }

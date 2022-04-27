@@ -49,12 +49,12 @@ namespace CoreDev.Examples
         {
             if(Input.GetKey(KeyCode.W))
             {
-                this.cameraDO.Pos_World += Vector3.ProjectOnPlane(this.cameraDO.Forward, Vector3.up).normalized * this.cameraDO.MoveSpeed.Value * deltaTime;
+                this.cameraDO.Pos_World += Vector3.ProjectOnPlane(this.cameraDO.Forward_World, Vector3.up).normalized * this.cameraDO.MoveSpeed.Value * deltaTime;
             }
             
             if(Input.GetKey(KeyCode.S))
             {
-                this.cameraDO.Pos_World -= Vector3.ProjectOnPlane(this.cameraDO.Forward, Vector3.up).normalized * this.cameraDO.MoveSpeed.Value * deltaTime;
+                this.cameraDO.Pos_World -= Vector3.ProjectOnPlane(this.cameraDO.Forward_World, Vector3.up).normalized * this.cameraDO.MoveSpeed.Value * deltaTime;
             }
             
             if(Input.GetKey(KeyCode.D))
