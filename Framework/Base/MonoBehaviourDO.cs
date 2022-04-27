@@ -30,6 +30,7 @@ namespace CoreDev.Framework
             this.destroying(this);
         }
 
+
 //*====================
 //* MonoBehaviourDataObject
 //*====================
