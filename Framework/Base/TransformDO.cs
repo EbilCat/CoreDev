@@ -116,6 +116,16 @@ namespace CoreDev.Framework
         {
             return Quaternion.Inverse(this.transform.rotation) * rot_World;
         }
+
+        public Vector3 LocalToWorldDirection(Vector3 dir_Local)
+        {
+            return this.transform.TransformDirection(dir_Local);
+        }
+
+        public Vector3 WorldToLocalDirection(Vector3 dir_World)
+        {
+            return this.transform.InverseTransformDirection(dir_World);
+        }
     }
 
 
@@ -140,6 +150,8 @@ namespace CoreDev.Framework
         Vector3 LocalToWorld(Vector3 pos_Local);
         Quaternion WorldToLocal(Quaternion rot_World);
         Quaternion LocalToWorld(Quaternion rot_Local);
+        Vector3 LocalToWorldDirection(Vector3 direction);
+        Vector3 WorldToLocalDirection(Vector3 direction);
 
         Vector3 Forward_World { get; }
         Vector3 Right_World { get; }
