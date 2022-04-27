@@ -202,7 +202,14 @@ namespace CoreDev.Observable
 
         public override string ToString()
         {
-            return string.Format("ObservableVar<{0}>({1})", typeof(T).Name, Value.ToString());
+            if(Value == null)
+            {
+                return "<NULL>";
+            }
+            else
+            {
+                return Value.ToString();
+            }
         }
 
         public virtual void SetValueFromString(string strVal)

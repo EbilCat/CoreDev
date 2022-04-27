@@ -12,7 +12,7 @@ namespace CoreDev.Examples
         
     }
 
-    public class CameraDO : MonoBehaviourDO, ICameraDO
+    public class CameraDO : TransformDO, ICameraDO
     {
         [SerializeField] private OFloat moveSpeed = new OFloat(1.0f);
         public OFloat MoveSpeed => moveSpeed;

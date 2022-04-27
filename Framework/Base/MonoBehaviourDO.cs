@@ -1,69 +1,17 @@
 ﻿using System;
-using CoreDev.Observable;
 using UnityEngine;
 
 
 namespace CoreDev.Framework
 {
-    public abstract class MonoBehaviourDO : MonoBehaviour, ITransform
+    public abstract class MonoBehaviourDO : MonoBehaviour, IDataObject
     {
         protected event Action<MonoBehaviourDO> destroying = delegate { };
 
-        public Vector3 Pos_World
-        {
-            get => this.transform.position;
-            set
-            {
-                Transform parent = this.transform.parent;
-                this.pos_Local.Value = (parent == null) ? value : parent.InverseTransformPoint(value);
-            }
-        }
 
-        public Quaternion Rot_World
-        {
-            get => this.transform.rotation;
-            set
-            {
-                Transform parent = this.transform.parent;
-                this.rot_Local.Value = (parent == null) ? value : Quaternion.Inverse(parent.rotation) * value;
-            }
-        }
-
-        public Vector3 Scale_World => this.transform.lossyScale;
-
-        private OString transformName;
-        public OString Name => transformName;
-
-        private OVector3 pos_Local;
-        public OVector3 Pos_Local => pos_Local;
-
-        private OQuaternion rot_Local;
-        public OQuaternion Rot_Local => rot_Local;
-
-        private OVector3 scale_Local;
-        public OVector3 Scale_Local => scale_Local;
-
-        public Vector3 Forward => this.transform.forward;
-
-        public Vector3 Right => this.transform.right;
-
-
-        //*====================
-        //* UNITY
-        //*====================
-        protected virtual void Awake()
-        {
-            this.transformName = new OString(this.transform.name, this);
-            this.pos_Local = new OVector3(this.transform.localPosition, this);
-            this.rot_Local = new OQuaternion(this.transform.localRotation, this);
-            this.scale_Local = new OVector3(this.transform.localScale, this);
-
-            this.transformName.RegisterForChanges(OnTransformNameChanged);
-            this.pos_Local.RegisterForChanges(OnPos_LocalChanged);
-            this.rot_Local.RegisterForChanges(OnRot_LocalChanged);
-            this.scale_Local.RegisterForChanges(OnScale_LocalChanged);
-        }
-
+//*====================
+//* UNITY
+//*====================
         protected virtual void Start()
         {
             this.BindAspect(this);
@@ -72,11 +20,6 @@ namespace CoreDev.Framework
 
         protected virtual void OnDestroy()
         {
-            this.transformName.UnregisterFromChanges(OnTransformNameChanged);
-            this.pos_Local.UnregisterFromChanges(OnPos_LocalChanged);
-            this.rot_Local.UnregisterFromChanges(OnRot_LocalChanged);
-            this.scale_Local.UnregisterFromChanges(OnScale_LocalChanged);
-
             DataObjectMasterRepository.DestroyDataObject(this);
             this.UnbindAspect(this);
             this.FireDestroyingEvent();
@@ -87,34 +30,9 @@ namespace CoreDev.Framework
             this.destroying(this);
         }
 
-
-        //*====================
-        //* CALLBACKS - ITransform
-        //*====================
-        protected virtual void OnTransformNameChanged(ObservableVar<string> obj)
-        {
-            this.transform.name = obj.Value;
-        }
-
-        protected virtual void OnPos_LocalChanged(ObservableVar<Vector3> obj)
-        {
-            this.transform.localPosition = obj.Value;
-        }
-
-        protected virtual void OnRot_LocalChanged(ObservableVar<Quaternion> obj)
-        {
-            this.transform.localRotation = obj.Value;
-        }
-
-        protected virtual void OnScale_LocalChanged(ObservableVar<Vector3> obj)
-        {
-            this.transform.localScale = obj.Value;
-        }
-
-
-        //*====================
-        //* MonoBehaviourDataObject
-        //*====================
+//*====================
+//* MonoBehaviourDataObject
+//*====================
         public virtual void RegisterForDestruction(Action<MonoBehaviourDO> callback)
         {
             destroying -= callback;
@@ -130,65 +48,5 @@ namespace CoreDev.Framework
         {
             Destroy(this.gameObject);
         }
-
-
-        //*====================
-        //* UTILS
-        //*====================
-        public Vector3 LocalToWorld(Vector3 pos_Local)
-        {
-            return this.transform.TransformPoint(pos_Local);
-        }
-
-        public Vector3 LocalToWorldUnscaled(Vector3 pos_Local)
-        {
-            return this.transform.TransformPointUnscaled(pos_Local);
-        }
-
-        public Vector3 WorldToLocal(Vector3 pos_World)
-        {
-            return this.transform.InverseTransformPoint(pos_World);
-        }
-
-        public Vector3 WorldToLocalUnscaled(Vector3 pos_World)
-        {
-            return this.transform.InverseTransformPointUnscaled(pos_World);
-        }
-
-        public Quaternion LocalToWorld(Quaternion rot_Local)
-        {
-            return this.transform.rotation * rot_Local;
-        }
-
-        public Quaternion WorldToLocal(Quaternion rot_World)
-        {
-            return Quaternion.Inverse(this.transform.rotation) * rot_World;
-        }
-    }
-
-
-    public interface IName : IDataObject
-    {
-        OString Name { get; }
-    }
-
-    public interface ITransform : IName, IDataObject
-    {
-        Vector3 Pos_World { get; set; }
-        Quaternion Rot_World { get; set; }
-        Vector3 Scale_World { get; }
-        OVector3 Pos_Local { get; }
-        OQuaternion Rot_Local { get; }
-        OVector3 Scale_Local { get; }
-
-        Vector3 WorldToLocal(Vector3 pos_World);
-        Vector3 WorldToLocalUnscaled(Vector3 pos_World);
-        Vector3 LocalToWorld(Vector3 pos_Local);
-        Vector3 LocalToWorldUnscaled(Vector3 pos_Local);
-        Quaternion WorldToLocal(Quaternion rot_World);
-        Quaternion LocalToWorld(Quaternion rot_Local);
-
-        Vector3 Forward { get; }
-        Vector3 Right { get; }
     }
 }

@@ -765,4 +765,79 @@ namespace CoreDev.Observable
             }
         }
     }
+    
+//*====================
+//* TransformPos
+//*====================
+    [Serializable]
+    public class OTransformPos : OVector3
+    {
+        public OTransformPos() : base(default(Vector3)) { }
+        public OTransformPos(Vector3 initValue) : base(initValue) { }
+        public OTransformPos(Vector3 initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+
+        public override string ToString()
+        {
+            if (this.dataObject is TransformDO)
+            {
+                TransformDO monoBehaviourDO = this.dataObject as TransformDO;
+                string parentName = (monoBehaviourDO.transform.parent) ? monoBehaviourDO.transform.parent.ToString() : "<NULL>";
+                parentName = parentName.Replace("(UnityEngine.Transform)", String.Empty);
+
+                return $"{base.ToString()}\r\nParent: {parentName}";
+            }
+
+            return base.ToString();
+        }
+    }
+    
+//*====================
+//* TransformRotation
+//*====================
+    [Serializable]
+    public class OTransformRotation : OQuaternion
+    {
+        public OTransformRotation() : base(default(Quaternion)) { }
+        public OTransformRotation(Quaternion initValue) : base(initValue) { }
+        public OTransformRotation(Quaternion initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+
+        public override string ToString()
+        {
+            if (this.dataObject is TransformDO)
+            {
+                TransformDO monoBehaviourDO = this.dataObject as TransformDO;
+                string parentName = (monoBehaviourDO.transform.parent) ? monoBehaviourDO.transform.parent.ToString() : "<NULL>";
+                parentName = parentName.Replace("(UnityEngine.Transform)", String.Empty);
+
+                return $"{base.ToString()}\r\nParent: {parentName}";
+            }
+
+            return base.ToString();
+        }
+    }
+    
+//*====================
+//* TransformScale
+//*====================
+    [Serializable]
+    public class OTransformScale : OVector3
+    {
+        public OTransformScale() : base(default(Vector3)) { }
+        public OTransformScale(Vector3 initValue) : base(initValue) { }
+        public OTransformScale(Vector3 initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+
+        public override string ToString()
+        {
+            if (this.dataObject is TransformDO)
+            {
+                TransformDO monoBehaviourDO = this.dataObject as TransformDO;
+                string parentName = (monoBehaviourDO.transform.parent) ? monoBehaviourDO.transform.parent.ToString() : "<NULL>";
+                parentName = parentName.Replace("(UnityEngine.Transform)", String.Empty);
+
+                return $"{base.ToString()}\r\nParent: {parentName}";
+            }
+
+            return base.ToString();
+        }
+    }
 }

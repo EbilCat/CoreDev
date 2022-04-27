@@ -163,14 +163,14 @@ public class InspectedObservableVarCard : MonoBehaviour, ISpawnee, IPointerDownH
                 int index = 0;
                 foreach (var item in collection)
                 {
-                    displayText += $"\r\n{index}: {GetStringRepresentation(item)}";
+                    displayText += $"\r\n{index}: {item}";
                     index++;
                 }
             }
         }
         else
         {
-            displayText = $"{inspectedObservableVarDO.varName.Value} : {GetStringRepresentation(currentValue)}";
+            displayText = $"{inspectedObservableVarDO.varName.Value} : {inspectedObservableVarDO.ObservableVarInstance}";
         }
 
         FieldInfo moderatorListFieldInfo = inspectedObservableVarDO.ObservableVarInfoDO.FieldType.GetField("moderators", bindingFlags);
@@ -202,17 +202,5 @@ public class InspectedObservableVarCard : MonoBehaviour, ISpawnee, IPointerDownH
         }
 
         this.text.text = displayText;
-    }
-
-    private static string GetStringRepresentation(object currentValue)
-    {
-        if(currentValue == null)
-        {
-            return "<NULL>";
-        }
-        else
-        {
-            return currentValue.ToString();
-        }
     }
 }
