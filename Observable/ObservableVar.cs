@@ -782,9 +782,10 @@ namespace CoreDev.Observable
             {
                 TransformDO monoBehaviourDO = this.dataObject as TransformDO;
                 string parentName = (monoBehaviourDO.transform.parent) ? monoBehaviourDO.transform.parent.ToString() : "<NULL>";
-                parentName = parentName.Replace("(UnityEngine.Transform)", String.Empty);
+                string print = $"{base.ToString()} in {parentName}\r\n AttachedTo: {monoBehaviourDO.transform}";
+                print = print.Replace("(UnityEngine.Transform)", String.Empty);
 
-                return $"{base.ToString()}\r\nParent: {parentName}";
+                return print;
             }
 
             return base.ToString();
@@ -807,9 +808,10 @@ namespace CoreDev.Observable
             {
                 TransformDO monoBehaviourDO = this.dataObject as TransformDO;
                 string parentName = (monoBehaviourDO.transform.parent) ? monoBehaviourDO.transform.parent.ToString() : "<NULL>";
-                parentName = parentName.Replace("(UnityEngine.Transform)", String.Empty);
+                string print = $"{base.ToString()} in {parentName}\r\n AttachedTo: {monoBehaviourDO.transform}";
+                print = print.Replace("(UnityEngine.Transform)", String.Empty);
 
-                return $"{base.ToString()}\r\nParent: {parentName}";
+                return print;
             }
 
             return base.ToString();
