@@ -67,6 +67,8 @@ namespace CoreDev.Framework
             this.pos_Local.UnregisterFromChanges(OnPos_LocalChanged);
             this.rot_Local.UnregisterFromChanges(OnRot_LocalChanged);
             this.scale_Local.UnregisterFromChanges(OnScale_LocalChanged);
+
+            base.OnDestroy();
         }
 
 
