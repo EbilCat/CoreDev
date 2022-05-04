@@ -11,8 +11,8 @@ namespace CoreDev.Framework
             get => this.transform.position;
             set
             {
-                this.transform.position = value;
-                this.pos_Local.Value = this.transform.localPosition;
+                Transform parentTransform = this.transform.parent;
+                this.pos_Local.Value = (parentTransform == null) ? value : parentTransform.InverseTransformPoint(value);
             }
         }
 
@@ -21,8 +21,8 @@ namespace CoreDev.Framework
             get => this.transform.rotation;
             set
             {
-                this.transform.rotation = value;
-                this.rot_Local.Value = this.transform.localRotation;
+                Transform parentTransform = this.transform.parent;
+                this.rot_Local.Value = (parentTransform == null) ? value : Quaternion.Inverse(parentTransform.rotation) * value;
             }
         }
 
@@ -99,32 +99,58 @@ namespace CoreDev.Framework
 //*====================
 //* Transform Wrappers
 //*====================
-        public Vector3 LocalToWorld(Vector3 pos_Local)
+        public Vector3 WorldToParent(Vector3 pos_World)
         {
-            return this.transform.TransformPoint(pos_Local);
+            Transform transformParent = this.transform.parent;
+            if(transformParent == null)
+            {
+                return pos_World;
+            }
+            else
+            {
+                return transformParent.InverseTransformPoint(pos_World);
+            }
         }
 
-        public Vector3 WorldToLocal(Vector3 pos_World)
+        public Vector3 ParentToWorld(Vector3 pos_Parent)
+        {
+            Transform transformParent = this.transform.parent;
+            if(transformParent == null)
+            {
+                return pos_Parent;
+            }
+            else
+            {
+                return transformParent.TransformPoint(pos_Parent);
+            }
+        }
+
+        public Vector3 ThisToWorld(Vector3 pos_This)
+        {
+            return this.transform.TransformPoint(pos_This);
+        }
+
+        public Vector3 WorldToThis(Vector3 pos_World)
         {
             return this.transform.InverseTransformPoint(pos_World);
         }
 
-        public Quaternion LocalToWorld(Quaternion rot_Local)
+        public Quaternion ThisToWorld(Quaternion rot_This)
         {
-            return this.transform.rotation * rot_Local;
+            return this.transform.rotation * rot_This;
         }
 
-        public Quaternion WorldToLocal(Quaternion rot_World)
+        public Quaternion WorldToThis(Quaternion rot_World)
         {
             return Quaternion.Inverse(this.transform.rotation) * rot_World;
         }
 
-        public Vector3 LocalToWorldDirection(Vector3 dir_Local)
+        public Vector3 ThisToWorldDirection(Vector3 dir_This)
         {
-            return this.transform.TransformDirection(dir_Local);
+            return this.transform.TransformDirection(dir_This);
         }
 
-        public Vector3 WorldToLocalDirection(Vector3 dir_World)
+        public Vector3 WorldToThisDirection(Vector3 dir_World)
         {
             return this.transform.InverseTransformDirection(dir_World);
         }
@@ -141,6 +167,7 @@ namespace CoreDev.Framework
 
     public interface ITransform : IName, IDataObject
     {
+
         Vector3 Pos_World { get; set; }
         Quaternion Rot_World { get; set; }
         Vector3 Scale_World { get; }
@@ -148,12 +175,14 @@ namespace CoreDev.Framework
         OQuaternion Rot_Local { get; }
         OVector3 Scale_Local { get; }
 
-        Vector3 WorldToLocal(Vector3 pos_World);
-        Vector3 LocalToWorld(Vector3 pos_Local);
-        Quaternion WorldToLocal(Quaternion rot_World);
-        Quaternion LocalToWorld(Quaternion rot_Local);
-        Vector3 LocalToWorldDirection(Vector3 direction);
-        Vector3 WorldToLocalDirection(Vector3 direction);
+        Vector3 WorldToThis(Vector3 pos_World);
+        Vector3 ThisToWorld(Vector3 pos_Local);
+        Vector3 WorldToParent(Vector3 pos_World);
+        Vector3 ParentToWorld(Vector3 pos_Parent);
+        Quaternion WorldToThis(Quaternion rot_World);
+        Quaternion ThisToWorld(Quaternion rot_Local);
+        Vector3 ThisToWorldDirection(Vector3 direction);
+        Vector3 WorldToThisDirection(Vector3 direction);
 
         Vector3 Forward_World { get; }
         Vector3 Right_World { get; }
