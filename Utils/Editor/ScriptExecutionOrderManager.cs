@@ -1,11 +1,10 @@
-﻿#define LOG_SCRIPTORDER
+﻿#if UNITY_EDITOR
+#define LOG_SCRIPTORDER
 // #define LOG_CLASSVALIDITY
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -131,3 +130,4 @@ namespace CoreDev.Utils
         }
     }
 }
+#endif
