@@ -11,8 +11,7 @@ namespace CoreDev.Framework
             get => this.transform.position;
             set
             {
-                Transform parentTransform = this.transform.parent;
-                this.pos_Local.Value = (parentTransform == null) ? value : parentTransform.InverseTransformPoint(value);
+                this.pos_Local.Value = this.WorldToParent(value);
             }
         }
 
@@ -21,8 +20,7 @@ namespace CoreDev.Framework
             get => this.transform.rotation;
             set
             {
-                Transform parentTransform = this.transform.parent;
-                this.rot_Local.Value = (parentTransform == null) ? value : Quaternion.Inverse(parentTransform.rotation) * value;
+                this.rot_Local.Value = this.WorldToParent(value);
             }
         }
 
@@ -99,32 +97,6 @@ namespace CoreDev.Framework
 //*====================
 //* Transform Wrappers
 //*====================
-        public Vector3 WorldToParent(Vector3 pos_World)
-        {
-            Transform transformParent = this.transform.parent;
-            if(transformParent == null)
-            {
-                return pos_World;
-            }
-            else
-            {
-                return transformParent.InverseTransformPoint(pos_World);
-            }
-        }
-
-        public Vector3 ParentToWorld(Vector3 pos_Parent)
-        {
-            Transform transformParent = this.transform.parent;
-            if(transformParent == null)
-            {
-                return pos_Parent;
-            }
-            else
-            {
-                return transformParent.TransformPoint(pos_Parent);
-            }
-        }
-
         public Vector3 ThisToWorld(Vector3 pos_This)
         {
             return this.transform.TransformPoint(pos_This);
@@ -144,6 +116,52 @@ namespace CoreDev.Framework
         {
             return Quaternion.Inverse(this.transform.rotation) * rot_World;
         }
+
+
+        public Vector3 WorldToParent(Vector3 pos_World)
+        {
+            Transform transformParent = this.transform.parent;
+            Vector3 pos_Parent = pos_World;
+            if(transformParent != null)
+            {
+                pos_Parent = transformParent.InverseTransformPoint(pos_World);
+            }
+            return pos_Parent;
+        }
+
+        public Vector3 ParentToWorld(Vector3 pos_Parent)
+        {
+            Transform transformParent = this.transform.parent;
+            Vector3 pos_World = pos_Parent;
+            if(transformParent != null)
+            {
+                pos_World =  transformParent.TransformPoint(pos_Parent);
+            }
+            return pos_World;
+        }
+
+        public Quaternion WorldToParent(Quaternion rot_World)
+        {
+            Transform transformParent = this.transform.parent;
+            Quaternion rot_Parent = rot_World;
+            if(transformParent != null)
+            {
+                rot_Parent = Quaternion.Inverse(transformParent.rotation) * rot_World;
+            }
+            return rot_Parent;
+        }
+
+        public Quaternion ParentToWorld(Quaternion rot_Parent)
+        {
+            Transform transformParent = this.transform.parent;
+            Quaternion rot_World = rot_Parent;
+            if(transformParent != null)
+            {
+                rot_World = transformParent.rotation * rot_Parent;
+            }
+            return rot_World;
+        }
+
 
         public Vector3 ThisToWorldDirection(Vector3 dir_This)
         {
@@ -177,10 +195,14 @@ namespace CoreDev.Framework
 
         Vector3 WorldToThis(Vector3 pos_World);
         Vector3 ThisToWorld(Vector3 pos_Local);
-        Vector3 WorldToParent(Vector3 pos_World);
-        Vector3 ParentToWorld(Vector3 pos_Parent);
         Quaternion WorldToThis(Quaternion rot_World);
         Quaternion ThisToWorld(Quaternion rot_Local);
+
+        Vector3 WorldToParent(Vector3 pos_World);
+        Vector3 ParentToWorld(Vector3 pos_Parent);
+        Quaternion WorldToParent(Quaternion rot_World);
+        Quaternion ParentToWorld(Quaternion rot_Parent);
+
         Vector3 ThisToWorldDirection(Vector3 direction);
         Vector3 WorldToThisDirection(Vector3 direction);
 
