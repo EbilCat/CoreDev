@@ -3,59 +3,63 @@ using CoreDev.Observable;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ObservableVarCardBookMarkButton : MonoBehaviour, ISpawnee
+
+namespace CoreDev.DataObjectInspector
 {
-    private InspectedObservableVarDO inspectedObservableVarDO;
-    private Image image;
-    private Button button;
-
-
-    //*====================
-    //* BINDING
-    //*====================
-    public void BindDO(IDataObject dataObject)
+    public class ObservableVarCardBookMarkButton : MonoBehaviour, ISpawnee
     {
-        if (dataObject is InspectedObservableVarDO)
+        private InspectedObservableVarDO inspectedObservableVarDO;
+        private Image image;
+        private Button button;
+
+
+//*====================
+//* BINDING
+//*====================
+        public void BindDO(IDataObject dataObject)
         {
-            UnbindDO(this.inspectedObservableVarDO);
-            this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
+            if (dataObject is InspectedObservableVarDO)
+            {
+                UnbindDO(this.inspectedObservableVarDO);
+                this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
 
-            this.image = this.GetComponent<Image>();
-            this.button = this.GetComponent<Button>();
-            this.button.onClick.RemoveListener(OnButtonClicked);
-            this.button.onClick.AddListener(OnButtonClicked);
-            
-            this.inspectedObservableVarDO.ObservableVarInfoDO.isBookedMarked.RegisterForChanges(OnIsBookMarkedChanged);
+                this.image = this.GetComponent<Image>();
+                this.button = this.GetComponent<Button>();
+                this.button.onClick.RemoveListener(OnButtonClicked);
+                this.button.onClick.AddListener(OnButtonClicked);
+
+                this.inspectedObservableVarDO.ObservableVarInfoDO.isBookedMarked.RegisterForChanges(OnIsBookMarkedChanged);
+            }
         }
-    }
 
-    public void UnbindDO(IDataObject dataObject)
-    {
-        if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject)
+        public void UnbindDO(IDataObject dataObject)
         {
-            this.button?.onClick.RemoveListener(OnButtonClicked);
+            if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject)
+            {
+                this.button?.onClick.RemoveListener(OnButtonClicked);
 
-            this.inspectedObservableVarDO?.ObservableVarInfoDO.isBookedMarked.UnregisterFromChanges(OnIsBookMarkedChanged);
-            this.inspectedObservableVarDO = null;
+                this.inspectedObservableVarDO?.ObservableVarInfoDO.isBookedMarked.UnregisterFromChanges(OnIsBookMarkedChanged);
+                this.inspectedObservableVarDO = null;
+            }
         }
-    }
 
 
-    //*====================
-    //* CALLBACKS - ObservableVarInfoDO
-    //*====================
-    private void OnIsBookMarkedChanged(ObservableVar<bool> oIsBookMarked)
-    {
-        this.image.color = (oIsBookMarked.Value) ? Color.green : Color.white;
-    }
+//*====================
+//* CALLBACKS - ObservableVarInfoDO
+//*====================
+        private void OnIsBookMarkedChanged(ObservableVar<bool> oIsBookMarked)
+        {
+            this.image.color = (oIsBookMarked.Value) ? Color.green : Color.white;
+        }
 
 
-    //*====================
-    //* PRIVATE
-    //*====================
-    private void OnButtonClicked()
-    {
-        bool isBookedMarked = this.inspectedObservableVarDO.ObservableVarInfoDO.isBookedMarked.Value;
-        this.inspectedObservableVarDO.ObservableVarInfoDO.isBookedMarked.Value = !isBookedMarked;
+//*====================
+//* PRIVATE
+//*====================
+        private void OnButtonClicked()
+        {
+            bool isBookedMarked = this.inspectedObservableVarDO.ObservableVarInfoDO.isBookedMarked.Value;
+            this.inspectedObservableVarDO.ObservableVarInfoDO.isBookedMarked.Value = !isBookedMarked;
+        }
     }
 }

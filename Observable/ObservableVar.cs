@@ -488,7 +488,7 @@ namespace CoreDev.Observable
         }
     }
 
-    
+
 //*====================
 //* RaycastResult
 //*====================
@@ -654,7 +654,7 @@ namespace CoreDev.Observable
         }
     }
 
-    
+
 //*====================
 //* Camera
 //*====================
@@ -763,58 +763,6 @@ namespace CoreDev.Observable
             {
                 Debug.Log("Error converting ToEnum");
             }
-        }
-    }
-    
-//*====================
-//* TransformPos
-//*====================
-    [Serializable]
-    public class OTransformVector3 : OVector3
-    {
-        public OTransformVector3() : base(default(Vector3)) { }
-        public OTransformVector3(Vector3 initValue) : base(initValue) { }
-        public OTransformVector3(Vector3 initValue, IDataObject dataObject) : base(initValue, dataObject) { }
-
-        public override string ToString()
-        {
-            if (this.dataObject is TransformDO)
-            {
-                TransformDO monoBehaviourDO = this.dataObject as TransformDO;
-                string parentName = (monoBehaviourDO.transform.parent) ? monoBehaviourDO.transform.parent.ToString() : "<NULL>";
-                string print = $"{base.ToString()} in {parentName}\r\n AttachedTo: {monoBehaviourDO.transform}";
-                print = print.Replace("(UnityEngine.Transform)", String.Empty);
-
-                return print;
-            }
-
-            return base.ToString();
-        }
-    }
-    
-//*====================
-//* TransformRotation
-//*====================
-    [Serializable]
-    public class OTransformQuaternion : OQuaternion
-    {
-        public OTransformQuaternion() : base(default(Quaternion)) { }
-        public OTransformQuaternion(Quaternion initValue) : base(initValue) { }
-        public OTransformQuaternion(Quaternion initValue, IDataObject dataObject) : base(initValue, dataObject) { }
-
-        public override string ToString()
-        {
-            if (this.dataObject is TransformDO)
-            {
-                TransformDO monoBehaviourDO = this.dataObject as TransformDO;
-                string parentName = (monoBehaviourDO.transform.parent) ? monoBehaviourDO.transform.parent.ToString() : "<NULL>";
-                string print = $"{base.ToString()} in {parentName}\r\n AttachedTo: {monoBehaviourDO.transform}";
-                print = print.Replace("(UnityEngine.Transform)", String.Empty);
-
-                return print;
-            }
-
-            return base.ToString();
         }
     }
 }

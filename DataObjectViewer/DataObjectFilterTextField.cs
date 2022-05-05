@@ -6,75 +6,79 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DataObjectFilterTextField : MonoBehaviour, ISpawnee
+
+namespace CoreDev.DataObjectInspector
 {
-    private DataObjectInspectorDO dataObjectInspectorDO;
-    private InputField inputField;
-
-
-//*====================
-//* BINDING
-//*====================
-    public void BindDO(IDataObject dataObject)
+    public class DataObjectFilterTextField : MonoBehaviour, ISpawnee
     {
-        if (dataObject is DataObjectInspectorDO)
+        private DataObjectInspectorDO dataObjectInspectorDO;
+        private InputField inputField;
+
+
+        //*====================
+        //* BINDING
+        //*====================
+        public void BindDO(IDataObject dataObject)
         {
-            this.inputField = this.GetComponent<InputField>();
-            this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
-            this.inputField.onEndEdit.AddListener(OnEndEdit);
-
-            UnbindDO(this.dataObjectInspectorDO);
-            this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
-            this.dataObjectInspectorDO.isOn.RegisterForChanges(OnIsOnChanged);
-        }
-    }
-
-    public void UnbindDO(IDataObject dataObject)
-    {
-        if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == (DataObjectInspectorDO)dataObject)
-        {
-            this.inputField.onValueChanged.RemoveListener(OnInputFieldValueChanged);
-            this.inputField.onEndEdit.RemoveListener(OnEndEdit);
-            this.inputField = null;
-
-            this.dataObjectInspectorDO?.isOn.UnregisterFromChanges(OnIsOnChanged);
-            this.dataObjectInspectorDO = null;
-        }
-    }
-
-
-//*====================
-//* CALLBACKS - DataObjectInspectorDO
-//*====================
-    private void OnIsOnChanged(ObservableVar<bool> oIsOn)
-    {
-        bool isOn = oIsOn.Value;
-
-        if (isOn)
-        {
-            //Have to delay a frame otherwise select won't work
-            UniversalTimer.ScheduleCallback((x) =>
+            if (dataObject is DataObjectInspectorDO)
             {
-                this.inputField.Select();
-                this.inputField.ActivateInputField();
-            });
+                this.inputField = this.GetComponent<InputField>();
+                this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
+                this.inputField.onEndEdit.AddListener(OnEndEdit);
+
+                UnbindDO(this.dataObjectInspectorDO);
+                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
+                this.dataObjectInspectorDO.isOn.RegisterForChanges(OnIsOnChanged);
+            }
         }
-    }
 
-
-//*====================
-//* CALLBACKS - InputField
-//*====================
-    private void OnInputFieldValueChanged(string inputFieldValue)
-    {
-        this.dataObjectInspectorDO.filterString.Value = inputFieldValue;
-    }
-
-    private void OnEndEdit(string arg0)
-    {
-        if (EventSystem.current.alreadySelecting == false)
+        public void UnbindDO(IDataObject dataObject)
         {
-            EventSystem.current.SetSelectedGameObject(null);
+            if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == (DataObjectInspectorDO)dataObject)
+            {
+                this.inputField.onValueChanged.RemoveListener(OnInputFieldValueChanged);
+                this.inputField.onEndEdit.RemoveListener(OnEndEdit);
+                this.inputField = null;
+
+                this.dataObjectInspectorDO?.isOn.UnregisterFromChanges(OnIsOnChanged);
+                this.dataObjectInspectorDO = null;
+            }
+        }
+
+
+        //*====================
+        //* CALLBACKS - DataObjectInspectorDO
+        //*====================
+        private void OnIsOnChanged(ObservableVar<bool> oIsOn)
+        {
+            bool isOn = oIsOn.Value;
+
+            if (isOn)
+            {
+                //Have to delay a frame otherwise select won't work
+                UniversalTimer.ScheduleCallback((x) =>
+                {
+                    this.inputField.Select();
+                    this.inputField.ActivateInputField();
+                });
+            }
+        }
+
+
+        //*====================
+        //* CALLBACKS - InputField
+        //*====================
+        private void OnInputFieldValueChanged(string inputFieldValue)
+        {
+            this.dataObjectInspectorDO.filterString.Value = inputFieldValue;
+        }
+
+        private void OnEndEdit(string arg0)
+        {
+            if (EventSystem.current.alreadySelecting == false)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+            }
         }
     }
 }

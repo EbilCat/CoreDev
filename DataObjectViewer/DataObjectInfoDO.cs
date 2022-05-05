@@ -3,29 +3,34 @@ using System.Reflection;
 using CoreDev.Framework;
 using CoreDev.Observable;
 
-public class DataObjectInfoDO : IDataObject
+namespace CoreDev.DataObjectInspector
 {
-    public OList<ObservableVarInfoDO> observableVarInfos;
-
-    public DataObjectInfoDO(List<FieldInfo> fieldInfos)
+    public class DataObjectInfoDO : IDataObject
     {
-        this.observableVarInfos = new OList<ObservableVarInfoDO>(this);
+        public OList<ObservableVarInfoDO> observableVarInfos;
 
-        int orderIndex = 0;
-        for (int i = 0; i < fieldInfos.Count; i++)
+        public DataObjectInfoDO(List<FieldInfo> fieldInfos)
         {
-            FieldInfo fieldInfo = fieldInfos[i];
-            if (typeof(IObservableVar).IsAssignableFrom(fieldInfo.FieldType))
+            this.observableVarInfos = new OList<ObservableVarInfoDO>(this);
+
+            int orderIndex = 0;
+            for (int i = 0; i < fieldInfos.Count; i++)
             {
-                observableVarInfos.Add(new ObservableVarInfoDO(fieldInfo, orderIndex));
-                orderIndex++;
+                FieldInfo fieldInfo = fieldInfos[i];
+                if (typeof(IObservableVar).IsAssignableFrom(fieldInfo.FieldType))
+                {
+                    ObservableVarInfoDO observableVarInfoDO = new ObservableVarInfoDO(fieldInfo, orderIndex);
+                    if (fieldInfo.GetCustomAttribute<Bookmark>(true) != null) { observableVarInfoDO.isBookedMarked.Value = true; }
+                    observableVarInfos.Add(observableVarInfoDO);
+                    orderIndex++;
+                }
             }
         }
-    }
 
-        
-//*====================
-//* IDataObject
-//*====================
+
+        //*====================
+        //* IDataObject
+        //*====================
         public void Dispose() { }
+    }
 }

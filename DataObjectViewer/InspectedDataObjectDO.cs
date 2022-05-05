@@ -4,63 +4,67 @@ using System.Reflection;
 using CoreDev.Framework;
 using CoreDev.Observable;
 
-public class InspectedDataObjectDO : IDataObject
+
+namespace CoreDev.DataObjectInspector
 {
-    private static Dictionary<Type, DataObjectInfoDO> dataObjectInfoDOs = new Dictionary<Type, DataObjectInfoDO>();
-    private const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
-
-    private IDataObject dataObjectInstance;
-    public IDataObject DataObjectInstance { get { return dataObjectInstance; } }
-
-    private DataObjectInfoDO dataObjectInfoDO;
-    public DataObjectInfoDO DataObjectInfoDO { get { return dataObjectInfoDO; } }
-
-    public OString name;
-    public OList<InspectedObservableVarDO> inspectedOVarDOs;
-    public OBool matchesFilter;
-    public OBool isInspected;
-
-
-    public InspectedDataObjectDO(IDataObject dataObjectInstance)
+    public class InspectedDataObjectDO : IDataObject
     {
-        this.dataObjectInstance = dataObjectInstance;
+        private static Dictionary<Type, DataObjectInfoDO> dataObjectInfoDOs = new Dictionary<Type, DataObjectInfoDO>();
+        private const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
 
-        this.name = new OString(dataObjectInstance.GetType().Name, this);
-        this.inspectedOVarDOs = new OList<InspectedObservableVarDO>(this);
-        this.matchesFilter = new OBool(true, this);
-        this.isInspected = new OBool(false, this);
+        private IDataObject dataObjectInstance;
+        public IDataObject DataObjectInstance { get { return dataObjectInstance; } }
 
-        Type dataObjectType = dataObjectInstance.GetType();
-        if (dataObjectInfoDOs.ContainsKey(dataObjectType) == false)
+        private DataObjectInfoDO dataObjectInfoDO;
+        public DataObjectInfoDO DataObjectInfoDO { get { return dataObjectInfoDO; } }
+
+        public OString name;
+        public OList<InspectedObservableVarDO> inspectedOVarDOs;
+        public OBool matchesFilter;
+        public OBool isInspected;
+
+
+        public InspectedDataObjectDO(IDataObject dataObjectInstance)
         {
-            DataObjectInfoDO dataObjectInfoDO = new DataObjectInfoDO(dataObjectType.GetAllFieldInfo(bindingFlags));
-            dataObjectInfoDOs.Add(dataObjectType, dataObjectInfoDO);
+            this.dataObjectInstance = dataObjectInstance;
+
+            this.name = new OString(dataObjectInstance.GetType().Name, this);
+            this.inspectedOVarDOs = new OList<InspectedObservableVarDO>(this);
+            this.matchesFilter = new OBool(true, this);
+            this.isInspected = new OBool(false, this);
+
+            Type dataObjectType = dataObjectInstance.GetType();
+            if (dataObjectInfoDOs.ContainsKey(dataObjectType) == false)
+            {
+                DataObjectInfoDO dataObjectInfoDO = new DataObjectInfoDO(dataObjectType.GetAllFieldInfo(bindingFlags));
+                dataObjectInfoDOs.Add(dataObjectType, dataObjectInfoDO);
+            }
+
+            this.dataObjectInfoDO = dataObjectInfoDOs[dataObjectType];
         }
 
-        this.dataObjectInfoDO = dataObjectInfoDOs[dataObjectType];
-    }
-
-    public void Inspect()
-    {
-        if (inspectedOVarDOs.Count == 0)
+        public void Inspect()
         {
-            for (int i = 0; i < dataObjectInfoDO.observableVarInfos.Count; i++)
+            if (inspectedOVarDOs.Count == 0)
             {
-                ObservableVarInfoDO observableVarInfoDO = dataObjectInfoDO.observableVarInfos[i];
-
-                if (typeof(IObservableVar).IsAssignableFrom(observableVarInfoDO.FieldType))
+                for (int i = 0; i < dataObjectInfoDO.observableVarInfos.Count; i++)
                 {
-                    IObservableVar oVarInstance = observableVarInfoDO.GetObservableVarInstance(dataObjectInstance);
-                    InspectedObservableVarDO reflectedObservableVar = new InspectedObservableVarDO(oVarInstance, observableVarInfoDO, this.isInspected);
-                    inspectedOVarDOs.Add(reflectedObservableVar);
+                    ObservableVarInfoDO observableVarInfoDO = dataObjectInfoDO.observableVarInfos[i];
+
+                    if (typeof(IObservableVar).IsAssignableFrom(observableVarInfoDO.FieldType))
+                    {
+                        IObservableVar oVarInstance = observableVarInfoDO.GetObservableVarInstance(dataObjectInstance);
+                        InspectedObservableVarDO reflectedObservableVar = new InspectedObservableVarDO(oVarInstance, observableVarInfoDO, this.isInspected);
+                        inspectedOVarDOs.Add(reflectedObservableVar);
+                    }
                 }
             }
         }
+
+
+        //*====================
+        //* IDataObject
+        //*====================
+        public void Dispose() { }
     }
-
-
-    //*====================
-    //* IDataObject
-    //*====================
-    public void Dispose() { }
 }

@@ -5,72 +5,76 @@ using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
 
-public class InspectedDataObjectCard : MonoBehaviour, ISpawnee
+
+namespace CoreDev.DataObjectInspector
 {
-    [SerializeField] private InspectedObservableVarCard prefab;
-    [SerializeField] private Transform content;
-    private InspectedDataObjectDO inspectedDataObjectDO;
-    private Dictionary<InspectedObservableVarDO, InspectedObservableVarCard> observableVarCards = new Dictionary<InspectedObservableVarDO, InspectedObservableVarCard>();
-
-
-//*====================
-//* BINDING
-//*====================
-    public void BindDO(IDataObject dataObject)
+    public class InspectedDataObjectCard : MonoBehaviour, ISpawnee
     {
-        if(dataObject is InspectedDataObjectDO)
+        [SerializeField] private InspectedObservableVarCard prefab;
+        [SerializeField] private Transform content;
+        private InspectedDataObjectDO inspectedDataObjectDO;
+        private Dictionary<InspectedObservableVarDO, InspectedObservableVarCard> observableVarCards = new Dictionary<InspectedObservableVarDO, InspectedObservableVarCard>();
+
+
+        //*====================
+        //* BINDING
+        //*====================
+        public void BindDO(IDataObject dataObject)
         {
-            UnbindDO(this.inspectedDataObjectDO);
-            this.inspectedDataObjectDO = dataObject as InspectedDataObjectDO;
-
-            ReadOnlyCollection<InspectedObservableVarDO> inspectedObservableVarDOs = inspectedDataObjectDO.inspectedOVarDOs.Value;
-
-            for (int i = 0; i < inspectedObservableVarDOs.Count; i++)
+            if (dataObject is InspectedDataObjectDO)
             {
-                InspectedObservableVarDO inspectedObservableVarDO = inspectedObservableVarDOs[i];
-                InspectedObservableVarCard prefabInstance = Instantiate(prefab);
-                
-                RectTransform rectTransform = prefabInstance.transform as RectTransform;
-                rectTransform.SetParentAndZeroOutValues(content, true);
+                UnbindDO(this.inspectedDataObjectDO);
+                this.inspectedDataObjectDO = dataObject as InspectedDataObjectDO;
 
-                observableVarCards.Add(inspectedObservableVarDO, prefabInstance);
-                inspectedObservableVarDO.BindAspect(prefabInstance);
-                inspectedDataObjectDO.BindAspect(prefabInstance);
+                ReadOnlyCollection<InspectedObservableVarDO> inspectedObservableVarDOs = inspectedDataObjectDO.inspectedOVarDOs.Value;
+
+                for (int i = 0; i < inspectedObservableVarDOs.Count; i++)
+                {
+                    InspectedObservableVarDO inspectedObservableVarDO = inspectedObservableVarDOs[i];
+                    InspectedObservableVarCard prefabInstance = Instantiate(prefab);
+
+                    RectTransform rectTransform = prefabInstance.transform as RectTransform;
+                    rectTransform.SetParentAndZeroOutValues(content, true);
+
+                    observableVarCards.Add(inspectedObservableVarDO, prefabInstance);
+                    inspectedObservableVarDO.BindAspect(prefabInstance);
+                    inspectedDataObjectDO.BindAspect(prefabInstance);
+                }
+
+                this.inspectedDataObjectDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
             }
-
-            this.inspectedDataObjectDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
         }
-    }
 
-    public void UnbindDO(IDataObject dataObject)
-    {
-        if(dataObject is InspectedDataObjectDO && this.inspectedDataObjectDO == dataObject)
+        public void UnbindDO(IDataObject dataObject)
         {
-            ReadOnlyCollection<InspectedObservableVarDO> inspectedOVarDOs = inspectedDataObjectDO.inspectedOVarDOs.Value;
-
-            for (int i = 0; i < inspectedOVarDOs.Count; i++)
+            if (dataObject is InspectedDataObjectDO && this.inspectedDataObjectDO == dataObject)
             {
-                InspectedObservableVarDO inspectedObservableVarDO = inspectedOVarDOs[i];
-                InspectedObservableVarCard prefabInstance = observableVarCards[inspectedObservableVarDO];
+                ReadOnlyCollection<InspectedObservableVarDO> inspectedOVarDOs = inspectedDataObjectDO.inspectedOVarDOs.Value;
 
-                observableVarCards.Remove(inspectedObservableVarDO);
-                inspectedObservableVarDO.UnbindAspect(prefabInstance);
-                inspectedDataObjectDO.UnbindAspect(prefabInstance);
+                for (int i = 0; i < inspectedOVarDOs.Count; i++)
+                {
+                    InspectedObservableVarDO inspectedObservableVarDO = inspectedOVarDOs[i];
+                    InspectedObservableVarCard prefabInstance = observableVarCards[inspectedObservableVarDO];
 
-                Destroy(prefabInstance.gameObject);
+                    observableVarCards.Remove(inspectedObservableVarDO);
+                    inspectedObservableVarDO.UnbindAspect(prefabInstance);
+                    inspectedDataObjectDO.UnbindAspect(prefabInstance);
+
+                    Destroy(prefabInstance.gameObject);
+                }
+
+                this.inspectedDataObjectDO?.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
+                this.inspectedDataObjectDO = null;
             }
-
-            this.inspectedDataObjectDO?.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
-            this.inspectedDataObjectDO = null;
         }
-    }
 
 
-//*====================
-//* CALLBACKS - InspectedDataObjectDO
-//*====================
-    private void OnIsInspectedChanged(ObservableVar<bool> oIsInspected)
-    {
-        this.gameObject.SetActive(oIsInspected.Value);
+        //*====================
+        //* CALLBACKS - InspectedDataObjectDO
+        //*====================
+        private void OnIsInspectedChanged(ObservableVar<bool> oIsInspected)
+        {
+            this.gameObject.SetActive(oIsInspected.Value);
+        }
     }
 }

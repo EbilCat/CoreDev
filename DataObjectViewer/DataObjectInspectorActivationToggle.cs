@@ -3,71 +3,74 @@ using CoreDev.Observable;
 using CoreDev.Sequencing;
 using UnityEngine;
 
-public class DataObjectInspectorActivationToggle : MonoBehaviour, ISpawnee
+namespace CoreDev.DataObjectInspector
 {
-    [SerializeField] private KeyCode activationKey = KeyCode.F1;
-    private DataObjectInspectorDO dataObjectInspectorDO;
-    private Canvas dataObjectInspectorCanvas;
-
-
-//*====================
-//* UNITY
-//*====================
-    protected virtual void OnDestroy()
+    public class DataObjectInspectorActivationToggle : MonoBehaviour, ISpawnee
     {
-        this.UnbindDO(this.dataObjectInspectorDO);
-    }
+        [SerializeField] private KeyCode activationKey = KeyCode.F1;
+        private DataObjectInspectorDO dataObjectInspectorDO;
+        private Canvas dataObjectInspectorCanvas;
 
 
-//*====================
-//* BINDING
-//*====================
-    public void BindDO(IDataObject dataObject)
-    {
-        if(dataObject is DataObjectInspectorDO)
+        //*====================
+        //* UNITY
+        //*====================
+        protected virtual void OnDestroy()
         {
-            UnbindDO(this.dataObjectInspectorDO);
-
-            this.dataObjectInspectorCanvas = this.GetComponent<Canvas>();
-
-            this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
-            this.dataObjectInspectorDO.isOn.RegisterForChanges(OnIsOnChanged);
-
-            UniversalTimer.RegisterForTimeElapsed(TimeElapsed);
+            this.UnbindDO(this.dataObjectInspectorDO);
         }
-    }
 
-    public void UnbindDO(IDataObject dataObject)
-    {
-        if(dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == (DataObjectInspectorDO)dataObject)
+
+        //*====================
+        //* BINDING
+        //*====================
+        public void BindDO(IDataObject dataObject)
         {
-            this.dataObjectInspectorDO?.isOn.UnregisterFromChanges(OnIsOnChanged);
-            this.dataObjectInspectorDO = null;
+            if (dataObject is DataObjectInspectorDO)
+            {
+                UnbindDO(this.dataObjectInspectorDO);
 
-            UniversalTimer.UnregisterFromTimeElapsed(TimeElapsed);
+                this.dataObjectInspectorCanvas = this.GetComponent<Canvas>();
+
+                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
+                this.dataObjectInspectorDO.isOn.RegisterForChanges(OnIsOnChanged);
+
+                UniversalTimer.RegisterForTimeElapsed(TimeElapsed);
+            }
         }
-    }
 
-
-//*====================
-//* IHasTimeElapsedHandler
-//*====================
-    public void TimeElapsed(float deltaTime, float unscaledDeltaTime, int executionOrder)
-    {
-        if (Input.GetKeyDown(activationKey))
+        public void UnbindDO(IDataObject dataObject)
         {
-            bool isInspectorOn = this.dataObjectInspectorDO.isOn.Value;
-            this.dataObjectInspectorDO.isOn.Value = !isInspectorOn;
+            if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == (DataObjectInspectorDO)dataObject)
+            {
+                this.dataObjectInspectorDO?.isOn.UnregisterFromChanges(OnIsOnChanged);
+                this.dataObjectInspectorDO = null;
+
+                UniversalTimer.UnregisterFromTimeElapsed(TimeElapsed);
+            }
         }
-    }
 
 
-//*====================
-//* CALLBACKS
-//*====================
-    private void OnIsOnChanged(ObservableVar<bool> oIsOn)
-    {
-        bool isOn = oIsOn.Value;
-        this.dataObjectInspectorCanvas.enabled = isOn;
+        //*====================
+        //* IHasTimeElapsedHandler
+        //*====================
+        public void TimeElapsed(float deltaTime, float unscaledDeltaTime, int executionOrder)
+        {
+            if (Input.GetKeyDown(activationKey))
+            {
+                bool isInspectorOn = this.dataObjectInspectorDO.isOn.Value;
+                this.dataObjectInspectorDO.isOn.Value = !isInspectorOn;
+            }
+        }
+
+
+        //*====================
+        //* CALLBACKS
+        //*====================
+        private void OnIsOnChanged(ObservableVar<bool> oIsOn)
+        {
+            bool isOn = oIsOn.Value;
+            this.dataObjectInspectorCanvas.enabled = isOn;
+        }
     }
 }

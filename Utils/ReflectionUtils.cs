@@ -15,6 +15,11 @@ public static class ReflectionUtils
     {
         if (allPropertyInfo == null) { allPropertyInfo = new List<PropertyInfo>(); }
 
+        if (type.BaseType != null)
+        {
+            type.BaseType.GetAllPropertyInfo(bindingFlags, allPropertyInfo);
+        }
+
         PropertyInfo[] properties = type.GetProperties(bindingFlags);
 
         for (int i = 0; i < properties.Length; i++)
@@ -26,11 +31,6 @@ public static class ReflectionUtils
             {
                 allPropertyInfo.Add(propertyInfo);
             }
-        }
-
-        if (type.BaseType != null)
-        {
-            type.BaseType.GetAllPropertyInfo(bindingFlags, allPropertyInfo);
         }
 
         return allPropertyInfo;
@@ -46,6 +46,11 @@ public static class ReflectionUtils
     {
         if (allFieldInfo == null) { allFieldInfo = new List<FieldInfo>(); }
 
+        if (type.BaseType != null)
+        {
+            GetAllFieldInfo(type.BaseType, bindingFlags, allFieldInfo);
+        }
+        
         FieldInfo[] fields = type.GetFields(bindingFlags);
 
         for (int i = 0; i < fields.Length; i++)
@@ -56,11 +61,6 @@ public static class ReflectionUtils
             {
                 allFieldInfo.Add(fieldInfo);
             }
-        }
-
-        if (type.BaseType != null)
-        {
-            GetAllFieldInfo(type.BaseType, bindingFlags, allFieldInfo);
         }
 
         return allFieldInfo;

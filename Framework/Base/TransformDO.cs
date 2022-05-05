@@ -1,4 +1,5 @@
-﻿using CoreDev.Observable;
+﻿using CoreDev.DataObjectInspector;
+using CoreDev.Observable;
 using UnityEngine;
 
 
@@ -26,16 +27,20 @@ namespace CoreDev.Framework
 
         public Vector3 Scale_World => this.transform.lossyScale;
 
+        [Bookmark]
         private OString transformName;
         public OString Name => transformName;
 
-        private OTransformVector3 pos_Local;
+        private OTransform transformParent;
+        public OTransform TransformParent => transformParent;
+
+        private OVector3 pos_Local;
         public OVector3 Pos_Local => pos_Local;
 
-        private OTransformQuaternion rot_Local;
+        private OQuaternion rot_Local;
         public OQuaternion Rot_Local => rot_Local;
 
-        private OTransformVector3 scale_Local;
+        private OVector3 scale_Local;
         public OVector3 Scale_Local => scale_Local;
 
         public Vector3 Forward_World => this.transform.forward;
@@ -49,19 +54,22 @@ namespace CoreDev.Framework
         protected virtual void Awake()
         {
             this.transformName = new OString(this.transform.name, this);
-            this.pos_Local = new OTransformVector3(this.transform.localPosition, this);
-            this.rot_Local = new OTransformQuaternion(this.transform.localRotation, this);
-            this.scale_Local = new OTransformVector3(this.transform.localScale, this);
+            this.transformParent = new OTransform(this.transform.parent, this);
+            this.pos_Local = new OVector3(this.transform.localPosition, this);
+            this.rot_Local = new OQuaternion(this.transform.localRotation, this);
+            this.scale_Local = new OVector3(this.transform.localScale, this);
 
-            this.transformName.RegisterForChanges(OnTransformNameChanged);
-            this.pos_Local.RegisterForChanges(OnPos_LocalChanged);
-            this.rot_Local.RegisterForChanges(OnRot_LocalChanged);
-            this.scale_Local.RegisterForChanges(OnScale_LocalChanged);
+            this.transformName.RegisterForChanges(OnTransformNameChanged, false);
+            this.transformParent.RegisterForChanges(OnParentChanged, false);
+            this.pos_Local.RegisterForChanges(OnPos_LocalChanged, false);
+            this.rot_Local.RegisterForChanges(OnRot_LocalChanged, false);
+            this.scale_Local.RegisterForChanges(OnScale_LocalChanged, false);
         }
 
         protected override void OnDestroy()
         {
             this.transformName.UnregisterFromChanges(OnTransformNameChanged);
+            this.transformParent.UnregisterFromChanges(OnParentChanged);
             this.pos_Local.UnregisterFromChanges(OnPos_LocalChanged);
             this.rot_Local.UnregisterFromChanges(OnRot_LocalChanged);
             this.scale_Local.UnregisterFromChanges(OnScale_LocalChanged);
@@ -76,6 +84,14 @@ namespace CoreDev.Framework
         protected virtual void OnTransformNameChanged(ObservableVar<string> obj)
         {
             this.transform.name = obj.Value;
+        }
+
+        private void OnParentChanged(ObservableVar<Transform> obj)
+        {
+            this.transform.SetParent(obj.Value);
+            this.Pos_Local.Value = this.transform.localPosition;
+            this.Rot_Local.Value = this.transform.localRotation;
+            this.Scale_Local.Value = this.transform.localScale;
         }
 
         protected virtual void OnPos_LocalChanged(ObservableVar<Vector3> obj)

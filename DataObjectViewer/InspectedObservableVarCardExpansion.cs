@@ -2,54 +2,58 @@
 using CoreDev.Observable;
 using UnityEngine;
 
-public class InspectedObservableVarCardExpansion : MonoBehaviour, ISpawnee
+
+namespace CoreDev.DataObjectInspector
 {
-    private InspectedObservableVarDO inspectedObservableVarDO;
-    private ObservableVarInfoDO observableVarInfoDO;
-
-
-//*====================
-//* UNITY
-//*====================
-    protected virtual void OnDestroy()
+    public class InspectedObservableVarCardExpansion : MonoBehaviour, ISpawnee
     {
-        this.UnbindDO(this.inspectedObservableVarDO);
-    }
+        private InspectedObservableVarDO inspectedObservableVarDO;
+        private ObservableVarInfoDO observableVarInfoDO;
 
 
-//*====================
-//* BINDING
-//*====================
-    public void BindDO(IDataObject dataObject)
-    {
-        if(dataObject is InspectedObservableVarDO)
+        //*====================
+        //* UNITY
+        //*====================
+        protected virtual void OnDestroy()
         {
-            UnbindDO(this.inspectedObservableVarDO);
-            this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
-            
-            this.observableVarInfoDO = inspectedObservableVarDO.ObservableVarInfoDO;
-            this.observableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
+            this.UnbindDO(this.inspectedObservableVarDO);
         }
-    }
 
-    public void UnbindDO(IDataObject dataObject)
-    {
-        if(dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject)
+
+        //*====================
+        //* BINDING
+        //*====================
+        public void BindDO(IDataObject dataObject)
         {
-            this.observableVarInfoDO?.isExpandedView.UnregisterFromChanges(OnIsExpandedViewChanged);
+            if (dataObject is InspectedObservableVarDO)
+            {
+                UnbindDO(this.inspectedObservableVarDO);
+                this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
 
-            this.observableVarInfoDO = null;
-            this.inspectedObservableVarDO = null;
+                this.observableVarInfoDO = inspectedObservableVarDO.ObservableVarInfoDO;
+                this.observableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
+            }
         }
-    }
+
+        public void UnbindDO(IDataObject dataObject)
+        {
+            if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject)
+            {
+                this.observableVarInfoDO?.isExpandedView.UnregisterFromChanges(OnIsExpandedViewChanged);
+
+                this.observableVarInfoDO = null;
+                this.inspectedObservableVarDO = null;
+            }
+        }
 
 
-//*====================
-//* CALLBACKS - InspectedObservableVarDO
-//*====================
-    private void OnIsExpandedViewChanged(ObservableVar<bool> oIsExpandedView)
-    {
-        bool isExpandedView = oIsExpandedView.Value;
-        this.gameObject.SetActive(isExpandedView);
+        //*====================
+        //* CALLBACKS - InspectedObservableVarDO
+        //*====================
+        private void OnIsExpandedViewChanged(ObservableVar<bool> oIsExpandedView)
+        {
+            bool isExpandedView = oIsExpandedView.Value;
+            this.gameObject.SetActive(isExpandedView);
+        }
     }
 }

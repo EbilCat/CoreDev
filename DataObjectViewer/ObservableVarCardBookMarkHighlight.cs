@@ -2,48 +2,52 @@
 using CoreDev.Observable;
 using UnityEngine;
 
-public class ObservableVarCardBookMarkHighlight : MonoBehaviour, ISpawnee
+
+namespace CoreDev.DataObjectInspector
 {
-    private InspectedObservableVarDO inspectedObservableVarDO;
+    public class ObservableVarCardBookMarkHighlight : MonoBehaviour, ISpawnee
+    {
+        private InspectedObservableVarDO inspectedObservableVarDO;
 
 
 //*====================
 //* UNITY
 //*====================
-    protected virtual void OnDestroy()
-    {
-        this.UnbindDO(this.inspectedObservableVarDO);
-    }
+        protected virtual void OnDestroy()
+        {
+            this.UnbindDO(this.inspectedObservableVarDO);
+        }
 
 
 //*====================
 //* BINDING
 //*====================
-    public void BindDO(IDataObject dataObject)
-    {
-        if(dataObject is InspectedObservableVarDO)
+        public void BindDO(IDataObject dataObject)
         {
-            UnbindDO(this.inspectedObservableVarDO);
-            this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
-            this.inspectedObservableVarDO.ObservableVarInfoDO.isBookedMarked.RegisterForChanges(OnIsBookedMarkedChanged);
+            if (dataObject is InspectedObservableVarDO)
+            {
+                UnbindDO(this.inspectedObservableVarDO);
+                this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
+                this.inspectedObservableVarDO.ObservableVarInfoDO.isBookedMarked.RegisterForChanges(OnIsBookedMarkedChanged);
+            }
         }
-    }
 
-    public void UnbindDO(IDataObject dataObject)
-    {
-        if(dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject as InspectedObservableVarDO)
+        public void UnbindDO(IDataObject dataObject)
         {
-            this.inspectedObservableVarDO?.ObservableVarInfoDO.isBookedMarked.UnregisterFromChanges(OnIsBookedMarkedChanged);
-            this.inspectedObservableVarDO = null;
+            if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject as InspectedObservableVarDO)
+            {
+                this.inspectedObservableVarDO?.ObservableVarInfoDO.isBookedMarked.UnregisterFromChanges(OnIsBookedMarkedChanged);
+                this.inspectedObservableVarDO = null;
+            }
         }
-    }
 
 
 //*====================
 //* CALLBACKS - ObservableVarInfoDO 
 //*====================
-    private void OnIsBookedMarkedChanged(ObservableVar<bool> obj)
-    {
-        this.gameObject.SetActive(obj.Value);
+        private void OnIsBookedMarkedChanged(ObservableVar<bool> obj)
+        {
+            this.gameObject.SetActive(obj.Value);
+        }
     }
 }
