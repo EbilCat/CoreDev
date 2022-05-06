@@ -40,11 +40,13 @@ namespace CoreDev.DataObjectInspector
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            this.leftMostLayoutElement.preferredWidth -= expandedSize / 4.0f;
             thisLayoutElement.minWidth = expandedSize;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
+            this.leftMostLayoutElement.preferredWidth += expandedSize / 4.0f;
             thisLayoutElement.minWidth = normalSize;
         }
     }

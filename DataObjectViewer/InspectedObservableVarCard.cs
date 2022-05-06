@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
@@ -12,6 +13,7 @@ namespace CoreDev.DataObjectInspector
     public class InspectedObservableVarCard : MonoBehaviour, ISpawnee, IPointerDownHandler, IPointerUpHandler, IBeginDragHandler
     {
         private InspectedObservableVarDO inspectedObservableVarDO;
+        private DataObjectInspectorDO dataObjectInspectorDO;
         private ObservableVarInfoDO observableVarInfoDO;
         private IObservableVar observableVarInstance;
         private RearrangeableScrollViewItem rearrangeableScrollViewItem;
@@ -24,6 +26,7 @@ namespace CoreDev.DataObjectInspector
         private void OnDestroy()
         {
             UnbindDO(this.inspectedObservableVarDO);
+            UnbindDO(this.dataObjectInspectorDO);
         }
 
 
@@ -32,10 +35,8 @@ namespace CoreDev.DataObjectInspector
 //*====================
         public void BindDO(IDataObject dataObject)
         {
-            if (dataObject is InspectedObservableVarDO)
+            if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == null)
             {
-                UnbindDO(this.inspectedObservableVarDO);
-
                 this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
                 this.observableVarInfoDO = inspectedObservableVarDO.ObservableVarInfoDO;
                 this.observableVarInstance = inspectedObservableVarDO.ObservableVarInstance;
@@ -45,36 +46,61 @@ namespace CoreDev.DataObjectInspector
                 rearrangeableScrollViewItem.RegisterForSiblingIndexChanged(OnSiblingIndexChanged);
 
                 this.text = this.GetComponentInChildren<Text>();
+                CompleteBinding();
+            }
 
-                this.inspectedObservableVarDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
-                this.observableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
-                this.observableVarInfoDO.orderIndex.RegisterForChanges(OnOrderIndexChanged);
-
+            if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == null)
+            {
+                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
+                CompleteBinding();
             }
         }
 
-        private void OnSiblingIndexChanged(int obj)
+        private void CompleteBinding()
         {
-            this.observableVarInfoDO.orderIndex.Value = obj;
+            if (this.inspectedObservableVarDO != null && this.dataObjectInspectorDO != null)
+            {
+                this.inspectedObservableVarDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
+
+                this.observableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
+                this.observableVarInfoDO.orderIndex.RegisterForChanges(OnOrderIndexChanged);
+
+                this.dataObjectInspectorDO.observableVarFilterString.RegisterForChanges(OnObservableVarFilterString);
+            }
         }
 
         public void UnbindDO(IDataObject dataObject)
         {
-            if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject)
+            if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject ||
+                dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == dataObject as DataObjectInspectorDO)
             {
-                this.rearrangeableScrollViewItem.UnregisterFromSiblingIndexChanged(OnSiblingIndexChanged);
+                this.rearrangeableScrollViewItem?.UnregisterFromSiblingIndexChanged(OnSiblingIndexChanged);
 
-                this.inspectedObservableVarDO?.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
-                this.observableVarInfoDO?.isExpandedView.UnregisterFromChanges(OnIsExpandedViewChanged);
-                this.observableVarInfoDO?.orderIndex.UnregisterFromChanges(OnOrderIndexChanged);
+                this.inspectedObservableVarDO?.isInspected?.UnregisterFromChanges(OnIsInspectedChanged);
+                this.observableVarInfoDO?.isExpandedView?.UnregisterFromChanges(OnIsExpandedViewChanged);
+                this.observableVarInfoDO?.orderIndex?.UnregisterFromChanges(OnOrderIndexChanged);
 
-                this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
-                this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
+                this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
+                this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
+
+                this.dataObjectInspectorDO.observableVarFilterString?.UnregisterFromChanges(OnObservableVarFilterString);
+
+                this.rearrangeableScrollViewItem = null;
+                this.observableVarInstance = null;
 
                 this.inspectedObservableVarDO = null;
                 this.observableVarInfoDO = null;
-                this.observableVarInstance = null;
+                this.dataObjectInspectorDO = null;
             }
+        }
+
+
+//*====================
+//* CALLBACKS - RearrangeableScrollViewItem 
+//*====================
+        private void OnSiblingIndexChanged(int obj)
+        {
+            this.observableVarInfoDO.orderIndex.Value = obj;
         }
 
 
@@ -109,6 +135,24 @@ namespace CoreDev.DataObjectInspector
         private void OnIsExpandedViewChanged(ObservableVar<bool> obj)
         {
             this.RefreshDisplayedValues();
+        }
+
+
+//*====================
+//* CALLBACKS
+//*====================
+        private void OnObservableVarFilterString(ObservableVar<string> obj)
+        {
+            try
+            {
+                string observableVarFilterString = this.dataObjectInspectorDO.observableVarFilterString.Value;
+                Match result = Regex.Match(this.text.text, observableVarFilterString, RegexOptions.Singleline);
+                this.gameObject.SetActive(result.Success);
+            }
+            catch
+            {
+                // Debug.LogWarning("Illegal Regex used in filter");
+            }
         }
 
 

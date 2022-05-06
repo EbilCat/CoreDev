@@ -13,6 +13,7 @@ namespace CoreDev.DataObjectInspector
         public ObservableVarInfoDO ObservableVarInfoDO { get { return observableVarInfoDO; } }
 
         public OBool isInspected;
+        public OBool matchesFilter;
 
         public OString varName;
         public OBool printToConsole;
@@ -22,6 +23,7 @@ namespace CoreDev.DataObjectInspector
             this.observableVarInstance = observableVarInstance;
             this.observableVarInfoDO = fieldInfoDO;
             this.isInspected = isInspected;
+            this.matchesFilter = new OBool(true, this);
             this.printToConsole = new OBool(false, this);
 
             this.varName = new OString(fieldInfoDO.Name, this);

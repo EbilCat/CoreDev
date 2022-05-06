@@ -7,31 +7,50 @@ using UnityEngine;
 
 namespace CoreDev.DataObjectInspector
 {
-    public class InspectedDataObjectCardSpawner : MonoBehaviour
+    public class InspectedDataObjectCardSpawner : MonoBehaviour, ISpawnee
     {
+        private DataObjectInspectorDO dataObjectInspectorDO;
         [SerializeField] private InspectedDataObjectCard prefab;
         private Dictionary<InspectedDataObjectDO, InspectedDataObjectCard> inspectedDataObjectCards = new Dictionary<InspectedDataObjectDO, InspectedDataObjectCard>();
 
 
-        //*===========================
-        //* UNITY
-        //*===========================
-        protected virtual void Awake()
-        {
-            DataObjectInspectorMasterRepository.RegisterForCreation(DataObjectCreated);
-            DataObjectInspectorMasterRepository.RegisterForDisposing(DataObjectDisposing);
-        }
-
+//*====================
+//* UNITY
+//*====================
         protected virtual void OnDestroy()
         {
-            DataObjectInspectorMasterRepository.UnregisterFromCreation(DataObjectCreated);
-            DataObjectInspectorMasterRepository.UnregisterFromDisposing(DataObjectDisposing);
+            this.UnbindDO(this.dataObjectInspectorDO);
         }
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
+        public void BindDO(IDataObject dataObject)
+        {
+            if (dataObject is DataObjectInspectorDO)
+            {
+                UnbindDO(this.dataObjectInspectorDO);
+                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
+                DataObjectInspectorMasterRepository.RegisterForCreation(DataObjectCreated);
+                DataObjectInspectorMasterRepository.RegisterForDisposing(DataObjectDisposing);
+            }
+        }
+
+        public void UnbindDO(IDataObject dataObject)
+        {
+            if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == dataObject as DataObjectInspectorDO)
+            {
+                DataObjectInspectorMasterRepository.UnregisterFromCreation(DataObjectCreated);
+                DataObjectInspectorMasterRepository.UnregisterFromDisposing(DataObjectDisposing);
+                this.dataObjectInspectorDO = null;
+            }
+        }
+
+
+//*====================
+//* CALLBACKS - DataObjectInspectorMasterRepository
+//*====================
         private void DataObjectCreated(InspectedDataObjectDO inspectedDataObjectDO)
         {
             inspectedDataObjectDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
@@ -44,9 +63,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS
-        //*====================
+//*====================
+//* CALLBACKS - InspectedDataObjectDO
+//*====================
         private void OnIsInspectedChanged(ObservableVar<bool> obj)
         {
             if (obj.DataObject is InspectedDataObjectDO)
@@ -66,9 +85,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* PRIVATE
-        //*====================
+//*====================
+//* PRIVATE
+//*====================
         private void InstantiatePrefab(InspectedDataObjectDO inspectedDataObjectDO)
         {
             InspectedDataObjectCard prefabInstance = Instantiate<InspectedDataObjectCard>(prefab);
@@ -78,6 +97,7 @@ namespace CoreDev.DataObjectInspector
 
             inspectedDataObjectCards.Add(inspectedDataObjectDO, prefabInstance);
             inspectedDataObjectDO.BindAspect(prefabInstance);
+            this.dataObjectInspectorDO.BindAspect(prefabInstance);
         }
 
         private void DisposePrefab(InspectedDataObjectDO inspectedDataObjectDO)
@@ -86,6 +106,7 @@ namespace CoreDev.DataObjectInspector
             {
                 InspectedDataObjectCard prefabInstance = inspectedDataObjectCards[inspectedDataObjectDO];
                 inspectedDataObjectDO.UnbindAspect(prefabInstance);
+                this.dataObjectInspectorDO.UnbindAspect(prefabInstance);
                 this.inspectedDataObjectCards.Remove(inspectedDataObjectDO);
                 Destroy(prefabInstance.gameObject);
             }

@@ -1,6 +1,4 @@
 ﻿using CoreDev.Framework;
-using CoreDev.Observable;
-using CoreDev.Sequencing;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -8,7 +6,7 @@ using UnityEngine.UI;
 
 namespace CoreDev.DataObjectInspector
 {
-    public class DataObjectFilterTextField : MonoBehaviour, ISpawnee
+    public class ObservableVarFilterTextField : MonoBehaviour, ISpawnee
     {
         private DataObjectInspectorDO dataObjectInspectorDO;
         private InputField inputField;
@@ -19,15 +17,13 @@ namespace CoreDev.DataObjectInspector
 //*====================
         public void BindDO(IDataObject dataObject)
         {
-            if (dataObject is DataObjectInspectorDO)
+            if (dataObject is DataObjectInspectorDO && dataObjectInspectorDO == null)
             {
+                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
+
                 this.inputField = this.GetComponent<InputField>();
                 this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
                 this.inputField.onEndEdit.AddListener(OnEndEdit);
-
-                UnbindDO(this.dataObjectInspectorDO);
-                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
-                this.dataObjectInspectorDO.isOn.RegisterForChanges(OnIsOnChanged);
             }
         }
 
@@ -39,27 +35,7 @@ namespace CoreDev.DataObjectInspector
                 this.inputField.onEndEdit.RemoveListener(OnEndEdit);
                 this.inputField = null;
 
-                this.dataObjectInspectorDO?.isOn.UnregisterFromChanges(OnIsOnChanged);
                 this.dataObjectInspectorDO = null;
-            }
-        }
-
-
-//*====================
-//* CALLBACKS - DataObjectInspectorDO
-//*====================
-        private void OnIsOnChanged(ObservableVar<bool> oIsOn)
-        {
-            bool isOn = oIsOn.Value;
-
-            if (isOn)
-            {
-                //Have to delay a frame otherwise select won't work
-                UniversalTimer.ScheduleCallback((x) =>
-                {
-                    this.inputField.Select();
-                    this.inputField.ActivateInputField();
-                });
             }
         }
 
@@ -69,7 +45,7 @@ namespace CoreDev.DataObjectInspector
 //*====================
         private void OnInputFieldValueChanged(string inputFieldValue)
         {
-            this.dataObjectInspectorDO.dataObjectFilterString.Value = inputFieldValue;
+            this.dataObjectInspectorDO.observableVarFilterString.Value = inputFieldValue;
         }
 
         private void OnEndEdit(string arg0)

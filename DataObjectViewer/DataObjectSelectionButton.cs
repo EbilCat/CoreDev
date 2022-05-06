@@ -14,9 +14,9 @@ namespace CoreDev.DataObjectInspector
         public string ButtonText { get { return buttonText.text; } }
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
         public void BindDO(IDataObject dataObject)
         {
             if (inspectedDataObjectDO == null)
@@ -53,9 +53,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS - InspectedDataObjectDO
-        //*====================
+//*====================
+//* CALLBACKS - InspectedDataObjectDO
+//*====================
         private void OnNameChanged(ObservableVar<string> oName)
         {
             this.buttonText.text = oName.Value;
@@ -73,9 +73,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS - Button
-        //*====================
+//*====================
+//* CALLBACKS - Button
+//*====================
         private void OnButtonClicked()
         {
             bool isInspected = this.inspectedDataObjectDO.isInspected.Value;
@@ -83,9 +83,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* PRIVATE
-        //*====================
+//*====================
+//* PRIVATE
+//*====================
         // private string GetIdentifier(object dataObject, Type objType, BindingFlags bindingFlags, string identifierStr = "")
         // {
         //     FieldInfo[] fields = objType.GetFields(bindingFlags);

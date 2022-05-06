@@ -32,7 +32,7 @@ namespace CoreDev.DataObjectInspector
             {
                 this.dataObjectInspectorDO?.isOn.UnregisterFromChanges(OnIsOnChanged);
 
-                this.dataObjectInspectorDO?.filterString.UnregisterFromChanges(OnFilterStringChanged);
+                this.dataObjectInspectorDO?.dataObjectFilterString.UnregisterFromChanges(OnFilterStringChanged);
                 DataObjectMasterRepository.UnregisterFromCreation(OnDataObjectCreated);
                 DataObjectMasterRepository.UnregisterFromDisposing(OnDataObjectDisposing);
 
@@ -50,7 +50,7 @@ namespace CoreDev.DataObjectInspector
 
             if (isOn)
             {
-                this.dataObjectInspectorDO.filterString.RegisterForChanges(OnFilterStringChanged);
+                this.dataObjectInspectorDO.dataObjectFilterString.RegisterForChanges(OnFilterStringChanged);
                 DataObjectMasterRepository.RegisterForCreation(OnDataObjectCreated);
                 DataObjectMasterRepository.RegisterForDisposing(OnDataObjectDisposing);
 
@@ -95,7 +95,7 @@ namespace CoreDev.DataObjectInspector
         //*====================
         private void OnNameChanged(ObservableVar<string> oName)
         {
-            ApplyFilterCheck(this.dataObjectInspectorDO.filterString.Value, (InspectedDataObjectDO)oName.DataObject);
+            ApplyFilterCheck(this.dataObjectInspectorDO.dataObjectFilterString.Value, (InspectedDataObjectDO)oName.DataObject);
         }
 
 
