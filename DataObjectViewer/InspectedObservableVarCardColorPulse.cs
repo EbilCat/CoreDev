@@ -12,22 +12,24 @@ namespace CoreDev.DataObjectInspector
         private InspectedObservableVarDO inspectedObservableVarDO;
         private ObservableVarInfoDO observableVarInfoDO;
         private IObservableVar observableVarInstance;
-
         private Image image;
-        [SerializeField] private Color pulseActiveColor = Color.green;
+        [SerializeField] private Color valueChangeBlockedPulseColor = Color.red;
+        [SerializeField] private Color moderatorsChangedPulseColor = new Color(1.0f, 0.75f, 0.0f); //Orange
+        [SerializeField] private Color valueChangedPulseColor = Color.green;
+        private Color activePulseColor;
         private Color pulseInactiveColor = Color.gray;
         [SerializeField] private float fadeDurationSecs = 0.5f;
         private float fadeProgress01 = 0.0f;
 
 
-        //*====================
-        //* IHasTimeElapsedHandler
-        //*====================
+//*====================
+//* IHasTimeElapsedHandler
+//*====================
         public void TimeElapsed(float deltaTime, float unscaledDeltaTime, int executionOrder)
         {
             fadeProgress01 += (unscaledDeltaTime / fadeDurationSecs);
             fadeProgress01 = Mathf.Clamp01(fadeProgress01);
-            this.image.color = Color.Lerp(pulseActiveColor, pulseInactiveColor, fadeProgress01);
+            this.image.color = Color.Lerp(activePulseColor, pulseInactiveColor, fadeProgress01);
 
             if (Mathf.Approximately(fadeProgress01, 1.0f))
             {
@@ -36,18 +38,18 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* UNITY
-        //*====================
+//*====================
+//* UNITY
+//*====================
         private void OnDestroy()
         {
             this.UnbindDO(inspectedObservableVarDO);
         }
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is InspectedObservableVarDO)
@@ -71,8 +73,9 @@ namespace CoreDev.DataObjectInspector
             {
                 this.inspectedObservableVarDO.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
 
-                this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, StartFade);
-                this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, StartFade);
+                this.observableVarInfoDO.UnregisterFromValueChangeBlocks(observableVarInstance, StartValueChangeBlockedPulse);
+                this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, StartValueChangedPulse);
+                this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, StartModeratorsChangedPulse);
                 this.ResetFadeToInactive();
 
                 this.inspectedObservableVarDO = null;
@@ -84,32 +87,53 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS - InspectedDataObjectDO
-        //*====================
+//*====================
+//* CALLBACKS - InspectedDataObjectDO
+//*====================
         private void OnIsInspectedChanged(ObservableVar<bool> oIsInspected)
         {
             if (oIsInspected.Value)
             {
-                this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, StartFade);
-                this.observableVarInfoDO.RegisterForModeratorsChanges(observableVarInstance, StartFade);
+                this.observableVarInfoDO.RegisterForValueChangeBlocks(observableVarInstance, StartValueChangeBlockedPulse);
+                this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, StartValueChangedPulse);
+                this.observableVarInfoDO.RegisterForModeratorsChanges(observableVarInstance, StartModeratorsChangedPulse);
+
             }
             else
             {
-                this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, StartFade);
-                this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, StartFade);
+                this.observableVarInfoDO?.UnregisterFromValueChangeBlocks(observableVarInstance, StartValueChangeBlockedPulse);
+                this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, StartValueChangedPulse);
+                this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, StartModeratorsChangedPulse);
                 this.ResetFadeToInactive();
             }
         }
 
+        private void StartValueChangeBlockedPulse()
+        {
+            this.activePulseColor = valueChangeBlockedPulseColor;
+            this.StartFade();
+        }
 
-        //*====================
-        //* PRIVATE
-        //*====================
+        private void StartValueChangedPulse()
+        {
+            this.activePulseColor = valueChangedPulseColor;
+            this.StartFade();
+        }
+
+        private void StartModeratorsChangedPulse()
+        {
+            this.activePulseColor = moderatorsChangedPulseColor;
+            this.StartFade();
+        }
+
+
+//*====================
+//* PRIVATE
+//*====================
         private void StartFade()
         {
             this.fadeProgress01 = 0.0f;
-            this.image.color = pulseActiveColor;
+            this.image.color = activePulseColor;
             UniversalTimer.RegisterForTimeElapsed(TimeElapsed);
         }
 
