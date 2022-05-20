@@ -16,7 +16,7 @@ namespace CoreDev.Observable
     {
         private const bool warnOnRecursion = true;
         public delegate bool ModerationCheck(ref T incomingValue);
-        protected event Action ValueChangeBlocked = delegate { };
+        protected event Action<string> ValueChangeBlocked = delegate { };
         protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
         private event Action<ObservableVar<T>> FireCallbacks = delegate { };
         protected event Action ModeratorsChanged = delegate { };
@@ -85,10 +85,6 @@ namespace CoreDev.Observable
                             }
                         }
                     }
-                }
-                else
-                {
-                    this.ValueChangeBlocked();
                 }
 
                 this.recursionCount = 0;
@@ -176,6 +172,7 @@ namespace CoreDev.Observable
                     bool isAcceptable = moderatorList[i](ref value);
                     if (isAcceptable == false)
                     {
+                        this.ValueChangeBlocked(moderatorList[i].Method.Name);
                         return false;
                     }
                 }

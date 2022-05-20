@@ -108,7 +108,7 @@ namespace CoreDev.DataObjectInspector
             }
         }
 
-        private void StartValueChangeBlockedPulse()
+        private void StartValueChangeBlockedPulse(string moderatorName)
         {
             this.activePulseColor = valueChangeBlockedPulseColor;
             this.StartFade();

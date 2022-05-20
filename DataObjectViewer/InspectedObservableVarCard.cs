@@ -61,6 +61,7 @@ namespace CoreDev.DataObjectInspector
             if (this.inspectedObservableVarDO != null && this.dataObjectInspectorDO != null)
             {
                 this.inspectedObservableVarDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
+                this.inspectedObservableVarDO.printToConsole.RegisterForChanges(OnPrintToConsoleChanged);
 
                 this.observableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
                 this.observableVarInfoDO.orderIndex.RegisterForChanges(OnOrderIndexChanged);
@@ -77,9 +78,11 @@ namespace CoreDev.DataObjectInspector
                 this.rearrangeableScrollViewItem?.UnregisterFromSiblingIndexChanged(OnSiblingIndexChanged);
 
                 this.inspectedObservableVarDO?.isInspected?.UnregisterFromChanges(OnIsInspectedChanged);
+                this.inspectedObservableVarDO?.printToConsole.UnregisterFromChanges(OnPrintToConsoleChanged);
                 this.observableVarInfoDO?.isExpandedView?.UnregisterFromChanges(OnIsExpandedViewChanged);
                 this.observableVarInfoDO?.orderIndex?.UnregisterFromChanges(OnOrderIndexChanged);
 
+                this.observableVarInfoDO?.UnregisterFromValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
                 this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
                 this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
 
@@ -95,9 +98,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* CALLBACKS - RearrangeableScrollViewItem 
-//*====================
+        //*====================
+        //* CALLBACKS - RearrangeableScrollViewItem 
+        //*====================
         private void OnSiblingIndexChanged(int obj)
         {
             this.observableVarInfoDO.orderIndex.Value = obj;
@@ -130,6 +133,23 @@ namespace CoreDev.DataObjectInspector
                 this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
                 this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
             }
+        }
+
+        private void OnPrintToConsoleChanged(ObservableVar<bool> obj)
+        {
+            if(obj.Value)
+            {
+                this.observableVarInfoDO.RegisterForValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
+            }
+            else
+            {
+                this.observableVarInfoDO?.UnregisterFromValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
+            }
+        }
+
+        private void OnValueChangeBlocked(string moderatorName)
+        {
+            Debug.LogFormat("[Frame {0}] Change to {1} blocked by Moderator: {2}", Time.frameCount, this.observableVarInfoDO.Name, moderatorName);
         }
 
         private void OnIsExpandedViewChanged(ObservableVar<bool> obj)

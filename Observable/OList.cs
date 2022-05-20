@@ -15,6 +15,8 @@ namespace CoreDev.Observable
         protected event Action ModeratorsChanged = delegate { };
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
 
+
+        protected event Action<string> ValueChangeBlocked = delegate { };
         protected event Action ValueChanged = delegate { };
         protected IDataObject dataObject;
 
@@ -325,6 +327,7 @@ namespace CoreDev.Observable
                     bool isAcceptable = moderatorList[i](ref value, operation);
                     if (isAcceptable == false)
                     {
+                        this.ValueChangeBlocked(moderatorList[i].Method.Name);
                         return false;
                     }
                 }

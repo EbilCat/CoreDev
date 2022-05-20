@@ -83,14 +83,14 @@ namespace CoreDev.DataObjectInspector
             setValueFromStringMethodInfo?.Invoke(observableVarInstance, newValueArray);
         }
 
-        public void RegisterForValueChangeBlocks(IObservableVar observableVarInstance, Action callback)
+        public void RegisterForValueChangeBlocks(IObservableVar observableVarInstance, Action<string> callback)
         {
             eventHandlerHolder[0] = callback;
             valueChangeBlockedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
             valueChangeBlockedEventInfo.GetAddMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
         }
 
-        public void UnregisterFromValueChangeBlocks(IObservableVar observableVarInstance, Action callback)
+        public void UnregisterFromValueChangeBlocks(IObservableVar observableVarInstance, Action<string> callback)
         {
             eventHandlerHolder[0] = callback;
             valueChangeBlockedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
