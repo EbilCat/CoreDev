@@ -1,4 +1,5 @@
-﻿using CoreDev.Framework;
+﻿using System.Collections.ObjectModel;
+using CoreDev.Framework;
 using CoreDev.Observable;
 using CoreDev.Sequencing;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace CoreDev.DataObjectInspector
             {
                 this.inputField = this.GetComponent<InputField>();
                 this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
+                this.inputField.onSubmit.AddListener(OnSubmit);
                 this.inputField.onEndEdit.AddListener(OnEndEdit);
 
                 UnbindDO(this.dataObjectInspectorDO);
@@ -36,6 +38,7 @@ namespace CoreDev.DataObjectInspector
             if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == (DataObjectInspectorDO)dataObject)
             {
                 this.inputField.onValueChanged.RemoveListener(OnInputFieldValueChanged);
+                this.inputField.onSubmit.RemoveListener(OnSubmit);
                 this.inputField.onEndEdit.RemoveListener(OnEndEdit);
                 this.inputField = null;
 
@@ -45,9 +48,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* CALLBACKS - DataObjectInspectorDO
-//*====================
+        //*====================
+        //* CALLBACKS - DataObjectInspectorDO
+        //*====================
         private void OnIsOnChanged(ObservableVar<bool> oIsOn)
         {
             bool isOn = oIsOn.Value;
@@ -70,6 +73,21 @@ namespace CoreDev.DataObjectInspector
         private void OnInputFieldValueChanged(string inputFieldValue)
         {
             this.dataObjectInspectorDO.dataObjectFilterString.Value = inputFieldValue;
+        }
+
+        private void OnSubmit(string arg0)
+        {
+            this.dataObjectInspectorDO?.dataObjectFilterSubmitted.Fire();
+
+            ReadOnlyCollection<InspectedDataObjectDO> inspectedDataObjectDOs = DataObjectInspectorMasterRepository.InspectedDataObjectDOs;
+            foreach (var inspectedDataObjectDO in inspectedDataObjectDOs)
+            {
+                if(inspectedDataObjectDO.matchesFilter.Value)
+                {
+                    inspectedDataObjectDO.isInspected.Value = true;
+                    break;
+                }
+            }
         }
 
         private void OnEndEdit(string arg0)

@@ -1,4 +1,7 @@
-﻿using CoreDev.Framework;
+﻿using System;
+using System.Collections.ObjectModel;
+using CoreDev.Framework;
+using CoreDev.Observable;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -23,7 +26,10 @@ namespace CoreDev.DataObjectInspector
 
                 this.inputField = this.GetComponent<InputField>();
                 this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
+                this.inputField.onSubmit.AddListener(OnSubmit);
                 this.inputField.onEndEdit.AddListener(OnEndEdit);
+
+                this.dataObjectInspectorDO.dataObjectFilterSubmitted.RegisterForChanges(OnDataObjectFilterSubmitted);
             }
         }
 
@@ -32,11 +38,19 @@ namespace CoreDev.DataObjectInspector
             if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == (DataObjectInspectorDO)dataObject)
             {
                 this.inputField.onValueChanged.RemoveListener(OnInputFieldValueChanged);
+                this.inputField.onSubmit.RemoveListener(OnSubmit);
                 this.inputField.onEndEdit.RemoveListener(OnEndEdit);
                 this.inputField = null;
 
+                this.dataObjectInspectorDO?.dataObjectFilterSubmitted.UnregisterFromChanges(OnDataObjectFilterSubmitted);
                 this.dataObjectInspectorDO = null;
             }
+        }
+
+        private void OnDataObjectFilterSubmitted(ObservableVar<object> obj)
+        {
+                this.inputField.Select();
+                this.inputField.ActivateInputField();
         }
 
 
@@ -46,6 +60,27 @@ namespace CoreDev.DataObjectInspector
         private void OnInputFieldValueChanged(string inputFieldValue)
         {
             this.dataObjectInspectorDO.observableVarFilterString.Value = inputFieldValue;
+        }
+
+        private void OnSubmit(string arg0)
+        {
+            this.dataObjectInspectorDO?.observableVarFilterSubmitted.Fire();
+
+            ReadOnlyCollection<InspectedDataObjectDO> inspectedDataObjectDOs = DataObjectInspectorMasterRepository.InspectedDataObjectDOs;
+            foreach (var inspectedDataObjectDO in inspectedDataObjectDOs)
+            {
+                if (inspectedDataObjectDO.isInspected.Value == true)
+                {
+                    foreach (var inspectedOVar in inspectedDataObjectDO.inspectedOVarDOs)
+                    {
+                        if (inspectedOVar.matchesFilter.Value)
+                        {
+                            inspectedOVar.ObservableVarInfoDO.isExpandedView.Value = true;
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         private void OnEndEdit(string arg0)

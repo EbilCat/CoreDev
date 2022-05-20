@@ -60,6 +60,7 @@ namespace CoreDev.DataObjectInspector
         {
             if (this.inspectedObservableVarDO != null && this.dataObjectInspectorDO != null)
             {
+                this.inspectedObservableVarDO.matchesFilter.RegisterForChanges(OnMatchesFilterChanged);
                 this.inspectedObservableVarDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
                 this.inspectedObservableVarDO.printToConsole.RegisterForChanges(OnPrintToConsoleChanged);
 
@@ -77,11 +78,13 @@ namespace CoreDev.DataObjectInspector
             {
                 this.rearrangeableScrollViewItem?.UnregisterFromSiblingIndexChanged(OnSiblingIndexChanged);
 
+                this.inspectedObservableVarDO?.matchesFilter.UnregisterFromChanges(OnMatchesFilterChanged);
                 this.inspectedObservableVarDO?.isInspected?.UnregisterFromChanges(OnIsInspectedChanged);
                 this.inspectedObservableVarDO?.printToConsole.UnregisterFromChanges(OnPrintToConsoleChanged);
+
                 this.observableVarInfoDO?.isExpandedView?.UnregisterFromChanges(OnIsExpandedViewChanged);
                 this.observableVarInfoDO?.orderIndex?.UnregisterFromChanges(OnOrderIndexChanged);
-
+                
                 this.observableVarInfoDO?.UnregisterFromValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
                 this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
                 this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
@@ -167,7 +170,7 @@ namespace CoreDev.DataObjectInspector
             {
                 string observableVarFilterString = this.dataObjectInspectorDO.observableVarFilterString.Value;
                 Match result = Regex.Match(this.text.text, observableVarFilterString, RegexOptions.Singleline);
-                this.gameObject.SetActive(result.Success);
+                this.inspectedObservableVarDO.matchesFilter.Value = result.Success;
             }
             catch
             {
@@ -175,6 +178,10 @@ namespace CoreDev.DataObjectInspector
             }
         }
 
+        private void OnMatchesFilterChanged(ObservableVar<bool> obj)
+        {
+            this.gameObject.SetActive(obj.Value);
+        }
 
 
 //*====================

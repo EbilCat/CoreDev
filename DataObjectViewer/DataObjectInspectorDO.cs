@@ -11,6 +11,9 @@ namespace CoreDev.DataObjectInspector
         public OString dataObjectFilterString = new OString(string.Empty);
         public OString observableVarFilterString = new OString(string.Empty);
 
+        public OAction dataObjectFilterSubmitted = new OAction();
+        public OAction observableVarFilterSubmitted = new OAction();
+
 
         private void Awake()
         {
