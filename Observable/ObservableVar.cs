@@ -11,10 +11,30 @@ namespace CoreDev.Observable
         IDataObject DataObject { get; set; }
     }
 
+    public class OAction : ObservableVar<object>
+    {
+        public OAction() : base(default(object)) { }
+        public OAction(IDataObject dataObject) : base(default(object), dataObject) { }
+        
+        public void Fire()
+        {
+            this.Value = null;
+        }
 
-//*====================
-//* SByte
-//*====================
+        public override void SetValueFromString(string strVal)
+        {
+            this.Value = null;
+        }
+
+        protected override bool AreEqual(object var, object value)
+        {
+            return false;
+        }
+    }
+
+    //*====================
+    //* SByte
+    //*====================
     [Serializable]
     public class OSByte : ObservableVar<SByte>
     {
