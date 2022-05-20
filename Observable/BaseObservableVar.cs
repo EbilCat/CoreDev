@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace CoreDev.Observable
 {
-
     public class InfiniteRecursionException : Exception
     {
         public InfiniteRecursionException(string message) : base(message)
@@ -17,6 +16,7 @@ namespace CoreDev.Observable
     {
         private const bool warnOnRecursion = true;
         public delegate bool ModerationCheck(ref T incomingValue);
+        protected event Action ValueChangeBlocked = delegate { };
         protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
         private event Action<ObservableVar<T>> FireCallbacks = delegate { };
         protected event Action ModeratorsChanged = delegate { };
@@ -86,15 +86,19 @@ namespace CoreDev.Observable
                         }
                     }
                 }
+                else
+                {
+                    this.ValueChangeBlocked();
+                }
 
                 this.recursionCount = 0;
             }
         }
 
 
-        //*====================
-        //* CONSTRUCTORS
-        //*====================
+//*====================
+//* CONSTRUCTORS
+//*====================
         public ObservableVar() : this(default(T)) { }
 
         public ObservableVar(T startValue) : this(startValue, default(IDataObject)) { }
@@ -108,9 +112,9 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* REGISTRATION FOR CHANGES
-        //*====================
+//*====================
+//* REGISTRATION FOR CHANGES
+//*====================
         public void RegisterForChanges(Action<ObservableVar<T>> callback, bool fireCallbackOnRegistration = true)
         {
             FireCallbacks -= callback;
@@ -134,9 +138,9 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* MODERATORS
-        //*====================
+//*====================
+//* MODERATORS
+//*====================
         public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0, bool applyModeratorImmediately = true)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
@@ -158,9 +162,9 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* UTILS
-        //*====================
+//*====================
+//* UTILS
+//*====================
         private bool ModerateIncomingValue(ref T value)
         {
             foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)
@@ -202,7 +206,7 @@ namespace CoreDev.Observable
 
         public override string ToString()
         {
-            if(Value == null)
+            if (Value == null)
             {
                 return "<NULL>";
             }

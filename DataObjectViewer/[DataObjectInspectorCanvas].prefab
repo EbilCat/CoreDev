@@ -773,8 +773,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7008d8c0253a334baec5cb94c757e0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dataObjectSelectionButtonSpawner: {fileID: 279339914031315619}
-  inspectedDataObjectCardSpawner: {fileID: 1569670165113734793}
+  dataObjectSelectionButtonSpawner: {fileID: 0}
+  inspectedDataObjectCardSpawner: {fileID: 0}
 --- !u!1 &1262183042862010285
 GameObject:
   m_ObjectHideFlags: 0
@@ -2083,7 +2083,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84e937836f2e82e49a6c91ae3ed3e221, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dataObjectInspectorWindow: {fileID: 379468558567051171}
+  dataObjectInspectorWindow: {fileID: 0}
   minSize: 30
 --- !u!1 &7313928346335706594
 GameObject:

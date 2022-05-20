@@ -16,6 +16,7 @@ namespace CoreDev.DataObjectInspector
         private FieldInfo fieldInfo;
         private PropertyInfo valuePropertyInfo;
         private MethodInfo setValueFromStringMethodInfo;
+        private EventInfo valueChangeBlockedEventInfo;
         private EventInfo valueChangedEventInfo;
         private EventInfo moderatorsChangedEventInfo;
 
@@ -30,14 +31,15 @@ namespace CoreDev.DataObjectInspector
         public OInt orderIndex;
 
 
-        //*====================
-        //* CONSTRUCTOR
-        //*====================
+//*====================
+//* CONSTRUCTOR
+//*====================
         public ObservableVarInfoDO(FieldInfo fieldInfo, int orderIndex)
         {
             this.fieldInfo = fieldInfo;
             this.valuePropertyInfo = this.FieldType.GetProperty("Value");
             this.setValueFromStringMethodInfo = this.FieldType.GetMethod("SetValueFromString");
+            this.valueChangeBlockedEventInfo = this.FieldType.GetEvent("ValueChangeBlocked", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             this.valueChangedEventInfo = this.FieldType.GetEvent("ValueChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             this.moderatorsChangedEventInfo = this.FieldType.GetEvent("ModeratorsChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
@@ -54,9 +56,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* PUBLIC
-        //*====================
+//*====================
+//* PUBLIC
+//*====================
         public IObservableVar GetObservableVarInstance(IDataObject dataObjectInstance)
         {
             IObservableVar oVar = fieldInfo.GetValue(dataObjectInstance) as IObservableVar;
@@ -81,13 +83,26 @@ namespace CoreDev.DataObjectInspector
             setValueFromStringMethodInfo?.Invoke(observableVarInstance, newValueArray);
         }
 
+        public void RegisterForValueChangeBlocks(IObservableVar observableVarInstance, Action callback)
+        {
+            eventHandlerHolder[0] = callback;
+            valueChangeBlockedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
+            valueChangeBlockedEventInfo.GetAddMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
+        }
+
+        public void UnregisterFromValueChangeBlocks(IObservableVar observableVarInstance, Action callback)
+        {
+            eventHandlerHolder[0] = callback;
+            valueChangeBlockedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
+        }
+
         public void RegisterForValueChanges(IObservableVar observableVarInstance, Action callback)
         {
             eventHandlerHolder[0] = callback;
             valueChangedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
             valueChangedEventInfo.GetAddMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
         }
-
+        
         public void UnregisterFromValueChanges(IObservableVar observableVarInstance, Action callback)
         {
             eventHandlerHolder[0] = callback;

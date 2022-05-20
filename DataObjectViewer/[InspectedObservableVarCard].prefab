@@ -1779,7 +1779,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1567961648fd29f4993ea0d76cd60dd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pulseActiveColor: {r: 0, g: 1, b: 0, a: 1}
+  valueChangeBlockedPulseColor: {r: 1, g: 0, b: 0, a: 1}
+  moderatorsChangedPulseColor: {r: 1, g: 0.75, b: 0, a: 1}
+  valueChangedPulseColor: {r: 0, g: 1, b: 0, a: 1}
   fadeDurationSecs: 0.5
 --- !u!114 &252439463693036127
 MonoBehaviour:
