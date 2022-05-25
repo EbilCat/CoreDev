@@ -50,9 +50,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* MODERATORS
-//*====================
+        //*====================
+        //* MODERATORS
+        //*====================
         public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
@@ -69,9 +69,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* EVENT REGISTRATION
-//*====================
+        //*====================
+        //* EVENT REGISTRATION
+        //*====================
         private event Action<OList<T>, T> FireElementAddedCallback = delegate { };
         public void RegisterForElementAdded(Action<OList<T>, T> callback, bool fireCallbackForExistingElements = true)
         {
@@ -119,9 +119,9 @@ namespace CoreDev.Observable
 
 
 
-//*====================
-//* ACTIONS
-//*====================
+        //*====================
+        //* ACTIONS
+        //*====================
         public new bool Add(T item)
         {
             bool moderationPassed = this.ModerateIncomingValue(ref item, OListOperation.ADD);
@@ -130,6 +130,7 @@ namespace CoreDev.Observable
                 base.Add(item);
                 this.ValueChanged();
                 this.FireElementAddedCallback(this, item);
+                this.FireElementsReorderedCallback(this);
             }
             return moderationPassed;
         }
@@ -150,6 +151,7 @@ namespace CoreDev.Observable
                 base.Insert(index, item);
                 this.ValueChanged();
                 this.FireElementAddedCallback(this, item);
+                this.FireElementsReorderedCallback(this);
             }
             return moderationPassed;
         }
@@ -179,6 +181,7 @@ namespace CoreDev.Observable
                 {
                     this.ValueChanged();
                     this.FireElementRemovedCallback(this, item);
+                    this.FireElementsReorderedCallback(this);
                 }
             }
 
@@ -212,6 +215,7 @@ namespace CoreDev.Observable
                 base.RemoveAt(index);
                 this.ValueChanged();
                 this.FireElementRemovedCallback(this, item);
+                this.FireElementsReorderedCallback(this);
             }
             return moderationPassed;
         }
@@ -279,9 +283,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* QUERIES
-//*====================
+        //*====================
+        //* QUERIES
+        //*====================
         public new T this[int index]
         {
             get
@@ -300,6 +304,7 @@ namespace CoreDev.Observable
                     base[index] = value;
                     this.ValueChanged();
                     this.FireElementAddedCallback(this, value);
+                    this.FireElementsReorderedCallback(this);
                 }
             }
         }
@@ -313,9 +318,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* PRIVATE
-//*====================
+        //*====================
+        //* PRIVATE
+        //*====================
         private bool ModerateIncomingValue(ref T value, OListOperation operation)
         {
             foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)

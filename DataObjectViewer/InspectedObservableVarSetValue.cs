@@ -30,6 +30,8 @@ namespace CoreDev.DataObjectInspector
                 this.observableVarInfoDO = inspectedObservableVarDO.ObservableVarInfoDO;
                 this.observableVarInstance = inspectedObservableVarDO.ObservableVarInstance;
 
+                this.inspectedObservableVarDO.Focus.RegisterForChanges(FocusInputField, false);
+
                 if (inspectedObservableVarDO.ObservableVarInfoDO.IsCollection)
                 {
                     this.gameObject.SetActive(false);
@@ -84,6 +86,7 @@ namespace CoreDev.DataObjectInspector
             {
                 this.inputField?.onEndEdit.RemoveListener(OnSubmit);
 
+                this.inspectedObservableVarDO?.Focus.UnregisterFromChanges(FocusInputField);
                 this.inspectedObservableVarDO?.ObservableVarInfoDO.isExpandedView.UnregisterFromChanges(OnIsExpandedViewChanged);
                 this.inspectedObservableVarDO = null;
                 this.observableVarInfoDO = null;
@@ -128,7 +131,7 @@ namespace CoreDev.DataObjectInspector
             this.observableVarInfoDO.SetValue(observableVarInstance, text);
         }
 
-        private void FocusInputField()
+        private void FocusInputField(object obj = null)
         {
             CoreDev.Sequencing.UniversalTimer.ScheduleCallback((x) =>
             {

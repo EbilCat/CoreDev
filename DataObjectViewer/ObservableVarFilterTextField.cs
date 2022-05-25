@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
@@ -76,6 +75,7 @@ namespace CoreDev.DataObjectInspector
                         if (inspectedOVar.matchesFilter.Value)
                         {
                             inspectedOVar.ObservableVarInfoDO.isExpandedView.Value = true;
+                            inspectedOVar.Focus.Fire();
                             break;
                         }
                     }
