@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Reflection;
+﻿using System;
 using System.Text.RegularExpressions;
 using CoreDev.Framework;
 using CoreDev.Observable;
@@ -43,9 +42,8 @@ namespace CoreDev.DataObjectInspector
 
                 this.name = this.observableVarInfoDO.Name;
                 this.rearrangeableScrollViewItem = this.GetComponentInChildren<RearrangeableScrollViewItem>();
-                rearrangeableScrollViewItem.RegisterForSiblingIndexChanged(OnSiblingIndexChanged);
-
                 this.text = this.GetComponentInChildren<Text>();
+
                 CompleteBinding();
             }
 
@@ -60,13 +58,10 @@ namespace CoreDev.DataObjectInspector
         {
             if (this.inspectedObservableVarDO != null && this.dataObjectInspectorDO != null)
             {
+                this.rearrangeableScrollViewItem.RegisterForSiblingIndexChanged(OnSiblingIndexChanged);
                 this.inspectedObservableVarDO.matchesFilter.RegisterForChanges(OnMatchesFilterChanged);
-                this.inspectedObservableVarDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
-                this.inspectedObservableVarDO.printToConsole.RegisterForChanges(OnPrintToConsoleChanged);
-
-                this.observableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
+                this.inspectedObservableVarDO.cardText.RegisterForChanges(OnCardTextChanged);
                 this.observableVarInfoDO.orderIndex.RegisterForChanges(OnOrderIndexChanged);
-
                 this.dataObjectInspectorDO.observableVarFilterString.RegisterForChanges(OnObservableVarFilterString);
             }
         }
@@ -77,18 +72,9 @@ namespace CoreDev.DataObjectInspector
                 dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == dataObject as DataObjectInspectorDO)
             {
                 this.rearrangeableScrollViewItem?.UnregisterFromSiblingIndexChanged(OnSiblingIndexChanged);
-
                 this.inspectedObservableVarDO?.matchesFilter.UnregisterFromChanges(OnMatchesFilterChanged);
-                this.inspectedObservableVarDO?.isInspected?.UnregisterFromChanges(OnIsInspectedChanged);
-                this.inspectedObservableVarDO?.printToConsole.UnregisterFromChanges(OnPrintToConsoleChanged);
-
-                this.observableVarInfoDO?.isExpandedView?.UnregisterFromChanges(OnIsExpandedViewChanged);
+                this.inspectedObservableVarDO?.cardText.UnregisterFromChanges(OnCardTextChanged);
                 this.observableVarInfoDO?.orderIndex?.UnregisterFromChanges(OnOrderIndexChanged);
-                
-                this.observableVarInfoDO?.UnregisterFromValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
-                this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
-                this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
-
                 this.dataObjectInspectorDO.observableVarFilterString?.UnregisterFromChanges(OnObservableVarFilterString);
 
                 this.rearrangeableScrollViewItem = null;
@@ -101,9 +87,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS - RearrangeableScrollViewItem 
-        //*====================
+//*====================
+//* CALLBACKS - RearrangeableScrollViewItem 
+//*====================
         private void OnSiblingIndexChanged(int obj)
         {
             this.observableVarInfoDO.orderIndex.Value = obj;
@@ -117,47 +103,6 @@ namespace CoreDev.DataObjectInspector
         {
             this.transform.SetSiblingIndex(obj.Value);
             this.name = this.observableVarInfoDO.Name + ":" + this.observableVarInfoDO.orderIndex.Value + ":" + this.transform.GetSiblingIndex();
-        }
-
-
-//*====================
-//* CALLBACKS - InspectedDataObjectDO
-//*====================
-        private void OnIsInspectedChanged(ObservableVar<bool> oIsInspected)
-        {
-            if (oIsInspected.Value)
-            {
-                this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, RefreshDisplayedValues);
-                this.observableVarInfoDO.RegisterForModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
-                this.RefreshDisplayedValues();
-            }
-            else
-            {
-                this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshDisplayedValues);
-                this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshDisplayedValues);
-            }
-        }
-
-        private void OnPrintToConsoleChanged(ObservableVar<bool> obj)
-        {
-            if(obj.Value)
-            {
-                this.observableVarInfoDO.RegisterForValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
-            }
-            else
-            {
-                this.observableVarInfoDO?.UnregisterFromValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
-            }
-        }
-
-        private void OnValueChangeBlocked(string moderatorName)
-        {
-            Debug.LogFormat("[Frame {0}] Change to {1} blocked by Moderator: {2}", Time.frameCount, this.observableVarInfoDO.Name, moderatorName);
-        }
-
-        private void OnIsExpandedViewChanged(ObservableVar<bool> obj)
-        {
-            this.RefreshDisplayedValues();
         }
 
 
@@ -181,6 +126,11 @@ namespace CoreDev.DataObjectInspector
         private void OnMatchesFilterChanged(ObservableVar<bool> obj)
         {
             this.gameObject.SetActive(obj.Value);
+        }
+
+        private void OnCardTextChanged(ObservableVar<string> obj)
+        {
+            this.text.text = obj.Value;
         }
 
 
@@ -210,72 +160,6 @@ namespace CoreDev.DataObjectInspector
                 this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value = !isExpandedView;
                 potentialClick = false;
             }
-        }
-
-
-//*====================
-//* PRIVATE
-//*====================
-        private void RefreshDisplayedValues()
-        {
-            if (inspectedObservableVarDO == null) { return; }
-
-            const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
-
-            PropertyInfo propertyInfo = observableVarInfoDO.FieldType.GetProperty("Value");
-            object currentValue = propertyInfo.GetValue(this.observableVarInstance);
-
-            string displayText = string.Empty;
-
-            if (observableVarInfoDO.IsCollection)
-            {
-                ICollection collection = currentValue as ICollection;
-                displayText = $"(COLLECTION) {this.inspectedObservableVarDO.varName.Value} Count: {collection.Count}";
-
-                if (this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value)
-                {
-                    int index = 0;
-                    foreach (var item in collection)
-                    {
-                        displayText += $"\r\n{index}: {item}";
-                        index++;
-                    }
-                }
-            }
-            else
-            {
-                displayText = $"{inspectedObservableVarDO.varName.Value} : {inspectedObservableVarDO.ObservableVarInstance}";
-            }
-
-            FieldInfo moderatorListFieldInfo = inspectedObservableVarDO.ObservableVarInfoDO.FieldType.GetField("moderators", bindingFlags);
-            if (moderatorListFieldInfo != null)
-            {
-                IEnumerable moderators = moderatorListFieldInfo.GetValue(this.inspectedObservableVarDO.ObservableVarInstance) as IEnumerable;
-
-                foreach (object moderatorListObj in moderators)
-                {
-                    PropertyInfo keyProp = moderatorListObj.GetType().GetProperty("Key");
-                    int priority = (int)keyProp.GetValue(moderatorListObj);
-
-                    PropertyInfo valProp = moderatorListObj.GetType().GetProperty("Value");
-                    IEnumerable moderatorList = valProp.GetValue(moderatorListObj) as IEnumerable;
-
-                    foreach (object moderator in moderatorList)
-                    {
-                        PropertyInfo methodProperty = moderator.GetType().GetProperty("Method", bindingFlags);
-                        object moderatorMethodObj = methodProperty.GetValue(moderator);
-                        PropertyInfo namePropertyInfo = moderatorMethodObj.GetType().GetProperty("Name", bindingFlags);
-                        displayText += $"\nModerator {priority}: {namePropertyInfo.GetValue(moderatorMethodObj)}";
-                    }
-                }
-            }
-
-            if (this.inspectedObservableVarDO.printToConsole.Value)
-            {
-                Debug.LogFormat("[Frame {0}] {1}", Time.frameCount, displayText);
-            }
-
-            this.text.text = displayText;
         }
     }
 }

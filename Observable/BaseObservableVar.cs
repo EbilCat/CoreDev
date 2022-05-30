@@ -14,12 +14,13 @@ namespace CoreDev.Observable
 
     public abstract class ObservableVar<T> : IObservableVar
     {
+        protected event Action<string> ValueChangeBlocked = delegate { };  //This exists only for benefit of InspectedObservableVar
+        protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+        protected event Action ModeratorsChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+
         private const bool warnOnRecursion = true;
         public delegate bool ModerationCheck(ref T incomingValue);
-        protected event Action<string> ValueChangeBlocked = delegate { };
-        protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
         private event Action<ObservableVar<T>> FireCallbacks = delegate { };
-        protected event Action ModeratorsChanged = delegate { };
 
         [SerializeField] protected T currentValue;
         protected T previousValue;
@@ -111,7 +112,7 @@ namespace CoreDev.Observable
 //*====================
 //* REGISTRATION FOR CHANGES
 //*====================
-        public void RegisterForChanges(Action<ObservableVar<T>> callback, bool fireCallbackOnRegistration = true)
+        public virtual void RegisterForChanges(Action<ObservableVar<T>> callback, bool fireCallbackOnRegistration = true)
         {
             FireCallbacks -= callback;
             FireCallbacks += callback;

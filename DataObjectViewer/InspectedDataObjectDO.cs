@@ -4,7 +4,6 @@ using System.Reflection;
 using CoreDev.Framework;
 using CoreDev.Observable;
 
-
 namespace CoreDev.DataObjectInspector
 {
     public class InspectedDataObjectDO : IDataObject
@@ -54,7 +53,7 @@ namespace CoreDev.DataObjectInspector
                     if (typeof(IObservableVar).IsAssignableFrom(observableVarInfoDO.FieldType))
                     {
                         IObservableVar oVarInstance = observableVarInfoDO.GetObservableVarInstance(dataObjectInstance);
-                        InspectedObservableVarDO reflectedObservableVar = new InspectedObservableVarDO(oVarInstance, observableVarInfoDO, this.isInspected);
+                        InspectedObservableVarDO reflectedObservableVar = new InspectedObservableVarDO(this, oVarInstance, observableVarInfoDO, this.isInspected);
                         inspectedOVarDOs.Add(reflectedObservableVar);
                     }
                 }
@@ -62,9 +61,12 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* IDataObject
-        //*====================
-        public void Dispose() { }
+//*====================
+//* IDataObject
+//*====================
+        public void Dispose()
+        {
+            this.inspectedOVarDOs.Clear();
+        }
     }
 }

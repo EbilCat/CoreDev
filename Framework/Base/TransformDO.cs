@@ -43,6 +43,9 @@ namespace CoreDev.Framework
         private OVector3 scale_Local;
         public OVector3 Scale_Local => scale_Local;
 
+        private OBool isActive;
+        public OBool IsActive => isActive;
+
         public Vector3 Forward_World => this.transform.forward;
 
         public Vector3 Right_World => this.transform.right;
@@ -59,11 +62,14 @@ namespace CoreDev.Framework
             this.rot_Local = new OQuaternion(this.transform.localRotation, this);
             this.scale_Local = new OVector3(this.transform.localScale, this);
 
+            this.isActive = new OBool(this.gameObject.activeSelf, this);
+
             this.transformName.RegisterForChanges(OnTransformNameChanged, false);
             this.transformParent.RegisterForChanges(OnParentChanged, false);
             this.pos_Local.RegisterForChanges(OnPos_LocalChanged, false);
             this.rot_Local.RegisterForChanges(OnRot_LocalChanged, false);
             this.scale_Local.RegisterForChanges(OnScale_LocalChanged, false);
+            this.isActive.RegisterForChanges(OnIsActiveChanged, false);
         }
 
         protected override void OnDestroy()
@@ -109,6 +115,11 @@ namespace CoreDev.Framework
             this.transform.localScale = obj.Value;
         }
 
+        private void OnIsActiveChanged(ObservableVar<bool> obj)
+        {
+            this.gameObject.SetActive(obj.Value);
+        }
+
 
 //*====================
 //* Transform Wrappers
@@ -138,7 +149,7 @@ namespace CoreDev.Framework
         {
             Transform transformParent = this.transform.parent;
             Vector3 pos_Parent = pos_World;
-            if(transformParent != null)
+            if (transformParent != null)
             {
                 pos_Parent = transformParent.InverseTransformPoint(pos_World);
             }
@@ -149,9 +160,9 @@ namespace CoreDev.Framework
         {
             Transform transformParent = this.transform.parent;
             Vector3 pos_World = pos_Parent;
-            if(transformParent != null)
+            if (transformParent != null)
             {
-                pos_World =  transformParent.TransformPoint(pos_Parent);
+                pos_World = transformParent.TransformPoint(pos_Parent);
             }
             return pos_World;
         }
@@ -160,7 +171,7 @@ namespace CoreDev.Framework
         {
             Transform transformParent = this.transform.parent;
             Quaternion rot_Parent = rot_World;
-            if(transformParent != null)
+            if (transformParent != null)
             {
                 rot_Parent = Quaternion.Inverse(transformParent.rotation) * rot_World;
             }
@@ -171,7 +182,7 @@ namespace CoreDev.Framework
         {
             Transform transformParent = this.transform.parent;
             Quaternion rot_World = rot_Parent;
-            if(transformParent != null)
+            if (transformParent != null)
             {
                 rot_World = transformParent.rotation * rot_Parent;
             }
@@ -208,6 +219,8 @@ namespace CoreDev.Framework
         OVector3 Pos_Local { get; }
         OQuaternion Rot_Local { get; }
         OVector3 Scale_Local { get; }
+
+        OBool IsActive { get; }
 
         Vector3 WorldToThis(Vector3 pos_World);
         Vector3 ThisToWorld(Vector3 pos_Local);

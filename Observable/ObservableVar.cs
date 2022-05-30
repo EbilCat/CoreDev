@@ -21,6 +21,11 @@ namespace CoreDev.Observable
             this.Value = null;
         }
 
+        public override void RegisterForChanges(Action<ObservableVar<object>> callback, bool fireCallbackOnRegistration = true)
+        {
+            base.RegisterForChanges(callback, false);
+        }
+
         public override void SetValueFromString(string strVal)
         {
             this.Value = null;

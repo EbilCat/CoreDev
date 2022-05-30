@@ -34,12 +34,30 @@ namespace CoreDev.Extensions
             return result;
         }
 
+        public static bool IsValidPosition(this Vector3 vec)
+        {
+            if(vec.IsInfinity() || vec.IsNan())
+            {
+                return false;
+            }
+            return true;
+        }
+
         public static bool IsInfinity(this Vector3 vec)
         {
             bool result = true;
             result &= float.IsInfinity(vec.x);
             result &= float.IsInfinity(vec.y);
             result &= float.IsInfinity(vec.z);
+            return result;
+        }
+        
+        public static bool IsNan(this Vector3 vec)
+        {
+            bool result = true;
+            result &= float.IsNaN(vec.x);
+            result &= float.IsNaN(vec.y);
+            result &= float.IsNaN(vec.z);
             return result;
         }
 
