@@ -13,9 +13,9 @@ namespace CoreDev.DataObjectInspector
         private ReadOnlyCollection<ObservableVarInfoDO> observableVarInfos;
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is InspectedDataObjectDO)
@@ -46,24 +46,27 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS - ObservableVarInfoDO
-        //*====================
+//*====================
+//* CALLBACKS - ObservableVarInfoDO
+//*====================
         private void OnIsBookedMarkedChanged(ObservableVar<bool> oIsBookedMarked)
         {
             ObservableVarInfoDO observableVarInfoDO = oIsBookedMarked.DataObject as ObservableVarInfoDO;
             IObservableVar observableVarInstance = observableVarInfoDO.GetObservableVarInstance(this.inspectedDataObjectDO.DataObjectInstance);
 
-            if (oIsBookedMarked.Value)
+            if (observableVarInstance != null)
             {
-                observableVarInfoDO.RegisterForValueChanges(observableVarInstance, RefreshName);
-            }
-            else
-            {
-                observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshName);
-            }
+                if (oIsBookedMarked.Value)
+                {
+                    observableVarInfoDO.RegisterForValueChanges(observableVarInstance, RefreshName);
+                }
+                else
+                {
+                    observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshName);
+                }
 
-            this.RefreshName();
+                this.RefreshName();
+            }
         }
 
         private void RefreshName()
@@ -76,16 +79,19 @@ namespace CoreDev.DataObjectInspector
                 {
                     IObservableVar observableVarInstance = observableVarInfoDO.GetObservableVarInstance(this.inspectedDataObjectDO.DataObjectInstance);
 
-                    if (observableVarInfoDO.IsCollection)
+                    if (observableVarInstance != null)
                     {
-                        ICollection collection = observableVarInfoDO.GetValue(observableVarInstance) as ICollection;
-                        name += $"{Environment.NewLine}{observableVarInfoDO.Name}:{collection.Count}";
-                    }
-                    else
-                    {
-                        object val = observableVarInfoDO.GetValue(observableVarInstance);
-                        string varStr = (val == null) ? "<NULL>" : val.ToString();
-                        name += $"{Environment.NewLine}{observableVarInfoDO.Name}:{varStr}";
+                        if (observableVarInfoDO.IsCollection)
+                        {
+                            ICollection collection = observableVarInfoDO.GetValue(observableVarInstance) as ICollection;
+                            name += $"{Environment.NewLine}{observableVarInfoDO.Name}:{collection.Count}";
+                        }
+                        else
+                        {
+                            object val = observableVarInfoDO.GetValue(observableVarInstance);
+                            string varStr = (val == null) ? "<NULL>" : val.ToString();
+                            name += $"{Environment.NewLine}{observableVarInfoDO.Name}:{varStr}";
+                        }
                     }
                 }
             }

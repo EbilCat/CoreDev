@@ -53,8 +53,11 @@ namespace CoreDev.DataObjectInspector
                     if (typeof(IObservableVar).IsAssignableFrom(observableVarInfoDO.FieldType))
                     {
                         IObservableVar oVarInstance = observableVarInfoDO.GetObservableVarInstance(dataObjectInstance);
-                        InspectedObservableVarDO reflectedObservableVar = new InspectedObservableVarDO(this, oVarInstance, observableVarInfoDO, this.isInspected);
-                        inspectedOVarDOs.Add(reflectedObservableVar);
+                        if (oVarInstance != null)
+                        {
+                            InspectedObservableVarDO reflectedObservableVar = new InspectedObservableVarDO(this, oVarInstance, observableVarInfoDO, this.isInspected);
+                            inspectedOVarDOs.Add(reflectedObservableVar);
+                        }
                     }
                 }
             }

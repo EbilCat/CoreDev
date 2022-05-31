@@ -237,5 +237,10 @@ namespace CoreDev.Observable
             List<ModerationCheck> moderationChecks = this.moderators[priority];
             return moderationChecks;
         }
+
+        public virtual void SetValueFromString(string strVal)
+        {
+            Debug.LogWarning($"No override for SetValueFromString for type {this.GetType()}");
+        }
     }
 }
