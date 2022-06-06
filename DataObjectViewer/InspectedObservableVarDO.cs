@@ -65,12 +65,13 @@ namespace CoreDev.DataObjectInspector
             if (this.isInspected.Value || this.printToConsole.Value)
             {
                 this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, OnValueChanged);
+                this.observableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
                 this.OnValueChanged();
             }
             else
             {
                 this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, OnValueChanged);
-
+                this.observableVarInfoDO?.isExpandedView.UnregisterFromChanges(OnIsExpandedViewChanged);
             }
 
             if (this.printToConsole.Value)
@@ -85,6 +86,11 @@ namespace CoreDev.DataObjectInspector
                 this.observableVarInfoDO.UnregisterFromValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
                 this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, OnValueChanged);
             }
+        }
+
+        private void OnIsExpandedViewChanged(ObservableVar<bool> obj)
+        {
+            this.OnValueChanged();
         }
 
         private void OnCardTextChanged(ObservableVar<string> obj)
@@ -154,6 +160,14 @@ namespace CoreDev.DataObjectInspector
                 }
             }
 
+            if (this.ObservableVarInfoDO.isExpandedView.Value)
+            {
+                string callbacks = $"{(this.observableVarInstance as IObservableVar).GetCallbacks()}";
+                if (callbacks.Length > 0)
+                {
+                    displayText += $"\n{callbacks}";
+                }
+            }
             this.cardText.Value = displayText;
         }
     }

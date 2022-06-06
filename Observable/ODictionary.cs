@@ -237,5 +237,16 @@ namespace CoreDev.Observable
             List<ModerationCheck> moderationChecks = this.moderators[priority];
             return moderationChecks;
         }
+
+        public string GetCallbacks()
+        {
+            Delegate[] invocationList = FireElementAddedCallback.GetInvocationList();
+            string callbacks = string.Empty;
+            foreach (Delegate invocation in invocationList)
+            {
+                callbacks = $"{invocation.Method.DeclaringType.Name}.{invocation.Method.Name}\r\n";
+            }
+            return callbacks;
+        }
     }
 }

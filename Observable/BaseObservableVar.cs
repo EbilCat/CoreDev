@@ -20,7 +20,7 @@ namespace CoreDev.Observable
 
         private const bool warnOnRecursion = true;
         public delegate bool ModerationCheck(ref T incomingValue);
-        private event Action<ObservableVar<T>> FireCallbacks = delegate { };
+        private event Action<ObservableVar<T>> FireCallbacks;
 
         [SerializeField] protected T currentValue;
         protected T previousValue;
@@ -72,17 +72,20 @@ namespace CoreDev.Observable
 
                         this.ValueChanged();
 
-                        Delegate[] invocationList = FireCallbacks.GetInvocationList();
-                        foreach (Delegate invocation in invocationList)
+                        Delegate[] invocationList = FireCallbacks?.GetInvocationList();
+                        if (invocationList != null)
                         {
-                            Action<ObservableVar<T>> action = invocation as Action<ObservableVar<T>>;
-                            try
+                            foreach (Delegate invocation in invocationList)
                             {
-                                action.Invoke(this);
-                            }
-                            catch (Exception e)
-                            {
-                                Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                                Action<ObservableVar<T>> action = invocation as Action<ObservableVar<T>>;
+                                try
+                                {
+                                    action.Invoke(this);
+                                }
+                                catch (Exception e)
+                                {
+                                    Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                                }
                             }
                         }
                     }
@@ -120,6 +123,7 @@ namespace CoreDev.Observable
             {
                 try
                 {
+                    // Debug.Log($"{callback.Method.DeclaringType.Name}.{callback.Method.Name}");
                     callback(this);
                 }
                 catch (Exception e)
@@ -224,6 +228,26 @@ namespace CoreDev.Observable
         protected virtual T ModerateValue(T input)
         {
             return input;
+        }
+
+        public string GetCallbacks()
+        {
+            string callbacks = string.Empty;
+
+            Delegate[] invocationList = FireCallbacks?.GetInvocationList();
+            if (invocationList != null)
+            {
+                for (int i = 0; i < invocationList.Length; i++)
+                {
+                    Delegate invocation = invocationList[i];
+                    callbacks = $"{invocation.Method.DeclaringType.Name}.{invocation.Method.Name}";
+                    if (i < invocationList.Length - 1)
+                    {
+                        callbacks += "\r\n";
+                    }
+                }
+            }
+            return callbacks;
         }
     }
 }

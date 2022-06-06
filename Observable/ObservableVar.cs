@@ -9,6 +9,8 @@ namespace CoreDev.Observable
     public interface IObservableVar
     {
         IDataObject DataObject { get; set; }
+
+        string GetCallbacks();
     }
 
     public class OAction : ObservableVar<object>
