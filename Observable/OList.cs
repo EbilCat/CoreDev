@@ -12,12 +12,13 @@ namespace CoreDev.Observable
     {
         public delegate bool ModerationCheck(ref T incomingValue, OListOperation op);
 
-        protected event Action ModeratorsChanged = delegate { };
+        protected event Action<string> ValueChangeBlocked = delegate { }; //This exists only for benefit of InspectedObservableVar
+        protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+        protected event Action ModeratorsChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+        protected event Action CallbacksChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
 
-
-        protected event Action<string> ValueChangeBlocked = delegate { };
-        protected event Action ValueChanged = delegate { };
         protected IDataObject dataObject;
 
         public IDataObject DataObject
@@ -72,7 +73,7 @@ namespace CoreDev.Observable
         //*====================
         //* EVENT REGISTRATION
         //*====================
-        private event Action<OList<T>, T> FireElementAddedCallback = delegate { };
+        private event Action<OList<T>, T> FireElementAddedCallback;
         public void RegisterForElementAdded(Action<OList<T>, T> callback, bool fireCallbackForExistingElements = true)
         {
             if (fireCallbackForExistingElements)
@@ -84,37 +85,43 @@ namespace CoreDev.Observable
             }
             FireElementAddedCallback -= callback;
             FireElementAddedCallback += callback;
+            this.CallbacksChanged();
         }
 
         public void UnregisterFromElementAdded(Action<OList<T>, T> callback)
         {
             FireElementAddedCallback -= callback;
+            this.CallbacksChanged();
         }
 
 
-        private event Action<OList<T>, T> FireElementRemovedCallback = delegate { };
+        private event Action<OList<T>, T> FireElementRemovedCallback;
         public void RegisterForElementRemoved(Action<OList<T>, T> callback)
         {
             FireElementRemovedCallback -= callback;
             FireElementRemovedCallback += callback;
+            this.CallbacksChanged();
         }
 
         public void UnregisterFromElementRemoved(Action<OList<T>, T> callback)
         {
             FireElementRemovedCallback -= callback;
+            this.CallbacksChanged();
         }
 
 
-        private event Action<OList<T>> FireElementsReorderedCallback = delegate { };
+        private event Action<OList<T>> FireElementsReorderedCallback;
         public void RegisterForElementsReordered(Action<OList<T>> callback)
         {
             FireElementsReorderedCallback -= callback;
             FireElementsReorderedCallback += callback;
+            this.CallbacksChanged();
         }
 
         public void UnregisterFromElementsReordered(Action<OList<T>> callback)
         {
             FireElementsReorderedCallback -= callback;
+            this.CallbacksChanged();
         }
 
 
@@ -129,8 +136,8 @@ namespace CoreDev.Observable
             {
                 base.Add(item);
                 this.ValueChanged();
-                this.FireElementAddedCallback(this, item);
-                this.FireElementsReorderedCallback(this);
+                this.FireElementAddedCallback?.Invoke(this, item);
+                this.FireElementsReorderedCallback?.Invoke(this);
             }
             return moderationPassed;
         }
@@ -150,8 +157,8 @@ namespace CoreDev.Observable
             {
                 base.Insert(index, item);
                 this.ValueChanged();
-                this.FireElementAddedCallback(this, item);
-                this.FireElementsReorderedCallback(this);
+                this.FireElementAddedCallback?.Invoke(this, item);
+                this.FireElementsReorderedCallback?.Invoke(this);
             }
             return moderationPassed;
         }
@@ -180,8 +187,8 @@ namespace CoreDev.Observable
                 if (isRemoved)
                 {
                     this.ValueChanged();
-                    this.FireElementRemovedCallback(this, item);
-                    this.FireElementsReorderedCallback(this);
+                    this.FireElementRemovedCallback?.Invoke(this, item);
+                    this.FireElementsReorderedCallback?.Invoke(this);
                 }
             }
 
@@ -214,8 +221,8 @@ namespace CoreDev.Observable
             {
                 base.RemoveAt(index);
                 this.ValueChanged();
-                this.FireElementRemovedCallback(this, item);
-                this.FireElementsReorderedCallback(this);
+                this.FireElementRemovedCallback?.Invoke(this, item);
+                this.FireElementsReorderedCallback?.Invoke(this);
             }
             return moderationPassed;
         }
@@ -235,42 +242,42 @@ namespace CoreDev.Observable
         {
             base.Reverse(index, count);
             this.ValueChanged();
-            this.FireElementsReorderedCallback(this);
+            this.FireElementsReorderedCallback?.Invoke(this);
         }
 
         public new void Reverse()
         {
             base.Reverse();
             this.ValueChanged();
-            this.FireElementsReorderedCallback(this);
+            this.FireElementsReorderedCallback?.Invoke(this);
         }
 
         public new void Sort(Comparison<T> comparison)
         {
             base.Sort(comparison);
             this.ValueChanged();
-            this.FireElementsReorderedCallback(this);
+            this.FireElementsReorderedCallback?.Invoke(this);
         }
 
         public new void Sort(int index, int count, IComparer<T> comparer)
         {
             base.Sort(index, count, comparer);
             this.ValueChanged();
-            this.FireElementsReorderedCallback(this);
+            this.FireElementsReorderedCallback?.Invoke(this);
         }
 
         public new void Sort()
         {
             base.Sort();
             this.ValueChanged();
-            this.FireElementsReorderedCallback(this);
+            this.FireElementsReorderedCallback?.Invoke(this);
         }
 
         public new void Sort(IComparer<T> comparer)
         {
             base.Sort(comparer);
             this.ValueChanged();
-            this.FireElementsReorderedCallback(this);
+            this.FireElementsReorderedCallback?.Invoke(this);
         }
 
         public new void Clear()
@@ -300,11 +307,11 @@ namespace CoreDev.Observable
 
                 if (removalModerationPassed && additionModerationPassed)
                 {
-                    this.FireElementRemovedCallback(this, itemToRemove);
+                    this.FireElementRemovedCallback?.Invoke(this, itemToRemove);
                     base[index] = value;
                     this.ValueChanged();
-                    this.FireElementAddedCallback(this, value);
-                    this.FireElementsReorderedCallback(this);
+                    this.FireElementAddedCallback?.Invoke(this, value);
+                    this.FireElementsReorderedCallback?.Invoke(this);
                 }
             }
         }
@@ -350,17 +357,120 @@ namespace CoreDev.Observable
             List<ModerationCheck> moderationChecks = this.moderators[priority];
             return moderationChecks;
         }
-        
+
 
         public string GetCallbacks()
         {
-            Delegate[] invocationList = FireElementAddedCallback.GetInvocationList();
             string callbacks = string.Empty;
-            foreach (Delegate invocation in invocationList)
+
+            Delegate[] elementAddedCallbackInvocationList = FireElementAddedCallback?.GetInvocationList();
+            if (elementAddedCallbackInvocationList != null)
             {
-                callbacks = $"{invocation.Method.DeclaringType.Name}.{invocation.Method.Name}\r\n";
+                foreach (Delegate invocation in elementAddedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks += $"ADD: {invocation.Target.GetType().Name} ({monoBehaviour.name})\r\n";
+                    }
+                    else
+                    {
+                        callbacks += $"ADD: {invocation.Target.GetType().Name}\r\n";
+                    }
+                }
             }
+
+            Delegate[] elementRemovedCallbackInvocationList = FireElementRemovedCallback?.GetInvocationList();
+            if (elementRemovedCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in elementRemovedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks += $"REMOVE: {invocation.Target.GetType().Name} ({monoBehaviour.name})\r\n";
+                    }
+                    else
+                    {
+                        callbacks += $"REMOVE: {invocation.Target.GetType().Name}\r\n";
+                    }
+                }
+            }
+
+            Delegate[] elementReorderedCallbackInvocationList = FireElementsReorderedCallback?.GetInvocationList();
+            if (elementReorderedCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in elementReorderedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks += $"REORDERED: {invocation.Target.GetType().Name} ({monoBehaviour.name})\r\n";
+                    }
+                    else
+                    {
+                        callbacks += $"REORDERED: {invocation.Target.GetType().Name}\r\n";
+                    }
+                }
+            }
+
             return callbacks;
+        }
+
+        public void GetCallbacks(List<string> callbacks)
+        {
+            callbacks.Clear();
+
+            Delegate[] elementAddedCallbackInvocationList = FireElementAddedCallback?.GetInvocationList();
+            if (elementAddedCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in elementAddedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks.Add($"ADD: {invocation.Target.GetType().Name} ({monoBehaviour.name})");
+                    }
+                    else
+                    {
+                        callbacks.Add($"ADD: {invocation.Target.GetType().Name}");
+                    }
+                }
+            }
+
+            Delegate[] elementRemovedCallbackInvocationList = FireElementRemovedCallback?.GetInvocationList();
+            if (elementRemovedCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in elementRemovedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks.Add($"REMOVE: {invocation.Target.GetType().Name} ({monoBehaviour.name})");
+                    }
+                    else
+                    {
+                        callbacks.Add($"REMOVE: {invocation.Target.GetType().Name}");
+                    }
+                }
+            }
+
+            Delegate[] elementReorderedCallbackInvocationList = FireElementsReorderedCallback?.GetInvocationList();
+            if (elementReorderedCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in elementReorderedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks.Add($"REORDERED: {invocation.Target.GetType().Name} ({monoBehaviour.name})");
+                    }
+                    else
+                    {
+                        callbacks.Add($"REORDERED: {invocation.Target.GetType().Name}");
+                    }
+                }
+            }
         }
 
         public virtual void SetValueFromString(string strVal)

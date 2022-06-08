@@ -17,7 +17,8 @@ namespace CoreDev.Observable
         protected event Action<string> ValueChangeBlocked = delegate { };  //This exists only for benefit of InspectedObservableVar
         protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
         protected event Action ModeratorsChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
-
+        protected event Action CallbacksChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+        
         private const bool warnOnRecursion = true;
         public delegate bool ModerationCheck(ref T incomingValue);
         private event Action<ObservableVar<T>> FireCallbacks;
@@ -131,11 +132,13 @@ namespace CoreDev.Observable
                     Debug.LogException(new Exception("ObservableVarCallbackException", e));
                 }
             }
+            this.CallbacksChanged();
         }
 
         public void UnregisterFromChanges(Action<ObservableVar<T>> callback)
         {
             FireCallbacks -= callback;
+            this.CallbacksChanged();
         }
 
 
@@ -240,7 +243,17 @@ namespace CoreDev.Observable
                 for (int i = 0; i < invocationList.Length; i++)
                 {
                     Delegate invocation = invocationList[i];
-                    callbacks = $"{invocation.Method.DeclaringType.Name}.{invocation.Method.Name}";
+
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks += $"{invocation.Target.GetType().Name} ({monoBehaviour.name})";
+                    }
+                    else
+                    {
+                        callbacks += $"{invocation.Target.GetType().Name}";
+                    }
+
                     if (i < invocationList.Length - 1)
                     {
                         callbacks += "\r\n";
@@ -248,6 +261,30 @@ namespace CoreDev.Observable
                 }
             }
             return callbacks;
+        }
+
+        public void GetCallbacks(List<string> callbacks)
+        {
+            callbacks.Clear();
+
+            Delegate[] invocationList = FireCallbacks?.GetInvocationList();
+            if (invocationList != null)
+            {
+                for (int i = 0; i < invocationList.Length; i++)
+                {
+                    Delegate invocation = invocationList[i];
+
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks.Add($"{invocation.Target.GetType().Name} ({monoBehaviour.name})");
+                    }
+                    else
+                    {
+                        callbacks.Add($"{invocation.Target.GetType().Name}");
+                    }
+                }
+            }
         }
     }
 }

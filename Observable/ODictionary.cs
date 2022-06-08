@@ -11,10 +11,13 @@ namespace CoreDev.Observable
     {
         public delegate bool ModerationCheck(ref TKey incomingKey, ref TValue incomingValue, ODictionaryOperation op);
 
-        protected event Action ModeratorsChanged = delegate { };
+        protected event Action<string> ValueChangeBlocked = delegate { }; //This exists only for benefit of InspectedObservableVar
+        protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+        protected event Action ModeratorsChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+        protected event Action CallbacksChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
+
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
 
-        protected event Action ValueChanged = delegate { };
         protected IDataObject dataObject;
 
         public IDataObject DataObject
@@ -66,11 +69,13 @@ namespace CoreDev.Observable
             }
             FireElementAddedCallback -= callback;
             FireElementAddedCallback += callback;
+            this.CallbacksChanged();
         }
 
         public void UnregisterFromElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
         {
             FireElementAddedCallback -= callback;
+            this.CallbacksChanged();
         }
 
 
@@ -79,11 +84,13 @@ namespace CoreDev.Observable
         {
             FireElementRemovedCallback -= callback;
             FireElementRemovedCallback += callback;
+            this.CallbacksChanged();
         }
 
         public void UnregisterFromElementRemoved(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
         {
             FireElementRemovedCallback -= callback;
+            this.CallbacksChanged();
         }
 
 
@@ -98,7 +105,7 @@ namespace CoreDev.Observable
             {
                 base.Add(key, value);
                 this.ValueChanged();
-                this.FireElementAddedCallback(this, key, value);
+                this.FireElementAddedCallback?.Invoke(this, key, value);
             }
             return moderationPassed;
         }
@@ -119,7 +126,7 @@ namespace CoreDev.Observable
                     if (isRemoved)
                     {
                         this.ValueChanged();
-                        this.FireElementRemovedCallback(this, key, value);
+                        this.FireElementRemovedCallback?.Invoke(this, key, value);
                     }
                 }
             }
@@ -189,10 +196,10 @@ namespace CoreDev.Observable
 
                 if (removalModerationPassed && additionModerationPassed)
                 {
-                    this.FireElementRemovedCallback(this, key, itemToRemove);
+                    this.FireElementRemovedCallback?.Invoke(this, key, itemToRemove);
                     base[key] = value;
                     this.ValueChanged();
-                    this.FireElementAddedCallback(this, key, value);
+                    this.FireElementAddedCallback?.Invoke(this, key, value);
                 }
             }
         }
@@ -240,15 +247,84 @@ namespace CoreDev.Observable
 
         public string GetCallbacks()
         {
-            Delegate[] invocationList = FireElementAddedCallback.GetInvocationList();
             string callbacks = string.Empty;
-            foreach (Delegate invocation in invocationList)
+
+            Delegate[] elementAddedCallbackInvocationList = FireElementAddedCallback?.GetInvocationList();
+            if (elementAddedCallbackInvocationList != null)
             {
-                callbacks = $"{invocation.Method.DeclaringType.Name}.{invocation.Method.Name}\r\n";
+                foreach (Delegate invocation in elementAddedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks += $"{invocation.Target.GetType().Name} ({monoBehaviour.name})\r\n";
+                    }
+                    else
+                    {
+                        callbacks += $"{invocation.Target.GetType().Name}\r\n";
+                    }
+                }
             }
+
+            Delegate[] elementRemovedCallbackInvocationList = FireElementRemovedCallback?.GetInvocationList();
+            if (elementRemovedCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in elementRemovedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks += $"{invocation.Target.GetType().Name} ({monoBehaviour.name})\r\n";
+                    }
+                    else
+                    {
+                        callbacks += $"{invocation.Target.GetType().Name}\r\n";
+                    }
+                }
+            }
+
             return callbacks;
         }
-        
+
+        public void GetCallbacks(List<string> callbacks)
+        {
+            callbacks.Clear();
+
+            Delegate[] elementAddedCallbackInvocationList = FireElementAddedCallback?.GetInvocationList();
+            if (elementAddedCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in elementAddedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks.Add($"{invocation.Target.GetType().Name} ({monoBehaviour.name})");
+                    }
+                    else
+                    {
+                        callbacks.Add($"{invocation.Target.GetType().Name}");
+                    }
+                }
+            }
+
+            Delegate[] elementRemovedCallbackInvocationList = FireElementRemovedCallback?.GetInvocationList();
+            if (elementRemovedCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in elementRemovedCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks.Add($"{invocation.Target.GetType().Name} ({monoBehaviour.name})");
+                    }
+                    else
+                    {
+                        callbacks.Add($"{invocation.Target.GetType().Name}");
+                    }
+                }
+            }
+        }
+
         public virtual void SetValueFromString(string strVal)
         {
             Debug.LogWarning($"No override for SetValueFromString for type {this.GetType()}");

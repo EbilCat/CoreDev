@@ -19,6 +19,7 @@ namespace CoreDev.DataObjectInspector
         private EventInfo valueChangeBlockedEventInfo;
         private EventInfo valueChangedEventInfo;
         private EventInfo moderatorsChangedEventInfo;
+        private EventInfo callbacksChangedEventInfo;
 
         public Type EnclosedValueType { get; private set; }
         public bool IsCollection { get; private set; }
@@ -42,6 +43,7 @@ namespace CoreDev.DataObjectInspector
             this.valueChangeBlockedEventInfo = this.FieldType.GetEvent("ValueChangeBlocked", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             this.valueChangedEventInfo = this.FieldType.GetEvent("ValueChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             this.moderatorsChangedEventInfo = this.FieldType.GetEvent("ModeratorsChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+            this.callbacksChangedEventInfo = this.FieldType.GetEvent("CallbacksChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
             this.EnclosedValueType = this.valuePropertyInfo.PropertyType;
             this.IsCollection = typeof(ICollection).IsAssignableFrom(this.EnclosedValueType);
@@ -65,7 +67,7 @@ namespace CoreDev.DataObjectInspector
 
             if (oVar == null)
             {
-                Debug.LogError($"ObservableVar {fieldInfo.Name} in {fieldInfo.DeclaringType} is NULL. It has likely not been initialized.");
+                Debug.LogError($"ObservableVar {fieldInfo.Name} in {dataObjectInstance.GetType().Name} is NULL. It has likely not been initialized.");
             }
 
             return oVar;
@@ -126,6 +128,19 @@ namespace CoreDev.DataObjectInspector
                 eventHandlerHolder[0] = callback;
                 moderatorsChangedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
             }
+        }
+
+        public void RegisterForCallbackChanges(IObservableVar observableVarInstance, Action callback)
+        {
+            eventHandlerHolder[0] = callback;
+            callbacksChangedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
+            callbacksChangedEventInfo.GetAddMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
+        }
+        
+        public void UnregisterFromCallbackChanges(IObservableVar observableVarInstance, Action callback)
+        {
+            eventHandlerHolder[0] = callback;
+            callbacksChangedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
         }
     }
 }

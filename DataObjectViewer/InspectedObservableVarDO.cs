@@ -20,6 +20,7 @@ namespace CoreDev.DataObjectInspector
 
         public OString varName;
         public OBool printToConsole;
+        public OBool showCallbacks;
         public OAction Focus;
 
         public OString cardText;
@@ -32,6 +33,7 @@ namespace CoreDev.DataObjectInspector
             this.isInspected = isInspected;
             this.matchesFilter = new OBool(true, this);
             this.printToConsole = new OBool(false, this);
+            this.showCallbacks = new OBool(false, this);
             this.Focus = new OAction(this);
             this.cardText = new OString(string.Empty, this);
 
@@ -42,9 +44,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* IDataObject
-        //*====================
+//*====================
+//* IDataObject
+//*====================
         public void Dispose()
         {
             this.isInspected.UnregisterFromChanges(EvaluateEventSubscription);
@@ -57,9 +59,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS
-        //*====================
+//*====================
+//* CALLBACKS
+//*====================
         private void EvaluateEventSubscription(ObservableVar<bool> obj)
         {
             if (this.isInspected.Value || this.printToConsole.Value)
@@ -159,15 +161,7 @@ namespace CoreDev.DataObjectInspector
                     }
                 }
             }
-
-            if (this.ObservableVarInfoDO.isExpandedView.Value)
-            {
-                string callbacks = $"{(this.observableVarInstance as IObservableVar).GetCallbacks()}";
-                if (callbacks.Length > 0)
-                {
-                    displayText += $"\n{callbacks}";
-                }
-            }
+            
             this.cardText.Value = displayText;
         }
     }

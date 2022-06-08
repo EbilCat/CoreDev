@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using CoreDev.Extensions;
 using CoreDev.Framework;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace CoreDev.Observable
         IDataObject DataObject { get; set; }
 
         string GetCallbacks();
-        
+        void GetCallbacks(List<string> callbacks);
         void SetValueFromString(string strVal);
     }
 
@@ -607,7 +608,7 @@ namespace CoreDev.Observable
 
 
 //*====================
-//* DateTime 
+//* DateTime
 //*====================
     [Serializable]
     public class ODateTime : ObservableVar<DateTime>
