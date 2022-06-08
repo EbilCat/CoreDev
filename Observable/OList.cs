@@ -362,5 +362,10 @@ namespace CoreDev.Observable
             }
             return callbacks;
         }
+
+        public virtual void SetValueFromString(string strVal)
+        {
+            Debug.LogWarning($"No override for SetValueFromString for type {this.GetType()}");
+        }
     }
 }

@@ -11,6 +11,8 @@ namespace CoreDev.Observable
         IDataObject DataObject { get; set; }
 
         string GetCallbacks();
+        
+        void SetValueFromString(string strVal);
     }
 
     public class OAction : ObservableVar<object>

@@ -1,5 +1,4 @@
-﻿using CoreDev.DataObjectInspector;
-using CoreDev.Observable;
+﻿using CoreDev.Observable;
 using UnityEngine;
 
 
@@ -27,10 +26,6 @@ namespace CoreDev.Framework
 
         public Vector3 Scale_World => this.transform.lossyScale;
 
-        [Bookmark]
-        private OString transformName;
-        public OString Name => transformName;
-
         private OTransform transformParent;
         public OTransform TransformParent => transformParent;
 
@@ -43,9 +38,6 @@ namespace CoreDev.Framework
         private OVector3 scale_Local;
         public OVector3 Scale_Local => scale_Local;
 
-        private OBool isActive;
-        public OBool IsActive => isActive;
-
         public Vector3 Forward_World => this.transform.forward;
 
         public Vector3 Right_World => this.transform.right;
@@ -54,27 +46,22 @@ namespace CoreDev.Framework
 //*====================
 //* UNITY
 //*====================
-        protected virtual void Awake()
+        protected override void Awake()
         {
-            this.transformName = new OString(this.transform.name, this);
+            base.Awake();
             this.transformParent = new OTransform(this.transform.parent, this);
             this.pos_Local = new OVector3(this.transform.localPosition, this);
             this.rot_Local = new OQuaternion(this.transform.localRotation, this);
             this.scale_Local = new OVector3(this.transform.localScale, this);
 
-            this.isActive = new OBool(this.gameObject.activeSelf, this);
-
-            this.transformName.RegisterForChanges(OnTransformNameChanged, false);
             this.transformParent.RegisterForChanges(OnParentChanged, false);
             this.pos_Local.RegisterForChanges(OnPos_LocalChanged, false);
             this.rot_Local.RegisterForChanges(OnRot_LocalChanged, false);
             this.scale_Local.RegisterForChanges(OnScale_LocalChanged, false);
-            this.isActive.RegisterForChanges(OnIsActiveChanged, false);
         }
 
         protected override void OnDestroy()
         {
-            this.transformName.UnregisterFromChanges(OnTransformNameChanged);
             this.transformParent.UnregisterFromChanges(OnParentChanged);
             this.pos_Local.UnregisterFromChanges(OnPos_LocalChanged);
             this.rot_Local.UnregisterFromChanges(OnRot_LocalChanged);
@@ -87,11 +74,6 @@ namespace CoreDev.Framework
 //*====================
 //* CALLBACKS - ITransform
 //*====================
-        protected virtual void OnTransformNameChanged(ObservableVar<string> obj)
-        {
-            this.transform.name = obj.Value;
-        }
-
         private void OnParentChanged(ObservableVar<Transform> obj)
         {
             this.transform.SetParent(obj.Value);
@@ -113,11 +95,6 @@ namespace CoreDev.Framework
         protected virtual void OnScale_LocalChanged(ObservableVar<Vector3> obj)
         {
             this.transform.localScale = obj.Value;
-        }
-
-        private void OnIsActiveChanged(ObservableVar<bool> obj)
-        {
-            this.gameObject.SetActive(obj.Value);
         }
 
 
@@ -205,22 +182,14 @@ namespace CoreDev.Framework
 //*====================
 //* INTERFACES
 //*====================
-    public interface IName : IDataObject
+    public interface ITransform : IMonoBehaviour, IDataObject
     {
-        OString Name { get; }
-    }
-
-    public interface ITransform : IName, IDataObject
-    {
-
         Vector3 Pos_World { get; set; }
         Quaternion Rot_World { get; set; }
         Vector3 Scale_World { get; }
         OVector3 Pos_Local { get; }
         OQuaternion Rot_Local { get; }
         OVector3 Scale_Local { get; }
-
-        OBool IsActive { get; }
 
         Vector3 WorldToThis(Vector3 pos_World);
         Vector3 ThisToWorld(Vector3 pos_Local);
