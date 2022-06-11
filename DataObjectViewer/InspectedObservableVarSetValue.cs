@@ -29,6 +29,8 @@ namespace CoreDev.DataObjectInspector
                 this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
                 this.observableVarInfoDO = inspectedObservableVarDO.ObservableVarInfoDO;
                 this.observableVarInstance = inspectedObservableVarDO.ObservableVarInstance;
+                this.dropDown = this.GetComponentInChildren<Dropdown>();
+                this.inputField = this.GetComponentInChildren<InputField>();
 
                 this.inspectedObservableVarDO.Focus.RegisterForChanges(FocusInputField, false);
 
@@ -39,12 +41,7 @@ namespace CoreDev.DataObjectInspector
                 else
                 {
                     this.gameObject.SetActive(true);
-
-                    this.dropDown = this.GetComponentInChildren<Dropdown>();
                     this.dropDown.options.Add(new Dropdown.OptionData("--Select Value--"));
-
-                    this.inputField = this.GetComponentInChildren<InputField>();
-
                     this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
 
                     if (observableVarInfoDO.EnclosedValueType.IsEnum)

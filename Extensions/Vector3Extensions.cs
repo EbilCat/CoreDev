@@ -117,7 +117,6 @@ namespace CoreDev.Extensions
             RaycastHit hitInfo;
             if (Physics.Raycast(fromPos_World, vecToPos, out hitInfo, distance, obstructionsLayerMask))
             {
-                //Debug.Log(hitInfo.collider.name, hitInfo.collider.gameObject);
                 return false;
             }
             return true;
