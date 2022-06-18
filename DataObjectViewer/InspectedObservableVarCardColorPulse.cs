@@ -98,7 +98,6 @@ namespace CoreDev.DataObjectInspector
                 this.observableVarInfoDO.RegisterForValueChangeBlocks(observableVarInstance, StartValueChangeBlockedPulse);
                 this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, StartValueChangedPulse);
                 this.observableVarInfoDO.RegisterForModeratorsChanges(observableVarInstance, StartModeratorsChangedPulse);
-
             }
             else
             {

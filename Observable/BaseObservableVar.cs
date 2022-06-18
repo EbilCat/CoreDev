@@ -18,7 +18,7 @@ namespace CoreDev.Observable
         protected event Action ValueChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
         protected event Action ModeratorsChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
         protected event Action CallbacksChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
-        
+
         private const bool warnOnRecursion = true;
         public delegate bool ModerationCheck(ref T incomingValue);
         private event Action<ObservableVar<T>> FireCallbacks;
@@ -148,21 +148,27 @@ namespace CoreDev.Observable
         public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0, bool applyModeratorImmediately = true)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
-            moderationChecks.Remove(acceptanceCheck);
-            moderationChecks.Add(acceptanceCheck);
-            this.ModeratorsChanged();
-
-            if (applyModeratorImmediately)
+            
+            if(moderationChecks.Contains(acceptanceCheck) == false)
             {
-                this.Value = this.currentValue;
+                moderationChecks.Add(acceptanceCheck);
+                this.ModeratorsChanged();
+
+                if (applyModeratorImmediately)
+                {
+                    this.Value = this.currentValue;
+                }
             }
         }
 
         public void RemoveModerator(ModerationCheck acceptanceCheck, int priority = 0)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
-            moderationChecks.Remove(acceptanceCheck);
-            this.ModeratorsChanged();
+            bool moderatorRemoved = moderationChecks.Remove(acceptanceCheck);
+            if (moderatorRemoved)
+            {
+                this.ModeratorsChanged();
+            }
         }
 
 

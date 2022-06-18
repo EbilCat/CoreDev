@@ -5,6 +5,14 @@ namespace CoreDev.Extensions
 {
     public static class Vector3Extensions
     {
+        public static Vector3 NaN
+        {
+            get
+            {
+                return new Vector3(float.NaN, float.NaN, float.NaN);
+            }
+        }
+
         public static Vector2 SetValues(this Vector2 vec, float? x, float? y)
         {
             vec.x = (x != null) ? vec.x = (float)x : vec.x;
@@ -36,7 +44,7 @@ namespace CoreDev.Extensions
 
         public static bool IsValidPosition(this Vector3 vec)
         {
-            if(vec.IsInfinity() || vec.IsNan())
+            if (vec.IsInfinity() || vec.IsNan())
             {
                 return false;
             }
@@ -51,7 +59,7 @@ namespace CoreDev.Extensions
             result &= float.IsInfinity(vec.z);
             return result;
         }
-        
+
         public static bool IsNan(this Vector3 vec)
         {
             bool result = true;

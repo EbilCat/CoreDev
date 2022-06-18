@@ -37,8 +37,8 @@ namespace CoreDev.Framework
 
         protected virtual void OnDestroy()
         {
-            this.transformName.UnregisterFromChanges(OnTransformNameChanged);
-            this.isActive.UnregisterFromChanges(OnIsActiveChanged);
+            this.transformName?.UnregisterFromChanges(OnTransformNameChanged);
+            this.isActive?.UnregisterFromChanges(OnIsActiveChanged);
 
             DataObjectMasterRepository.DestroyDataObject(this);
             this.UnbindAspect(this);

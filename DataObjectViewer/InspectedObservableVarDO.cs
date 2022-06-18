@@ -52,7 +52,7 @@ namespace CoreDev.DataObjectInspector
             this.isInspected.UnregisterFromChanges(EvaluateEventSubscription);
             this.printToConsole.UnregisterFromChanges(EvaluateEventSubscription);
 
-            this.cardText.UnregisterFromChanges(OnCardTextChanged);
+            observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshCardText);
             observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, OnValueChanged);
             observableVarInfoDO.UnregisterFromValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
             observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, OnModeratorsChanged);
@@ -66,38 +66,40 @@ namespace CoreDev.DataObjectInspector
         {
             if (this.isInspected.Value || this.printToConsole.Value)
             {
-                this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, OnValueChanged);
+                this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, RefreshCardText);
+                this.observableVarInfoDO.RegisterForModeratorsChanges(observableVarInstance, RefreshCardText);
                 this.observableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
-                this.OnValueChanged();
+                this.RefreshCardText();
             }
             else
             {
-                this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, OnValueChanged);
+                this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshCardText);
+                this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, RefreshCardText);
                 this.observableVarInfoDO?.isExpandedView.UnregisterFromChanges(OnIsExpandedViewChanged);
             }
 
             if (this.printToConsole.Value)
             {
-                this.cardText.RegisterForChanges(OnCardTextChanged);
+                this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, OnValueChanged);
                 this.observableVarInfoDO.RegisterForValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
-                this.observableVarInfoDO.RegisterForModeratorsChanges(observableVarInstance, OnValueChanged);
+                this.observableVarInfoDO.RegisterForModeratorsChanges(observableVarInstance, OnModeratorsChanged);
             }
             else
             {
-                this.cardText.UnregisterFromChanges(OnCardTextChanged);
+                this.observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, OnValueChanged);
                 this.observableVarInfoDO.UnregisterFromValueChangeBlocks(observableVarInstance, OnValueChangeBlocked);
-                this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, OnValueChanged);
+                this.observableVarInfoDO.UnregisterFromModeratorsChanges(observableVarInstance, OnModeratorsChanged);
             }
         }
 
         private void OnIsExpandedViewChanged(ObservableVar<bool> obj)
         {
-            this.OnValueChanged();
+            this.RefreshCardText();
         }
 
-        private void OnCardTextChanged(ObservableVar<string> obj)
+        private void OnValueChanged()
         {
-            Debug.LogFormat("[Frame {0}] {1} => {2}", Time.frameCount, this.inspectedDataObject.DataObjectInstance, obj.Value);
+            Debug.LogFormat("[Frame {0}] {1} => {2}", Time.frameCount, this.inspectedDataObject.DataObjectInstance, this.observableVarInstance);
         }
 
         private void OnModeratorsChanged()
@@ -110,7 +112,11 @@ namespace CoreDev.DataObjectInspector
             Debug.LogFormat("[Frame {0}] Change to {1} blocked by Moderator: {2}", Time.frameCount, observableVarInfoDO.Name, moderatorName);
         }
 
-        private void OnValueChanged()
+
+//*====================
+//* PRIVATE
+//*====================
+        private void RefreshCardText()
         {
             const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
 
