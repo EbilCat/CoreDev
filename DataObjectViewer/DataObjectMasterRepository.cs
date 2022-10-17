@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
@@ -11,8 +10,8 @@ namespace CoreDev.Framework
 //* Static
         protected static List<IDataObject> dataObjects = new List<IDataObject>();
         protected static Dictionary<Type, List<IDataObject>> typeSegregatedDOs = new Dictionary<Type, List<IDataObject>>();
-        protected static Action<IDataObject> CreatedDO = delegate { };
-        protected static Action<IDataObject> DisposingDO = delegate { };
+        protected static event Action<IDataObject> CreatedDO = delegate { };
+        protected static event Action<IDataObject> DisposingDO = delegate { };
         public static int DataObjectCount { get { return dataObjects.Count; } }
 
 
@@ -21,23 +20,38 @@ namespace CoreDev.Framework
 //*===========================
         public static void RegisterForCreation(Action<IDataObject> callback, bool fireCallbackForExistingDOs = true)
         {
-            if (fireCallbackForExistingDOs)
+            if (IsCreationCallbackRegistered(callback) == false)
             {
-                for (int i = 0; i < dataObjects.Count; i++)
+                if (fireCallbackForExistingDOs)
                 {
-                    IDataObject dataObject = dataObjects[i];
-                    callback(dataObject);
+                    for (int i = 0; i < dataObjects.Count; i++)
+                    {
+                        IDataObject dataObject = dataObjects[i];
+                        callback(dataObject);
+                    }
                 }
+                CreatedDO += callback;
             }
-
-            CreatedDO -= callback;
-            CreatedDO += callback;
         }
 
         public static void UnregisterFromCreation(Action<IDataObject> callback)
         {
             CreatedDO -= callback;
         }
+
+        public static bool IsCreationCallbackRegistered(Action<IDataObject> callback)
+        {
+            Delegate[] invocationList = CreatedDO.GetInvocationList();
+            foreach (Delegate invocation in invocationList)
+            {
+                if (invocation == callback as Delegate)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
 
         public static void RegisterForDisposing(Action<IDataObject> callback)
         {
@@ -47,15 +61,31 @@ namespace CoreDev.Framework
 
         public static void UnregisterFromDisposing(Action<IDataObject> callback, bool fireCallbackForExistingDOs = true)
         {
-            if (fireCallbackForExistingDOs)
+            if (IsDisposingCallbackRegistered(callback))
             {
-                for (int i = 0; i < dataObjects.Count; i++)
+                if (fireCallbackForExistingDOs)
                 {
-                    IDataObject dataObject = dataObjects[i];
-                    callback(dataObject);
+                    for (int i = 0; i < dataObjects.Count; i++)
+                    {
+                        IDataObject dataObject = dataObjects[i];
+                        callback(dataObject);
+                    }
+                }
+                DisposingDO -= callback;
+            }
+        }
+
+        public static bool IsDisposingCallbackRegistered(Action<IDataObject> callback)
+        {
+            Delegate[] invocationList = DisposingDO.GetInvocationList();
+            foreach (Delegate invocation in invocationList)
+            {
+                if (invocation == callback as Delegate)
+                {
+                    return true;
                 }
             }
-            DisposingDO -= callback;
+            return false;
         }
 
         public static bool IsDataObjectRegistered(IDataObject dataObject)
@@ -162,7 +192,7 @@ namespace CoreDev.Framework
 
         public static bool RegisterDataObject(IDataObject dataObject)
         {
-            if(dataObject == null)
+            if (dataObject == null)
             {
                 Debug.LogWarning("Rejecting attempt to register a NULL DataObject");
                 return false;

@@ -56,7 +56,7 @@ namespace CoreDev.DataObjectInspector
             if (isOn)
             {
                 //Have to delay a frame otherwise select won't work
-                UniversalTimer.ScheduleCallback((x) =>
+                UniversalTimer.ScheduleCallbackUnscaled((x) =>
                 {
                     this.inputField.Select();
                     this.inputField.ActivateInputField();

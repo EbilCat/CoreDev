@@ -44,7 +44,7 @@ namespace CoreDev.Extensions
 
         public static bool IsValidPosition(this Vector3 vec)
         {
-            if (vec.IsInfinity() || vec.IsNan())
+            if (vec.ContainsInfinity() || vec.ContainsNan())
             {
                 return false;
             }
@@ -60,12 +60,30 @@ namespace CoreDev.Extensions
             return result;
         }
 
+        public static bool ContainsInfinity(this Vector3 vec)
+        {
+            bool result = false;
+            result |= float.IsInfinity(vec.x);
+            result |= float.IsInfinity(vec.y);
+            result |= float.IsInfinity(vec.z);
+            return result;
+        }
+
         public static bool IsNan(this Vector3 vec)
         {
             bool result = true;
             result &= float.IsNaN(vec.x);
             result &= float.IsNaN(vec.y);
             result &= float.IsNaN(vec.z);
+            return result;
+        }
+
+        public static bool ContainsNan(this Vector3 vec)
+        {
+            bool result = false;
+            result |= float.IsNaN(vec.x);
+            result |= float.IsNaN(vec.y);
+            result |= float.IsNaN(vec.z);
             return result;
         }
 
@@ -124,7 +142,23 @@ namespace CoreDev.Extensions
 
             RaycastHit hitInfo;
             if (Physics.Raycast(fromPos_World, vecToPos, out hitInfo, distance, obstructionsLayerMask))
+            {               
+                return false;
+            }
+            return true;
+        }
+
+        public static bool HasLineOfSightTo(this Vector3 fromPos_World, Vector3 toPos_World, float dist, out RaycastHit hit, int obstructionsLayerMask = ~0)
+        {
+            Vector3 vecToPos = (toPos_World - fromPos_World).normalized;
+            float distance = dist;
+
+            hit = default(RaycastHit);
+            RaycastHit hitInfo;
+            if (Physics.Raycast(fromPos_World, vecToPos, out hitInfo, distance, obstructionsLayerMask))
             {
+                
+                hit = hitInfo;
                 return false;
             }
             return true;
@@ -135,5 +169,6 @@ namespace CoreDev.Extensions
             float distance = Vector3.Distance(fromPos_World, toPos_World);
             return distance;
         }
+
     }
 }

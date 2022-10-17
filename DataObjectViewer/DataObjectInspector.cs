@@ -13,9 +13,9 @@ namespace CoreDev.DataObjectInspector
         [SerializeField] private InspectedDataObjectCardSpawner inspectedDataObjectCardSpawner;
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is DataObjectInspectorDO)
@@ -41,9 +41,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS - DataObjectInspectorDO
-        //*====================
+//*====================
+//* CALLBACKS - DataObjectInspectorDO
+//*====================
         private void OnIsOnChanged(ObservableVar<bool> oIsOn)
         {
             bool isOn = oIsOn.Value;
@@ -90,9 +90,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS - InspectedDataObjectDO
-        //*====================
+//*====================
+//* CALLBACKS - InspectedDataObjectDO
+//*====================
         private void OnNameChanged(ObservableVar<string> oName)
         {
             ApplyFilterCheck(this.dataObjectInspectorDO.dataObjectFilterString.Value, (InspectedDataObjectDO)oName.DataObject);
@@ -125,15 +125,15 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* PRIVATE
-        //*====================
+//*====================
+//* PRIVATE
+//*====================
         private void ApplyFilterCheck(string filterString, InspectedDataObjectDO inspectedDataObjectDO)
         {
             string inspectedDataObjectName = inspectedDataObjectDO.name.Value;
             try
             {
-                Match result = Regex.Match(inspectedDataObjectName, filterString, RegexOptions.Singleline);
+                Match result = Regex.Match(inspectedDataObjectName, filterString, RegexOptions.Singleline | RegexOptions.IgnoreCase);
                 inspectedDataObjectDO.matchesFilter.Value = result.Success;
             }
             catch

@@ -22,10 +22,12 @@ namespace CoreDev.Observable
         private const bool warnOnRecursion = true;
         public delegate bool ModerationCheck(ref T incomingValue);
         private event Action<ObservableVar<T>> FireCallbacks;
+        private Delegate[] invocationList;
 
         [SerializeField] protected T currentValue;
         protected T previousValue;
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
+        protected IEnumerator<KeyValuePair<int, List<ModerationCheck>>> moderatorEnumerator;
         protected int recursionCount = 0;
         protected const int recursionLimit = 1000;
 
@@ -73,7 +75,6 @@ namespace CoreDev.Observable
 
                         this.ValueChanged();
 
-                        Delegate[] invocationList = FireCallbacks?.GetInvocationList();
                         if (invocationList != null)
                         {
                             foreach (Delegate invocation in invocationList)
@@ -120,11 +121,12 @@ namespace CoreDev.Observable
         {
             FireCallbacks -= callback;
             FireCallbacks += callback;
+            this.invocationList = FireCallbacks?.GetInvocationList();
+
             if (fireCallbackOnRegistration)
             {
                 try
                 {
-                    // Debug.Log($"{callback.Method.DeclaringType.Name}.{callback.Method.Name}");
                     callback(this);
                 }
                 catch (Exception e)
@@ -138,6 +140,8 @@ namespace CoreDev.Observable
         public void UnregisterFromChanges(Action<ObservableVar<T>> callback)
         {
             FireCallbacks -= callback;
+            this.invocationList = FireCallbacks?.GetInvocationList();
+
             this.CallbacksChanged();
         }
 
@@ -177,8 +181,9 @@ namespace CoreDev.Observable
 //*====================
         private bool ModerateIncomingValue(ref T value)
         {
-            foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)
+            while(moderatorEnumerator != null && moderatorEnumerator.MoveNext())
             {
+                KeyValuePair<int, List<ModerationCheck>> kvp = moderatorEnumerator.Current;
                 List<ModerationCheck> moderatorList = kvp.Value;
 
                 for (int i = 0; i < moderatorList.Count; i++)
@@ -187,10 +192,13 @@ namespace CoreDev.Observable
                     if (isAcceptable == false)
                     {
                         this.ValueChangeBlocked(moderatorList[i].Method.Name);
+                        moderatorEnumerator?.Reset();
                         return false;
                     }
                 }
             }
+
+            moderatorEnumerator?.Reset();
             return true;
         }
 
@@ -199,6 +207,7 @@ namespace CoreDev.Observable
             if (moderators.ContainsKey(priority) == false)
             {
                 this.moderators.Add(priority, new List<ModerationCheck>());
+                this.moderatorEnumerator = moderators.GetEnumerator();
             }
 
             List<ModerationCheck> moderationChecks = this.moderators[priority];
@@ -243,7 +252,6 @@ namespace CoreDev.Observable
         {
             string callbacks = string.Empty;
 
-            Delegate[] invocationList = FireCallbacks?.GetInvocationList();
             if (invocationList != null)
             {
                 for (int i = 0; i < invocationList.Length; i++)
@@ -273,7 +281,6 @@ namespace CoreDev.Observable
         {
             callbacks.Clear();
 
-            Delegate[] invocationList = FireCallbacks?.GetInvocationList();
             if (invocationList != null)
             {
                 for (int i = 0; i < invocationList.Length; i++)

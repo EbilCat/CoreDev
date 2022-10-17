@@ -1,4 +1,5 @@
-﻿using CoreDev.Framework;
+﻿using System;
+using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
 
@@ -30,9 +31,13 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* IDataObject
-        //*====================
-        public void Dispose() { }
+//*====================
+//* IDataObject
+//*====================
+        public event Action<IDataObject> disposing;
+        public void Dispose()
+        {
+            disposing?.Invoke(this);
+        }
     }
 }

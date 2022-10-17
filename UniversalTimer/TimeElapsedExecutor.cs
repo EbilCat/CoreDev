@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CoreDev.Sequencing
@@ -10,9 +11,9 @@ namespace CoreDev.Sequencing
         private List<TimeElapsedHandler> timeElapsedHandlers = new List<TimeElapsedHandler>();
 
 
-//*====================
-//* PUBLIC
-//*====================
+        //*====================
+        //* PUBLIC
+        //*====================
         public void TimeElapsed(float deltaTime, float unscaledDeltaTime, int executionOrder)
         {
             timeElapsedHandlers.AddRange(pendingAddition);
@@ -23,7 +24,14 @@ namespace CoreDev.Sequencing
                 TimeElapsedHandler timeElapsedHandler = timeElapsedHandlers[i];
                 if (this.pendingRemoval.Contains(timeElapsedHandler) == false)
                 {
-                    timeElapsedHandler(deltaTime, unscaledDeltaTime, executionOrder);
+                    try
+                    {
+                        timeElapsedHandler(deltaTime, unscaledDeltaTime, executionOrder);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
                 }
             }
 

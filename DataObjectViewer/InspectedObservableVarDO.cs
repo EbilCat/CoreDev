@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Reflection;
 using CoreDev.Framework;
 using CoreDev.Observable;
@@ -47,8 +48,10 @@ namespace CoreDev.DataObjectInspector
 //*====================
 //* IDataObject
 //*====================
+        public event Action<IDataObject> disposing;
         public void Dispose()
         {
+            disposing?.Invoke(this);
             this.isInspected.UnregisterFromChanges(EvaluateEventSubscription);
             this.printToConsole.UnregisterFromChanges(EvaluateEventSubscription);
 
@@ -99,7 +102,7 @@ namespace CoreDev.DataObjectInspector
 
         private void OnValueChanged()
         {
-            Debug.LogFormat("[Frame {0}] {1} => {2}", Time.frameCount, this.inspectedDataObject.DataObjectInstance, this.observableVarInstance);
+            Debug.LogFormat("[Frame {0}] {1} {2} => {3}", Time.frameCount, this.inspectedDataObject.DataObjectInstance, observableVarInfoDO.Name, this.observableVarInstance);
         }
 
         private void OnModeratorsChanged()

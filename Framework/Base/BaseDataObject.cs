@@ -1,4 +1,5 @@
-﻿using CoreDev.Observable;
+﻿using System;
+using CoreDev.Observable;
 using UnityEngine;
 
 namespace CoreDev.Framework
@@ -56,6 +57,8 @@ namespace CoreDev.Framework
 
     public interface IDataObject
     {
+        public event Action<IDataObject> disposing;
+
         void Dispose();
     }
 }

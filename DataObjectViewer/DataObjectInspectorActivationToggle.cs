@@ -9,7 +9,6 @@ namespace CoreDev.DataObjectInspector
     {
         [SerializeField] private KeyCode activationKey = KeyCode.F1;
         private DataObjectInspectorDO dataObjectInspectorDO;
-        private Canvas dataObjectInspectorCanvas;
 
 
         //*====================
@@ -29,8 +28,6 @@ namespace CoreDev.DataObjectInspector
             if (dataObject is DataObjectInspectorDO)
             {
                 UnbindDO(this.dataObjectInspectorDO);
-
-                this.dataObjectInspectorCanvas = this.GetComponent<Canvas>();
 
                 this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
                 this.dataObjectInspectorDO.isOn.RegisterForChanges(OnIsOnChanged);
@@ -70,7 +67,7 @@ namespace CoreDev.DataObjectInspector
         private void OnIsOnChanged(ObservableVar<bool> oIsOn)
         {
             bool isOn = oIsOn.Value;
-            this.dataObjectInspectorCanvas.enabled = isOn;
+            this.gameObject.SetActive(oIsOn.Value);
         }
     }
 }

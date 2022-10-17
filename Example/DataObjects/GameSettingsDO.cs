@@ -1,4 +1,5 @@
-﻿using CoreDev.Framework;
+﻿using System;
+using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
 
@@ -39,6 +40,10 @@ namespace CoreDev.Examples
 //*====================
 //* IDataObject
 //*====================
-        public void Dispose() { }
+        public event Action<IDataObject> disposing;
+        public void Dispose()
+        {
+            disposing?.Invoke(this);
+        }
     }
 }

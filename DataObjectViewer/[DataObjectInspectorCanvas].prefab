@@ -551,6 +551,7 @@ GameObject:
   - component: {fileID: 1179579507722034769}
   - component: {fileID: 9036466620025524012}
   - component: {fileID: 3708197628983288772}
+  - component: {fileID: 5680355580813586615}
   m_Layer: 5
   m_Name: '[DataObjectInspectorCanvas]'
   m_TagString: Untagged
@@ -671,6 +672,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activationKey: 282
+--- !u!114 &5680355580813586615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1179579507722034768}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fce25b4790e0fb46951d9fb0e0f7125, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1179579508001695780
 GameObject:
   m_ObjectHideFlags: 0

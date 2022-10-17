@@ -1,6 +1,7 @@
 ﻿using System;
 using CoreDev.DataObjectInspector;
 using CoreDev.Observable;
+using CoreDev.Sequencing;
 using UnityEngine;
 
 
@@ -8,13 +9,13 @@ namespace CoreDev.Framework
 {
     public abstract class MonoBehaviourDO : MonoBehaviour, IName, IMonoBehaviour, IDataObject
     {
-        protected event Action<MonoBehaviourDO> destroying = delegate { };
-
         [Bookmark]
         private OString transformName;
         public OString Name => transformName;
         private OBool isActive;
         public OBool IsActive => isActive;
+
+        public event Action<IDataObject> disposing;
 
 
 //*====================
@@ -24,12 +25,14 @@ namespace CoreDev.Framework
         {
             this.transformName = new OString(this.transform.name, this);
             this.isActive = new OBool(this.gameObject.activeSelf, this);
-            
+
             this.transformName.RegisterForChanges(OnTransformNameChanged, false);
             this.isActive.RegisterForChanges(OnIsActiveChanged, false);
+
+            UniversalTimer.ScheduleCallback(BindAndRegister);
         }
 
-        protected virtual void Start()
+        protected virtual void BindAndRegister(object obj)
         {
             this.BindAspect(this);
             DataObjectMasterRepository.RegisterDataObject(this);
@@ -41,13 +44,8 @@ namespace CoreDev.Framework
             this.isActive?.UnregisterFromChanges(OnIsActiveChanged);
 
             DataObjectMasterRepository.DestroyDataObject(this);
+            this.disposing?.Invoke(this);
             this.UnbindAspect(this);
-            this.FireDestroyingEvent();
-        }
-
-        protected void FireDestroyingEvent()
-        {
-            this.destroying(this);
         }
 
 
@@ -58,7 +56,7 @@ namespace CoreDev.Framework
         {
             this.transform.name = obj.Value;
         }
-        
+
         private void OnIsActiveChanged(ObservableVar<bool> obj)
         {
             this.gameObject.SetActive(obj.Value);
@@ -68,17 +66,6 @@ namespace CoreDev.Framework
 //*====================
 //* MonoBehaviourDataObject
 //*====================
-        public virtual void RegisterForDestruction(Action<MonoBehaviourDO> callback)
-        {
-            destroying -= callback;
-            destroying += callback;
-        }
-
-        public virtual void UnregisterFromDestruction(Action<MonoBehaviourDO> callback)
-        {
-            destroying -= callback;
-        }
-
         public virtual void Dispose()
         {
             Destroy(this.gameObject);

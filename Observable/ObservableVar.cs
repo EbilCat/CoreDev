@@ -723,6 +723,19 @@ namespace CoreDev.Observable
         protected override bool AreEqual(Transform var, Transform value) { return var == value; }
     }
 
+    
+//*====================
+//* RectTransform
+//*====================
+    [Serializable]
+    public class ORectTransform : ObservableVar<RectTransform>
+    {
+        public ORectTransform() : base(default(RectTransform)) { }
+        public ORectTransform(RectTransform initValue) : base(initValue) { }
+        public ORectTransform(RectTransform initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(RectTransform var, RectTransform value) { return var == value; }
+    }
+
 
 //*====================
 //* Bounds
@@ -734,6 +747,31 @@ namespace CoreDev.Observable
         public OBounds(Bounds initValue) : base(initValue) { }
         public OBounds(Bounds initValue, IDataObject dataObject) : base(initValue, dataObject) { }
         protected override bool AreEqual(Bounds var, Bounds value) { return var.Equals(value); }
+    }
+
+    //*====================
+    //* InputButton
+    //*====================
+    [Serializable]
+    public class OInputButton : ObservableVar<PointerEventData.InputButton>
+    {
+        public OInputButton() : base(default(PointerEventData.InputButton)) { }
+        public OInputButton(PointerEventData.InputButton initValue) : base(initValue) { }
+        public OInputButton(PointerEventData.InputButton initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(PointerEventData.InputButton var, PointerEventData.InputButton value) { return (var == value); }
+
+        public override void SetValueFromString(string strVal)
+        {
+            try
+            {
+                object enumVal = Enum.Parse(typeof(PointerEventData.InputButton), strVal, true);
+                this.Value = (PointerEventData.InputButton)enumVal;
+            }
+            catch
+            {
+                Debug.Log("Error converting ToInputButton");
+            }
+        }
     }
 
 

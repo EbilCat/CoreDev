@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using CoreDev.Framework;
 using CoreDev.Observable;
@@ -28,9 +29,13 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* IDataObject
-        //*====================
-        public void Dispose() { }
+//*====================
+//* IDataObject
+//*====================
+        public event Action<IDataObject> disposing;
+        public void Dispose()
+        {
+            disposing?.Invoke(this);
+        }
     }
 }

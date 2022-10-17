@@ -65,7 +65,7 @@ namespace CoreDev.DataObjectInspector
                 this.inspectedObservableVarDO.ObservableVarInfoDO.RegisterForCallbackChanges(this.inspectedObservableVarDO.ObservableVarInstance, RefreshCallbacksDisplay);
                 this.gameObject.SetActive(true);
                 this.RefreshCallbacksDisplay();
-                CoreDev.Sequencing.UniversalTimer.ScheduleCallback((x) =>
+                CoreDev.Sequencing.UniversalTimer.ScheduleCallbackUnscaled((x) =>
                 {
                     this.callbackFilter.Select();
                     this.callbackFilter.ActivateInputField();

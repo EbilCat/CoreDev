@@ -130,7 +130,7 @@ namespace CoreDev.DataObjectInspector
 
         private void FocusInputField(object obj = null)
         {
-            CoreDev.Sequencing.UniversalTimer.ScheduleCallback((x) =>
+            CoreDev.Sequencing.UniversalTimer.ScheduleCallbackUnscaled((x) =>
             {
                 if (this.inputField.gameObject.activeInHierarchy)
                 {

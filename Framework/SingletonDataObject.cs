@@ -1,4 +1,6 @@
-﻿namespace CoreDev.Framework
+﻿using System;
+
+namespace CoreDev.Framework
 {
     public abstract class SingletonDataObject<DO> : IDataObject where DO : class, IDataObject, new()
     {
@@ -25,6 +27,10 @@
 //*====================
 //* IDataObject
 //*====================
-        public void Dispose() { }
+        public event Action<IDataObject> disposing;
+        public void Dispose()
+        {
+            disposing?.Invoke(this);
+        }
     }
 }

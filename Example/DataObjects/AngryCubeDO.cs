@@ -61,9 +61,11 @@ namespace CoreDev.Examples
             return str;
         }
 
+
+        public event Action<IDataObject> disposing;
         public void Dispose()
         {
-            
+            disposing?.Invoke(this);
         }
     }
 }

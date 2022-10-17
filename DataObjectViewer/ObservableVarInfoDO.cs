@@ -53,8 +53,11 @@ namespace CoreDev.DataObjectInspector
             this.orderIndex = new OInt(orderIndex, this);
         }
 
+
+        public event Action<IDataObject> disposing;
         public void Dispose()
         {
+            disposing?.Invoke(this);
         }
 
 

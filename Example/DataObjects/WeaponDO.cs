@@ -1,4 +1,5 @@
 ﻿
+using System;
 using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
@@ -18,5 +19,9 @@ public class WeaponDO : IDataObject
 //*====================
 //* IDataObject
 //*====================
-        public void Dispose() { }
+        public event Action<IDataObject> disposing;
+        public void Dispose()
+        {
+            disposing?.Invoke(this);
+        }
 }

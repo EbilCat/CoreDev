@@ -113,7 +113,7 @@ namespace CoreDev.DataObjectInspector
             try
             {
                 string observableVarFilterString = this.dataObjectInspectorDO.observableVarFilterString.Value;
-                Match result = Regex.Match(this.text.text, observableVarFilterString, RegexOptions.Singleline);
+                Match result = Regex.Match(this.text.text, observableVarFilterString, RegexOptions.Singleline | RegexOptions.IgnoreCase);
                 this.inspectedObservableVarDO.matchesFilter.Value = result.Success;
             }
             catch
