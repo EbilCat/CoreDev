@@ -10,17 +10,12 @@ namespace CoreDev.DataObjectInspector
     {
         public OBool isOn = new OBool(false);
         public OString dataObjectFilterString = new OString(string.Empty);
-        public OString observableVarFilterString = new OString(string.Empty);
-
-        public OAction dataObjectFilterSubmitted = new OAction();
-        public OAction observableVarFilterSubmitted = new OAction();
 
 
         private void Awake()
         {
             this.isOn.DataObject = this;
             this.dataObjectFilterString.DataObject = this;
-            this.observableVarFilterString.DataObject = this;
 
             this.BindAspect(this);
         }

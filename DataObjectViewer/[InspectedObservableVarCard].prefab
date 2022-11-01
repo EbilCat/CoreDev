@@ -2038,7 +2038,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Position: (1000, 1000, 1000)'
+  m_Text: Loading ...
 --- !u!114 &6626791987773705909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2587,6 +2587,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8054789778f283a46a88287470552bdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fulfillmentAttemptLimit: 10
 --- !u!114 &3640154075242046638
 MonoBehaviour:
   m_ObjectHideFlags: 0

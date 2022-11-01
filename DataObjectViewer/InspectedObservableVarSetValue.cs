@@ -1,6 +1,7 @@
 ﻿using System;
 using CoreDev.Framework;
 using CoreDev.Observable;
+using CoreDev.Sequencing;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -42,7 +43,6 @@ namespace CoreDev.DataObjectInspector
                 {
                     this.gameObject.SetActive(true);
                     this.dropDown.options.Add(new Dropdown.OptionData("--Select Value--"));
-                    this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.RegisterForChanges(OnIsExpandedViewChanged);
 
                     if (observableVarInfoDO.EnclosedValueType.IsEnum)
                     {
@@ -84,7 +84,6 @@ namespace CoreDev.DataObjectInspector
                 this.inputField?.onEndEdit.RemoveListener(OnSubmit);
 
                 this.inspectedObservableVarDO?.Focus.UnregisterFromChanges(FocusInputField);
-                this.inspectedObservableVarDO?.ObservableVarInfoDO.isExpandedView.UnregisterFromChanges(OnIsExpandedViewChanged);
                 this.inspectedObservableVarDO = null;
                 this.observableVarInfoDO = null;
                 this.observableVarInstance = null;
@@ -95,16 +94,6 @@ namespace CoreDev.DataObjectInspector
         //*====================
         //* CALLBACKS
         //*====================
-        private void OnIsExpandedViewChanged(ObservableVar<bool> oIsExpandedView)
-        {
-            bool isExpandedView = oIsExpandedView.Value;
-            if (isExpandedView)
-            {
-                this.inputField.text = observableVarInfoDO.GetValue(observableVarInstance)?.ToString();
-                FocusInputField();
-            }
-        }
-
         private void OnSubmit(string text)
         {
             if (Input.GetKeyDown(KeyCode.Return))
@@ -130,7 +119,7 @@ namespace CoreDev.DataObjectInspector
 
         private void FocusInputField(object obj = null)
         {
-            CoreDev.Sequencing.UniversalTimer.ScheduleCallbackUnscaled((x) =>
+            UniversalTimer.ScheduleCallbackUnscaled((x) =>
             {
                 if (this.inputField.gameObject.activeInHierarchy)
                 {

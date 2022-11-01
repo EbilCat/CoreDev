@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
@@ -9,8 +10,6 @@ namespace CoreDev.DataObjectInspector
     public class DataObjectInspector : MonoBehaviour, ISpawnee
     {
         private DataObjectInspectorDO dataObjectInspectorDO;
-        [SerializeField] private DataObjectSelectionButtonSpawner dataObjectSelectionButtonSpawner;
-        [SerializeField] private InspectedDataObjectCardSpawner inspectedDataObjectCardSpawner;
 
 
 //*====================
@@ -50,7 +49,7 @@ namespace CoreDev.DataObjectInspector
 
             if (isOn)
             {
-                this.dataObjectInspectorDO.dataObjectFilterString.RegisterForChanges(OnFilterStringChanged);
+                this.dataObjectInspectorDO.dataObjectFilterString.RegisterForChanges(OnFilterStringChanged, false);
                 DataObjectMasterRepository.RegisterForCreation(OnDataObjectCreated);
                 DataObjectMasterRepository.RegisterForDisposing(OnDataObjectDisposing);
 
@@ -99,7 +98,7 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        private InspectedDataObjectDO currentSelectedInspectedDataObjectDO = null;
+        private List<InspectedDataObjectDO> currentSelectedInspectedDataObjectDOs = new List<InspectedDataObjectDO>();
         private void OnIsInspectedChanged(ObservableVar<bool> oIsInspected)
         {
             InspectedDataObjectDO dataObject = (InspectedDataObjectDO)oIsInspected.DataObject;
@@ -109,17 +108,20 @@ namespace CoreDev.DataObjectInspector
             if (isInspected)
             {
                 dataObject.Inspect();
-                if (currentSelectedInspectedDataObjectDO != null)
+                if (Input.GetKey(KeyCode.LeftControl) == false && Input.GetKey(KeyCode.RightControl) == false)
                 {
-                    this.currentSelectedInspectedDataObjectDO.isInspected.Value = false;
+                    for (int i = currentSelectedInspectedDataObjectDOs.Count - 1; i >= 0 ; i--)
+                    {
+                        currentSelectedInspectedDataObjectDOs[i].isInspected.Value = false;
+                    }
                 }
-                this.currentSelectedInspectedDataObjectDO = dataObject;
+                this.currentSelectedInspectedDataObjectDOs.Add(dataObject);
             }
             else
             {
-                if (this.currentSelectedInspectedDataObjectDO == dataObject)
+                if (this.currentSelectedInspectedDataObjectDOs.Contains(dataObject))
                 {
-                    this.currentSelectedInspectedDataObjectDO = null;
+                    this.currentSelectedInspectedDataObjectDOs.Remove(dataObject);
                 }
             }
         }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using CoreDev.Framework;
+﻿using CoreDev.Framework;
 using CoreDev.Observable;
 using CoreDev.Sequencing;
 using UnityEngine;
@@ -10,78 +8,97 @@ using UnityEngine.UI;
 
 namespace CoreDev.DataObjectInspector
 {
-    public class ObservableVarFilterTextField : MonoBehaviour, ISpawnee
+    public class ObservableVarFilterTextField : BaseSpawnee
     {
-        private DataObjectInspectorDO dataObjectInspectorDO;
+        private InspectedDataObjectDO inspectedDataObjectDO;
         private InputField inputField;
-        private bool wasFocusedLastFrame;
 
 
-        //*====================
-        //* BINDING
-        //*====================
-        public void BindDO(IDataObject dataObject)
+//*====================
+//* BINDING
+//*====================
+        public override void BindDO(IDataObject dataObject)
         {
-            if (dataObject is DataObjectInspectorDO && dataObjectInspectorDO == null)
+            base.BindDO(dataObject);
+            this.AttemptDependencyBind(dataObject, ref inspectedDataObjectDO);
+        }
+
+        public override void UnbindDO(IDataObject dataObject)
+        {
+            base.UnbindDO(dataObject);
+            this.UnbindDependency(dataObject, ref inspectedDataObjectDO);
+        }
+
+        protected override bool FulfillDependencies()
+        {
+            bool fulfilled = base.FulfillDependencies();
+            fulfilled &= inspectedDataObjectDO != null;
+            fulfilled &= this.inputField = this.GetComponent<InputField>();
+            return fulfilled;
+        }
+
+        protected override void ClearDependencies(object obj = null)
+        {
+            base.ClearDependencies(obj);
+            this.ClearDependency(ref inspectedDataObjectDO);
+            this.inputField = null;
+        }
+
+        protected override void RegisterCallbacks()
+        {
+            this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
+            this.inputField.onEndEdit.AddListener(OnEndEdit);
+            this.inspectedDataObjectDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
+            this.inspectedDataObjectDO.activateFilterTextField.RegisterForChanges(ActivateFilterTextField);
+            this.inspectedDataObjectDO.observableVarFilterString.RegisterForChanges(OnObservableVarFilterStringChanged);
+        }
+
+        protected override void UnregisterCallbacks()
+        {
+            this.inputField.onValueChanged.RemoveListener(OnInputFieldValueChanged);
+            this.inputField.onEndEdit.RemoveListener(OnEndEdit);
+            this.inspectedDataObjectDO?.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
+            this.inspectedDataObjectDO?.activateFilterTextField.UnregisterFromChanges(ActivateFilterTextField);
+            this.inspectedDataObjectDO?.observableVarFilterString.UnregisterFromChanges(OnObservableVarFilterStringChanged);
+        }
+
+
+//*====================
+//* CALLBACKS
+//*====================
+        private void OnIsInspectedChanged(ObservableVar<bool> obj)
+        {
+            if (obj.Value)
             {
-                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
-                this.inputField = this.GetComponent<InputField>();
-
-                this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
-                this.inputField.onEndEdit.AddListener(OnEndEdit);
-
-                this.dataObjectInspectorDO.dataObjectFilterSubmitted.RegisterForChanges(OnDataObjectFilterSubmitted);
+                this.ActivateFilterTextField();
             }
         }
 
-        public void UnbindDO(IDataObject dataObject)
+        private void OnObservableVarFilterStringChanged(ObservableVar<string> obj)
         {
-            if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == (DataObjectInspectorDO)dataObject)
-            {
-                this.inputField.onValueChanged.RemoveListener(OnInputFieldValueChanged);
-                this.inputField.onEndEdit.RemoveListener(OnEndEdit);
-                this.inputField = null;
-
-                this.dataObjectInspectorDO?.dataObjectFilterSubmitted.UnregisterFromChanges(OnDataObjectFilterSubmitted);
-                this.dataObjectInspectorDO = null;
-            }
-        }
-
-        private void OnDataObjectFilterSubmitted(ObservableVar<object> obj)
-        {
-            this.inputField.Select();
-            this.inputField.ActivateInputField();
+            this.inputField.text = obj.Value;
         }
 
 
-        //*====================
-        //* CALLBACKS - InputField
-        //*====================
+//*====================
+//* CALLBACKS - InputField
+//*====================
         private void OnInputFieldValueChanged(string inputFieldValue)
         {
-            this.dataObjectInspectorDO.observableVarFilterString.Value = inputFieldValue;
+            this.inspectedDataObjectDO.observableVarFilterString.Value = inputFieldValue;
         }
 
         private void OnEndEdit(string arg0)
         {
-            if(Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(KeyCode.Return))
             {
-                this.dataObjectInspectorDO?.observableVarFilterSubmitted.Fire();
-
-                ReadOnlyCollection<InspectedDataObjectDO> inspectedDataObjectDOs = DataObjectInspectorMasterRepository.InspectedDataObjectDOs;
-                foreach (var inspectedDataObjectDO in inspectedDataObjectDOs)
+                foreach (var inspectedOVar in inspectedDataObjectDO.inspectedOVarDOs)
                 {
-                    if (inspectedDataObjectDO.isInspected.Value == true)
+                    if (inspectedOVar.matchesFilter.Value)
                     {
-                        foreach (var inspectedOVar in inspectedDataObjectDO.inspectedOVarDOs)
-                        {
-                            if (inspectedOVar.matchesFilter.Value)
-                            {
-                                inspectedOVar.ObservableVarInfoDO.isExpandedView.Value = true;
-                                inspectedOVar.Focus.Fire();
-                                break;
-                            }
-                        }
+                        inspectedOVar.ObservableVarInfoDO.isExpandedView.Value = true;
+                        inspectedOVar.Focus.Fire();
+                        break;
                     }
                 }
             }
@@ -90,6 +107,20 @@ namespace CoreDev.DataObjectInspector
             {
                 EventSystem.current.SetSelectedGameObject(null);
             }
+        }
+
+
+//*====================
+//* PRIVATE
+//*====================
+        private void ActivateFilterTextField(object obj = null)
+        {
+            //Have to delay a frame otherwise select won't work
+            UniversalTimer.ScheduleCallback((x) =>
+            {
+                this.inputField?.Select();
+                this.inputField?.ActivateInputField();
+            });
         }
     }
 }

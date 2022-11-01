@@ -18,9 +18,11 @@ namespace CoreDev.DataObjectInspector
         public DataObjectInfoDO DataObjectInfoDO { get { return dataObjectInfoDO; } }
 
         public OString name;
+        public OString observableVarFilterString;
         public OList<InspectedObservableVarDO> inspectedOVarDOs;
         public OBool matchesFilter;
         public OBool isInspected;
+        public OAction activateFilterTextField;
 
 
         public InspectedDataObjectDO(IDataObject dataObjectInstance)
@@ -28,9 +30,11 @@ namespace CoreDev.DataObjectInspector
             this.dataObjectInstance = dataObjectInstance;
 
             this.name = new OString(dataObjectInstance.GetType().Name, this);
+            this.observableVarFilterString = new OString(string.Empty, this);
             this.inspectedOVarDOs = new OList<InspectedObservableVarDO>(this);
             this.matchesFilter = new OBool(true, this);
             this.isInspected = new OBool(false, this);
+            this.activateFilterTextField = new OAction(this);
 
             Type dataObjectType = dataObjectInstance.GetType();
             if (dataObjectInfoDOs.ContainsKey(dataObjectType) == false)

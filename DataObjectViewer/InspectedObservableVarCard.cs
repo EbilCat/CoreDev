@@ -1,17 +1,16 @@
 ﻿using System.Text.RegularExpressions;
 using CoreDev.Framework;
 using CoreDev.Observable;
-using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 
 namespace CoreDev.DataObjectInspector
 {
-    public class InspectedObservableVarCard : MonoBehaviour, ISpawnee, IPointerDownHandler, IPointerUpHandler, IBeginDragHandler
+    public class InspectedObservableVarCard : BaseSpawnee, IPointerDownHandler, IPointerUpHandler, IBeginDragHandler
     {
         private InspectedObservableVarDO inspectedObservableVarDO;
-        private DataObjectInspectorDO dataObjectInspectorDO;
+        private InspectedDataObjectDO inspectedDataObjectDO;
         private ObservableVarInfoDO observableVarInfoDO;
         private IObservableVar observableVarInstance;
         private RearrangeableScrollViewItem rearrangeableScrollViewItem;
@@ -19,70 +18,65 @@ namespace CoreDev.DataObjectInspector
 
 
 //*====================
-//* UNITY
-//*====================
-        private void OnDestroy()
-        {
-            UnbindDO(this.inspectedObservableVarDO);
-            UnbindDO(this.dataObjectInspectorDO);
-        }
-
-
-//*====================
 //* BINDING
 //*====================
-        public void BindDO(IDataObject dataObject)
+        public override void BindDO(IDataObject dataObject)
         {
-            if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == null)
-            {
-                this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
-                this.observableVarInfoDO = inspectedObservableVarDO.ObservableVarInfoDO;
-                this.observableVarInstance = inspectedObservableVarDO.ObservableVarInstance;
-
-                this.name = this.observableVarInfoDO.Name;
-                this.rearrangeableScrollViewItem = this.GetComponentInChildren<RearrangeableScrollViewItem>();
-                this.text = this.GetComponentInChildren<Text>();
-
-                CompleteBinding();
-            }
-
-            if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == null)
-            {
-                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
-                CompleteBinding();
-            }
+            base.BindDO(dataObject);
+            this.AttemptDependencyBind(dataObject, ref inspectedObservableVarDO);
+            this.AttemptDependencyBind(dataObject, ref inspectedDataObjectDO);
         }
 
-        private void CompleteBinding()
+        public override void UnbindDO(IDataObject dataObject)
         {
-            if (this.inspectedObservableVarDO != null && this.dataObjectInspectorDO != null)
-            {
-                this.rearrangeableScrollViewItem.RegisterForSiblingIndexChanged(OnSiblingIndexChanged);
-                this.inspectedObservableVarDO.matchesFilter.RegisterForChanges(OnMatchesFilterChanged);
-                this.inspectedObservableVarDO.cardText.RegisterForChanges(OnCardTextChanged);
-                this.observableVarInfoDO.orderIndex.RegisterForChanges(OnOrderIndexChanged);
-                this.dataObjectInspectorDO.observableVarFilterString.RegisterForChanges(OnObservableVarFilterString);
-            }
+            base.UnbindDO(dataObject);
+            this.UnbindDependency(dataObject, ref inspectedObservableVarDO);
+            this.UnbindDependency(dataObject, ref inspectedDataObjectDO);
         }
 
-        public void UnbindDO(IDataObject dataObject)
+        protected override bool FulfillDependencies()
         {
-            if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject ||
-                dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == dataObject as DataObjectInspectorDO)
-            {
-                this.rearrangeableScrollViewItem?.UnregisterFromSiblingIndexChanged(OnSiblingIndexChanged);
-                this.inspectedObservableVarDO?.matchesFilter.UnregisterFromChanges(OnMatchesFilterChanged);
-                this.inspectedObservableVarDO?.cardText.UnregisterFromChanges(OnCardTextChanged);
-                this.observableVarInfoDO?.orderIndex?.UnregisterFromChanges(OnOrderIndexChanged);
-                this.dataObjectInspectorDO.observableVarFilterString?.UnregisterFromChanges(OnObservableVarFilterString);
+            bool fulfilled = base.FulfillDependencies();
+            fulfilled &= inspectedObservableVarDO != null;
+            fulfilled &= inspectedDataObjectDO != null;
+            fulfilled &= this.rearrangeableScrollViewItem = this.GetComponentInChildren<RearrangeableScrollViewItem>();
+            fulfilled &= this.text = this.GetComponentInChildren<Text>();
+            return fulfilled;
+        }
 
-                this.rearrangeableScrollViewItem = null;
-                this.observableVarInstance = null;
+        protected override void ClearDependencies(object obj = null)
+        {
+            base.ClearDependencies(obj);
+            this.ClearDependency(ref inspectedObservableVarDO);
+            this.ClearDependency(ref inspectedDataObjectDO);
+            this.rearrangeableScrollViewItem = null;
+            this.text = null;
+        }
 
-                this.inspectedObservableVarDO = null;
-                this.observableVarInfoDO = null;
-                this.dataObjectInspectorDO = null;
-            }
+        protected override void RegisterCallbacks()
+        {
+            this.name = inspectedObservableVarDO.ObservableVarInfoDO.Name;
+            this.observableVarInfoDO = inspectedObservableVarDO.ObservableVarInfoDO;
+            this.observableVarInstance = inspectedObservableVarDO.ObservableVarInstance;
+
+            this.rearrangeableScrollViewItem.RegisterForSiblingIndexChanged(OnSiblingIndexChanged);
+            this.inspectedObservableVarDO.matchesFilter.RegisterForChanges(OnMatchesFilterChanged);
+            this.inspectedObservableVarDO.cardText.RegisterForChanges(OnCardTextChanged);
+            this.observableVarInfoDO.orderIndex.RegisterForChanges(OnOrderIndexChanged);
+            this.inspectedDataObjectDO.observableVarFilterString.RegisterForChanges(OnObservableVarFilterString);
+        }
+
+        protected override void UnregisterCallbacks()
+        {
+            this.rearrangeableScrollViewItem?.UnregisterFromSiblingIndexChanged(OnSiblingIndexChanged);
+            this.inspectedObservableVarDO?.matchesFilter.UnregisterFromChanges(OnMatchesFilterChanged);
+            this.inspectedObservableVarDO?.cardText.UnregisterFromChanges(OnCardTextChanged);
+            this.observableVarInfoDO?.orderIndex?.UnregisterFromChanges(OnOrderIndexChanged);
+            this.inspectedDataObjectDO.observableVarFilterString?.UnregisterFromChanges(OnObservableVarFilterString);
+
+            this.name = string.Empty;
+            this.observableVarInfoDO = null;
+            this.observableVarInstance = null;
         }
 
 
@@ -112,7 +106,7 @@ namespace CoreDev.DataObjectInspector
         {
             try
             {
-                string observableVarFilterString = this.dataObjectInspectorDO.observableVarFilterString.Value;
+                string observableVarFilterString = this.inspectedDataObjectDO.observableVarFilterString.Value;
                 Match result = Regex.Match(this.text.text, observableVarFilterString, RegexOptions.Singleline | RegexOptions.IgnoreCase);
                 this.inspectedObservableVarDO.matchesFilter.Value = result.Success;
             }

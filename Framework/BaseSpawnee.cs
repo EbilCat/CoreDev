@@ -26,6 +26,10 @@ namespace CoreDev.Framework
         protected virtual void OnDestroy()
         {
             UniversalTimer.UnscheduleCallback(startDependencyCheck);
+            if (initComplete.Value)
+            {
+                this.ClearDependencies();
+            }
         }
 
 
@@ -41,7 +45,7 @@ namespace CoreDev.Framework
             }
             else
             {
-                if(startDependencyCheck == null) { startDependencyCheck = BeginInit; }
+                if (startDependencyCheck == null) { startDependencyCheck = BeginInit; }
                 UniversalTimer.ScheduleCallback(startDependencyCheck, 0.1f);
             }
         }

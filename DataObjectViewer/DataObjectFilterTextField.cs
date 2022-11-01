@@ -56,7 +56,7 @@ namespace CoreDev.DataObjectInspector
             if (isOn)
             {
                 //Have to delay a frame otherwise select won't work
-                UniversalTimer.ScheduleCallbackUnscaled((x) =>
+                UniversalTimer.ScheduleCallback((x) =>
                 {
                     this.inputField.Select();
                     this.inputField.ActivateInputField();
@@ -77,14 +77,13 @@ namespace CoreDev.DataObjectInspector
         {
             if (Input.GetKeyDown(KeyCode.Return))
             {
-                this.dataObjectInspectorDO?.dataObjectFilterSubmitted.Fire();
-
                 ReadOnlyCollection<InspectedDataObjectDO> inspectedDataObjectDOs = DataObjectInspectorMasterRepository.InspectedDataObjectDOs;
                 foreach (var inspectedDataObjectDO in inspectedDataObjectDOs)
                 {
                     if (inspectedDataObjectDO.matchesFilter.Value)
                     {
                         inspectedDataObjectDO.isInspected.Value = true;
+                        inspectedDataObjectDO.activateFilterTextField.Fire();
                         break;
                     }
                 }

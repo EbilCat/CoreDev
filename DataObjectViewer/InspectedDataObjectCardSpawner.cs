@@ -7,44 +7,21 @@ using UnityEngine;
 
 namespace CoreDev.DataObjectInspector
 {
-    public class InspectedDataObjectCardSpawner : MonoBehaviour, ISpawnee
+    public class InspectedDataObjectCardSpawner : MonoBehaviour
     {
-        private DataObjectInspectorDO dataObjectInspectorDO;
         [SerializeField] private InspectedDataObjectCard prefab;
         private Dictionary<InspectedDataObjectDO, InspectedDataObjectCard> inspectedDataObjectCards = new Dictionary<InspectedDataObjectDO, InspectedDataObjectCard>();
 
-
-//*====================
-//* UNITY
-//*====================
-        protected virtual void OnDestroy()
+        protected void Awake()
         {
-            this.UnbindDO(this.dataObjectInspectorDO);
+            DataObjectInspectorMasterRepository.RegisterForCreation(DataObjectCreated);
+            DataObjectInspectorMasterRepository.RegisterForDisposing(DataObjectDisposing);
         }
 
-
-//*====================
-//* BINDING
-//*====================
-        public void BindDO(IDataObject dataObject)
+        protected void OnDestroy()
         {
-            if (dataObject is DataObjectInspectorDO)
-            {
-                UnbindDO(this.dataObjectInspectorDO);
-                this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
-                DataObjectInspectorMasterRepository.RegisterForCreation(DataObjectCreated);
-                DataObjectInspectorMasterRepository.RegisterForDisposing(DataObjectDisposing);
-            }
-        }
-
-        public void UnbindDO(IDataObject dataObject)
-        {
-            if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == dataObject as DataObjectInspectorDO)
-            {
-                DataObjectInspectorMasterRepository.UnregisterFromCreation(DataObjectCreated);
-                DataObjectInspectorMasterRepository.UnregisterFromDisposing(DataObjectDisposing);
-                this.dataObjectInspectorDO = null;
-            }
+            DataObjectInspectorMasterRepository.UnregisterFromCreation(DataObjectCreated);
+            DataObjectInspectorMasterRepository.UnregisterFromDisposing(DataObjectDisposing);
         }
 
 
@@ -59,6 +36,7 @@ namespace CoreDev.DataObjectInspector
         private void DataObjectDisposing(InspectedDataObjectDO inspectedDataObjectDO)
         {
             inspectedDataObjectDO?.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
+            
             this.DisposePrefab(inspectedDataObjectDO);
         }
 
@@ -97,7 +75,6 @@ namespace CoreDev.DataObjectInspector
 
             inspectedDataObjectCards.Add(inspectedDataObjectDO, prefabInstance);
             inspectedDataObjectDO.BindAspect(prefabInstance);
-            this.dataObjectInspectorDO.BindAspect(prefabInstance);
         }
 
         private void DisposePrefab(InspectedDataObjectDO inspectedDataObjectDO)
@@ -106,7 +83,6 @@ namespace CoreDev.DataObjectInspector
             {
                 InspectedDataObjectCard prefabInstance = inspectedDataObjectCards[inspectedDataObjectDO];
                 inspectedDataObjectDO.UnbindAspect(prefabInstance);
-                this.dataObjectInspectorDO.UnbindAspect(prefabInstance);
                 this.inspectedDataObjectCards.Remove(inspectedDataObjectDO);
                 Destroy(prefabInstance.gameObject);
             }
