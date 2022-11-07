@@ -1,7 +1,6 @@
 ﻿using System;
 using CoreDev.Framework;
 using CoreDev.Observable;
-using CoreDev.Sequencing;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -18,9 +17,9 @@ namespace CoreDev.DataObjectInspector
         private InputField inputField;
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is InspectedObservableVarDO)
@@ -91,9 +90,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS
-        //*====================
+//*====================
+//* CALLBACKS
+//*====================
         private void OnSubmit(string text)
         {
             if (Input.GetKeyDown(KeyCode.Return))
@@ -119,19 +118,16 @@ namespace CoreDev.DataObjectInspector
 
         private void FocusInputField(object obj = null)
         {
-            UniversalTimer.ScheduleCallbackUnscaled((x) =>
+            if (this.inputField.gameObject.activeInHierarchy)
             {
-                if (this.inputField.gameObject.activeInHierarchy)
-                {
-                    this.inputField.Select();
-                    this.inputField.ActivateInputField();
-                }
+                this.inputField.Select();
+                this.inputField.ActivateInputField();
+            }
 
-                if (this.dropDown.gameObject.activeInHierarchy)
-                {
-                    this.dropDown.Select();
-                }
-            });
+            if (this.dropDown.gameObject.activeInHierarchy)
+            {
+                this.dropDown.Select();
+            }
         }
     }
 }

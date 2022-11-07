@@ -17,9 +17,9 @@ namespace CoreDev.DataObjectInspector
         private Text text;
 
 
-//*====================
-//* BINDING
-//*====================
+        //*====================
+        //* BINDING
+        //*====================
         public override void BindDO(IDataObject dataObject)
         {
             base.BindDO(dataObject);
@@ -80,18 +80,18 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* CALLBACKS - RearrangeableScrollViewItem 
-//*====================
+        //*====================
+        //* CALLBACKS - RearrangeableScrollViewItem 
+        //*====================
         private void OnSiblingIndexChanged(int obj)
         {
             this.observableVarInfoDO.orderIndex.Value = obj;
         }
 
 
-//*====================
-//* CALLBACKS - ObservableVarInfoDO 
-//*====================
+        //*====================
+        //* CALLBACKS - ObservableVarInfoDO 
+        //*====================
         private void OnOrderIndexChanged(ObservableVar<int> obj)
         {
             this.transform.SetSiblingIndex(obj.Value);
@@ -99,9 +99,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* CALLBACKS
-//*====================
+        //*====================
+        //* CALLBACKS
+        //*====================
         private void OnObservableVarFilterString(ObservableVar<string> obj)
         {
             try
@@ -127,9 +127,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* IMPLEMENTATION - IPointerDownHandler
-//*====================
+        //*====================
+        //* IMPLEMENTATION - IPointerDownHandler
+        //*====================
         private bool potentialClick = false;
 
         public void OnPointerDown(PointerEventData eventData)
@@ -149,9 +149,14 @@ namespace CoreDev.DataObjectInspector
         {
             if (eventData.button == PointerEventData.InputButton.Left && potentialClick)
             {
-                bool isExpandedView = this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value;
-                this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value = !isExpandedView;
+                bool isExpandedView = !this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value;
+                this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value = isExpandedView;
                 potentialClick = false;
+
+                if (isExpandedView)
+                {
+                    inspectedObservableVarDO.Focus.Fire();
+                }
             }
         }
     }
