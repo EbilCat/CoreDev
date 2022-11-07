@@ -19,6 +19,8 @@ namespace CoreDev.CustomEditors
         {
             VisualElement container = new VisualElement();
             InspectorElement.FillDefaultInspector(container, serializedObject, this);
+            PropertyField scriptPropertyField = container.Q<PropertyField>("PropertyField:m_Script");
+            scriptPropertyField.SetEnabled(true);
             return container;
         }
     }
