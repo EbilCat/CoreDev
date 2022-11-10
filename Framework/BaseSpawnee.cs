@@ -46,7 +46,7 @@ namespace CoreDev.Framework
             else
             {
                 if (startDependencyCheck == null) { startDependencyCheck = BeginInit; }
-                UniversalTimer.ScheduleCallback(startDependencyCheck, 0.1f);
+                UniversalTimer.ScheduleCallbackUnscaled(startDependencyCheck);
             }
         }
 
