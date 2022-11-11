@@ -510,6 +510,22 @@ namespace CoreDev.Observable
 
 
 //*====================
+//* AudioClip
+//*====================
+    [Serializable]
+    public class OAudioClip : ObservableVar<AudioClip>
+    {
+        public OAudioClip() : base(default(AudioClip)) { }
+        public OAudioClip(AudioClip initValue) : base(initValue) { }
+        public OAudioClip(AudioClip initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(AudioClip var, AudioClip value)
+        {
+            return var == value;
+        }
+    }
+
+
+//*====================
 //* LayerMask
 //*====================
     [Serializable]
