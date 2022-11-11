@@ -13,6 +13,7 @@ namespace CoreDev.DataObjectInspector
         private InspectedObservableVarDO inspectedObservableVarDO;
         private ObservableVarInfoDO observableVarInfoDO;
         private IObservableVar observableVarInstance;
+        private Button fireEventButton;
         private Dropdown dropDown;
         private InputField inputField;
 
@@ -29,10 +30,11 @@ namespace CoreDev.DataObjectInspector
                 this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
                 this.observableVarInfoDO = inspectedObservableVarDO.ObservableVarInfoDO;
                 this.observableVarInstance = inspectedObservableVarDO.ObservableVarInstance;
+                this.fireEventButton = this.GetComponentInChildren<Button>();
                 this.dropDown = this.GetComponentInChildren<Dropdown>();
                 this.inputField = this.GetComponentInChildren<InputField>();
 
-                this.inspectedObservableVarDO.Focus.RegisterForChanges(FocusInputField, false);
+                this.inspectedObservableVarDO.Focus.RegisterForChanges(FocusInputField);
 
                 if (inspectedObservableVarDO.ObservableVarInfoDO.IsCollection)
                 {
@@ -43,8 +45,18 @@ namespace CoreDev.DataObjectInspector
                     this.gameObject.SetActive(true);
                     this.dropDown.options.Add(new Dropdown.OptionData("--Select Value--"));
 
+                    if(observableVarInfoDO.ValuePropertyInfo == null)
+                    {
+                        this.fireEventButton.gameObject.SetActive(true);
+                        this.inputField.gameObject.SetActive(false);
+                        this.dropDown.gameObject.SetActive(false);
+
+                        this.fireEventButton.onClick.AddListener(OnFireEventButtonClicked);
+                    }
+                    else
                     if (observableVarInfoDO.EnclosedValueType.IsEnum)
                     {
+                        this.fireEventButton.gameObject.SetActive(false);
                         this.inputField.gameObject.SetActive(false);
                         this.dropDown.gameObject.SetActive(true);
 
@@ -58,6 +70,7 @@ namespace CoreDev.DataObjectInspector
                     else
                     if (observableVarInfoDO.EnclosedValueType == typeof(bool))
                     {
+                        this.fireEventButton.gameObject.SetActive(false);
                         this.inputField.gameObject.SetActive(false);
                         this.dropDown.gameObject.SetActive(true);
 
@@ -68,6 +81,7 @@ namespace CoreDev.DataObjectInspector
                     }
                     else
                     {
+                        this.fireEventButton.gameObject.SetActive(false);
                         this.dropDown.gameObject.SetActive(false);
                         this.inputField.gameObject.SetActive(true);
                         this.inputField.onEndEdit.AddListener(OnSubmit);
@@ -109,6 +123,11 @@ namespace CoreDev.DataObjectInspector
             }
         }
 
+        private void OnFireEventButtonClicked()
+        {
+            (this.observableVarInstance as OEvent).Fire();
+        }
+
         private void OnDropDownValueChanged(int optionIndex)
         {
             if (optionIndex == 0) { return; }
@@ -116,8 +135,13 @@ namespace CoreDev.DataObjectInspector
             this.observableVarInfoDO.SetValue(observableVarInstance, text);
         }
 
-        private void FocusInputField(object obj = null)
+        private void FocusInputField()
         {
+            if (this.fireEventButton.gameObject.activeInHierarchy)
+            {
+                this.fireEventButton.Select();
+            }
+
             if (this.inputField.gameObject.activeInHierarchy)
             {
                 this.inputField.Select();

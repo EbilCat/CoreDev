@@ -24,9 +24,9 @@ namespace CoreDev.DataObjectInspector
         public Type EnclosedValueType { get; private set; }
         public bool IsCollection { get; private set; }
 
-        public string Name { get { return fieldInfo.Name; } }
-        public Type FieldType { get { return fieldInfo.FieldType; } }
-
+        public string Name => fieldInfo.Name;
+        public Type FieldType => fieldInfo.FieldType;
+        public PropertyInfo ValuePropertyInfo => valuePropertyInfo;
         public OBool isExpandedView;
         public OBool isBookedMarked;
         public OInt orderIndex;
@@ -45,7 +45,7 @@ namespace CoreDev.DataObjectInspector
             this.moderatorsChangedEventInfo = this.FieldType.GetEvent("ModeratorsChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             this.callbacksChangedEventInfo = this.FieldType.GetEvent("CallbacksChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
-            this.EnclosedValueType = this.valuePropertyInfo.PropertyType;
+            this.EnclosedValueType = this.valuePropertyInfo?.PropertyType;
             this.IsCollection = typeof(ICollection).IsAssignableFrom(this.EnclosedValueType);
 
             this.isExpandedView = new OBool(false, this);

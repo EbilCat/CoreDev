@@ -22,7 +22,7 @@ namespace CoreDev.DataObjectInspector
         public OString varName;
         public OBool printToConsole;
         public OBool showCallbacks;
-        public OAction Focus;
+        public OEvent Focus;
 
         public OString cardText;
 
@@ -35,7 +35,7 @@ namespace CoreDev.DataObjectInspector
             this.matchesFilter = new OBool(true, this);
             this.printToConsole = new OBool(false, this);
             this.showCallbacks = new OBool(false, this);
-            this.Focus = new OAction(this);
+            this.Focus = new OEvent(this);
             this.cardText = new OString(string.Empty, this);
 
             this.varName = new OString(fieldInfoDO.Name, this);
@@ -45,9 +45,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* IDataObject
-//*====================
+        //*====================
+        //* IDataObject
+        //*====================
         public event Action<IDataObject> disposing;
         public void Dispose()
         {
@@ -62,9 +62,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* CALLBACKS
-//*====================
+        //*====================
+        //* CALLBACKS
+        //*====================
         private void EvaluateEventSubscription(ObservableVar<bool> obj)
         {
             if (this.isInspected.Value || this.printToConsole.Value)
@@ -116,20 +116,18 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* PRIVATE
-//*====================
+        //*====================
+        //* PRIVATE
+        //*====================
         private void RefreshCardText()
         {
             const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
-
-            PropertyInfo propertyInfo = observableVarInfoDO.FieldType.GetProperty("Value");
-            object currentValue = propertyInfo.GetValue(this.observableVarInstance);
 
             string displayText = string.Empty;
 
             if (observableVarInfoDO.IsCollection)
             {
+                object currentValue = observableVarInfoDO.ValuePropertyInfo.GetValue(this.observableVarInstance);
                 ICollection collection = currentValue as ICollection;
                 displayText = $"(COLLECTION) {this.varName.Value} Count: {collection.Count}";
 
@@ -145,7 +143,14 @@ namespace CoreDev.DataObjectInspector
             }
             else
             {
-                displayText = $"{varName.Value} : {this.observableVarInstance}";
+                if (observableVarInfoDO.ValuePropertyInfo == null) //Null here means ObservableVar is an Event
+                {
+                    displayText = $"EVENT: {varName.Value}";
+                }
+                else
+                {
+                    displayText = $"{varName.Value} : {this.observableVarInstance}";
+                }
             }
 
             FieldInfo moderatorListFieldInfo = ObservableVarInfoDO.FieldType.GetField("moderators", bindingFlags);
@@ -170,7 +175,7 @@ namespace CoreDev.DataObjectInspector
                     }
                 }
             }
-            
+
             this.cardText.Value = displayText;
         }
     }

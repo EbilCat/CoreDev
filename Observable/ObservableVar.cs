@@ -16,32 +16,6 @@ namespace CoreDev.Observable
         void SetValueFromString(string strVal);
     }
 
-    public class OAction : ObservableVar<object>
-    {
-        public OAction() : base(default(object)) { }
-        public OAction(IDataObject dataObject) : base(default(object), dataObject) { }
-        
-        public void Fire()
-        {
-            this.Value = null;
-        }
-
-        public override void RegisterForChanges(Action<ObservableVar<object>> callback, bool fireCallbackOnRegistration = true)
-        {
-            base.RegisterForChanges(callback, false);
-        }
-
-        public override void SetValueFromString(string strVal)
-        {
-            this.Value = null;
-        }
-
-        protected override bool AreEqual(object var, object value)
-        {
-            return false;
-        }
-    }
-
     //*====================
     //* SByte
     //*====================
