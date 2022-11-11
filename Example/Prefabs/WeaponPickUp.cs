@@ -20,8 +20,7 @@ namespace CoreDev.Examples
                 AngryCubeDO angryCubeDO = angryCube.AngryCubeDO;
                 Debug.Log($"Cube {angryCubeDO.id.Value} picked up weapon");
                 angryCubeDO.hasWeapon.Value = true;
-
-                DataObjectMasterRepository.DestroyDataObject(this.weaponDO);
+                this.weaponDO.Dispose();
         }
     }
     

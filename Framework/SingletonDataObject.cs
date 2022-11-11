@@ -11,7 +11,6 @@ namespace CoreDev.Framework
             if (singleton == null)
             {
                 singleton = new DO();
-                DataObjectDestroyer.Instance?.RegisterForDestruction(DestroyDataObject);
                 DataObjectMasterRepository.RegisterDataObject(singleton);
             }
             return singleton;
@@ -19,7 +18,7 @@ namespace CoreDev.Framework
 
         public static void DestroyDataObject()
         {
-            DataObjectMasterRepository.DestroyDataObject(singleton);
+            singleton.Dispose();
             singleton = null;
         }
 

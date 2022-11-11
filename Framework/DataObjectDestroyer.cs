@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CoreDev.Framework
 {
     public class DataObjectDestroyer : MonoBehaviour
     {
+        private List<IDataObject> dataObjectsToDestroy = new List<IDataObject>();
+
+
 //*====================
 //* STATIC
 //*====================
         private static DataObjectDestroyer dataObjectDestroyer;
-
         public static DataObjectDestroyer Instance
         {
             get
@@ -28,25 +31,26 @@ namespace CoreDev.Framework
 //*====================
         private void OnDestroy()
         {
-            this.destructorCallback();
-            DataObjectMasterRepository.DestroyAllDataObjects();
+            for (int i = dataObjectsToDestroy.Count - 1; i >= 0 ; i--)
+            {
+                dataObjectsToDestroy[0].Dispose();
+                dataObjectsToDestroy.RemoveAt(0);
+            }
         }
 
 
 //*====================
 //* PUBLIC
 //*====================
-        private event Action destructorCallback = delegate { };
 
-        public void RegisterForDestruction(Action destructorCallback)
+        public void RegisterForDestructionOnSceneEnd(IDataObject dataObject)
         {
-            this.destructorCallback -= destructorCallback;
-            this.destructorCallback += destructorCallback;
+            this.dataObjectsToDestroy.Add(dataObject);
         }
 
-        public void UnregisterFromDestruction(Action destructorCallback)
+        public void UnregisterFromDestructionOnSceneEnd(IDataObject dataObject)
         {
-            this.destructorCallback -= destructorCallback;
+            this.dataObjectsToDestroy.Remove(dataObject);
         }
     }
 }

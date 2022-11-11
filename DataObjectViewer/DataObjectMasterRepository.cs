@@ -7,7 +7,7 @@ namespace CoreDev.Framework
 {
     public class DataObjectMasterRepository
     {
-//* Static
+        //* Static
         protected static List<IDataObject> dataObjects = new List<IDataObject>();
         protected static Dictionary<Type, List<IDataObject>> typeSegregatedDOs = new Dictionary<Type, List<IDataObject>>();
         protected static event Action<IDataObject> CreatedDO = delegate { };
@@ -15,9 +15,9 @@ namespace CoreDev.Framework
         public static int DataObjectCount { get { return dataObjects.Count; } }
 
 
-//*===========================
-//* PUBLIC
-//*===========================
+        //*===========================
+        //* PUBLIC
+        //*===========================
         public static void RegisterForCreation(Action<IDataObject> callback, bool fireCallbackForExistingDOs = true)
         {
             if (IsCreationCallbackRegistered(callback) == false)
@@ -94,7 +94,7 @@ namespace CoreDev.Framework
             return exists;
         }
 
-        public static bool DestroyDataObject(IDataObject dataObject)
+        private static void DestroyDataObject(IDataObject dataObject)
         {
             if (IsDataObjectRegistered(dataObject))
             {
@@ -109,22 +109,8 @@ namespace CoreDev.Framework
                 }
 
                 DisposingDO(dataObject);
+                dataObject.disposing -= DestroyDataObject;
                 dataObjects.Remove(dataObject);
-                dataObject.Dispose();
-                return true;
-            }
-            return false;
-        }
-
-        public static void DestroyAllDataObjects()
-        {
-            int lastDataObjIndex = dataObjects.Count - 1;
-
-            while (lastDataObjIndex > 0)
-            {
-                IDataObject dataObject = dataObjects[lastDataObjIndex];
-                DestroyDataObject(dataObject);
-                lastDataObjIndex = dataObjects.Count - 1;
             }
         }
 
@@ -190,7 +176,7 @@ namespace CoreDev.Framework
             }
         }
 
-        public static bool RegisterDataObject(IDataObject dataObject)
+        public static bool RegisterDataObject(IDataObject dataObject, bool destroyOnSceneEnd = true)
         {
             if (dataObject == null)
             {
@@ -198,10 +184,13 @@ namespace CoreDev.Framework
                 return false;
             }
 
-            DataObjectDestroyer.Instance?.RegisterForDestruction(DestroyAllDataObjects);
-
             if (!IsDataObjectRegistered(dataObject))
             {
+                if (destroyOnSceneEnd)
+                {
+                    DataObjectDestroyer.Instance.RegisterForDestructionOnSceneEnd(dataObject);
+                }
+
                 Type dataObjectType = dataObject.GetType();
                 RegisterDataObjectByType(dataObject, dataObjectType);
 
@@ -212,6 +201,7 @@ namespace CoreDev.Framework
                     RegisterDataObjectByType(dataObject, interfaceType);
                 }
 
+                dataObject.disposing += DestroyDataObject;
                 dataObjects.Add(dataObject);
                 CreatedDO(dataObject);
                 return true;

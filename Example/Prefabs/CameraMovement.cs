@@ -36,7 +36,7 @@ namespace CoreDev.Examples
         {
             if (dataObject is ICameraDO && this.cameraDO == dataObject as ICameraDO)
             {
-                UniversalTimer.RegisterForTimeElapsed(MoveCamera);
+                UniversalTimer.UnregisterFromTimeElapsed(MoveCamera);
                 this.cameraDO = null;
             }
         }
