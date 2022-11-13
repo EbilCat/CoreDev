@@ -20,6 +20,8 @@ namespace CoreDev.Observable
         protected event Action CallbacksChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
 
         private const bool warnOnRecursion = true;
+        private bool equalityChecksEnabled = true;
+        public bool EqualityChecksEnabled => equalityChecksEnabled;
         public delegate bool ModerationCheck(ref T incomingValue);
         private event Action<ObservableVar<T>> FireCallbacks;
         private Delegate[] invocationList;
@@ -28,8 +30,8 @@ namespace CoreDev.Observable
         protected T previousValue;
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
         protected IEnumerator<KeyValuePair<int, List<ModerationCheck>>> moderatorEnumerator;
-        protected int recursionCount = 0;
-        protected const int recursionLimit = 1000;
+        protected byte recursionCount = 0;
+        protected const byte recursionLimit = 100;
 
         protected IDataObject dataObject;
         public IDataObject DataObject
@@ -68,7 +70,7 @@ namespace CoreDev.Observable
 
                 if (isValueAcceptable)
                 {
-                    if (AreEqual(currentValue, moderatedValue) == false)
+                    if (equalityChecksEnabled == false || AreEqual(currentValue, moderatedValue) == false)
                     {
                         previousValue = currentValue;
                         currentValue = moderatedValue;
@@ -98,9 +100,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* CONSTRUCTORS
-//*====================
+        //*====================
+        //* CONSTRUCTORS
+        //*====================
         public ObservableVar() : this(default(T)) { }
 
         public ObservableVar(T startValue) : this(startValue, default(IDataObject)) { }
@@ -114,9 +116,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* REGISTRATION FOR CHANGES
-//*====================
+        //*====================
+        //* PUBLIC
+        //*====================
         public virtual void RegisterForChanges(Action<ObservableVar<T>> callback, bool fireCallbackOnRegistration = true)
         {
             FireCallbacks -= callback;
@@ -145,15 +147,11 @@ namespace CoreDev.Observable
             this.CallbacksChanged();
         }
 
-
-//*====================
-//* MODERATORS
-//*====================
         public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0, bool applyModeratorImmediately = true)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
-            
-            if(moderationChecks.Contains(acceptanceCheck) == false)
+
+            if (moderationChecks.Contains(acceptanceCheck) == false)
             {
                 moderationChecks.Add(acceptanceCheck);
                 this.ModeratorsChanged();
@@ -175,43 +173,9 @@ namespace CoreDev.Observable
             }
         }
 
-
-//*====================
-//* UTILS
-//*====================
-        private bool ModerateIncomingValue(ref T value)
+        public void EnableEqualityChecks(bool enable)
         {
-            while(moderatorEnumerator != null && moderatorEnumerator.MoveNext())
-            {
-                KeyValuePair<int, List<ModerationCheck>> kvp = moderatorEnumerator.Current;
-                List<ModerationCheck> moderatorList = kvp.Value;
-
-                for (int i = 0; i < moderatorList.Count; i++)
-                {
-                    bool isAcceptable = moderatorList[i](ref value);
-                    if (isAcceptable == false)
-                    {
-                        this.ValueChangeBlocked(moderatorList[i].Method.Name);
-                        moderatorEnumerator?.Reset();
-                        return false;
-                    }
-                }
-            }
-
-            moderatorEnumerator?.Reset();
-            return true;
-        }
-
-        private List<ModerationCheck> GetModerationChecks(int priority)
-        {
-            if (moderators.ContainsKey(priority) == false)
-            {
-                this.moderators.Add(priority, new List<ModerationCheck>());
-                this.moderatorEnumerator = moderators.GetEnumerator();
-            }
-
-            List<ModerationCheck> moderationChecks = this.moderators[priority];
-            return moderationChecks;
+            this.equalityChecksEnabled = enable;
         }
 
         public bool IsEquals(ObservableVar<T> other)
@@ -239,13 +203,6 @@ namespace CoreDev.Observable
         public virtual void SetValueFromString(string strVal)
         {
             Debug.LogWarning($"No override for SetValueFromString for type {this.GetType()}");
-        }
-
-        protected abstract bool AreEqual(T var, T value);
-
-        protected virtual T ModerateValue(T input)
-        {
-            return input;
         }
 
         public string GetCallbacks()
@@ -298,6 +255,52 @@ namespace CoreDev.Observable
                     }
                 }
             }
+        }
+
+
+        //*====================
+        //* PRIVATE
+        //*====================
+        private bool ModerateIncomingValue(ref T value)
+        {
+            while (moderatorEnumerator != null && moderatorEnumerator.MoveNext())
+            {
+                KeyValuePair<int, List<ModerationCheck>> kvp = moderatorEnumerator.Current;
+                List<ModerationCheck> moderatorList = kvp.Value;
+
+                for (int i = 0; i < moderatorList.Count; i++)
+                {
+                    bool isAcceptable = moderatorList[i](ref value);
+                    if (isAcceptable == false)
+                    {
+                        this.ValueChangeBlocked(moderatorList[i].Method.Name);
+                        moderatorEnumerator?.Reset();
+                        return false;
+                    }
+                }
+            }
+
+            moderatorEnumerator?.Reset();
+            return true;
+        }
+
+        private List<ModerationCheck> GetModerationChecks(int priority)
+        {
+            if (moderators.ContainsKey(priority) == false)
+            {
+                this.moderators.Add(priority, new List<ModerationCheck>());
+                this.moderatorEnumerator = moderators.GetEnumerator();
+            }
+
+            List<ModerationCheck> moderationChecks = this.moderators[priority];
+            return moderationChecks;
+        }
+
+        protected abstract bool AreEqual(T var, T value);
+
+        protected virtual T ModerateValue(T input)
+        {
+            return input;
         }
     }
 }
