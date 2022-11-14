@@ -7,11 +7,11 @@ using UnityEngine.UIElements;
 
 namespace CoreDev.CustomEditors
 {
-/*
-    This class makes all MonoBehaviour Inspectors render using UI Toolkit
-    and will be removed in future when Unity inspectors use UI Toolkit for 
-    inspectors by default
-*/
+    /*
+        This class makes all MonoBehaviour Inspectors render using UI Toolkit
+        and will be removed in future when Unity inspectors use UI Toolkit for 
+        inspectors by default
+    */
     [CustomEditor(typeof(MonoBehaviour), true), CanEditMultipleObjects]
     public class MonoBehaviourEditor : Editor
     {
@@ -35,12 +35,21 @@ namespace CoreDev.CustomEditors
         {
             VisualElement container = new VisualElement();
 
-            SerializedProperty serializedProperty = property.FindPropertyRelative("currentValue");
-            string propertyPath = serializedProperty.propertyPath;
-            string propertyName = propertyPath.Substring(0, propertyPath.IndexOf('.'));
-            PropertyField propertyField = new PropertyField(serializedProperty, char.ToUpper(propertyName[0]) + propertyName.Substring(1));
-            propertyField.SetEnabled(EditorApplication.isPlaying == false);
-            container.Add(propertyField);
+            SerializedProperty serializedCurrentValue = property.FindPropertyRelative("currentValue");
+
+            if (serializedCurrentValue != null)
+            {
+                string propertyPath = serializedCurrentValue.propertyPath;
+                PropertyField propertyField = new PropertyField(serializedCurrentValue, property.displayName);
+                propertyField.SetEnabled(EditorApplication.isPlaying == false);
+                container.Add(propertyField);
+            }
+            else
+            {
+                Label label = new Label(property.displayName +" (Non-Serializable)");
+                label.style.marginLeft = 3.0f;
+                container.Add(label);
+            }
 
             return container;
         }
