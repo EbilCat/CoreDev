@@ -4,14 +4,14 @@ namespace CoreDev.Utils
 {
     public class DropToCollider : MonoBehaviour
     {
-        [SerializeField] private LayerMask layerMask;
+        [SerializeField] private LayerMask colliderLayerMask;
 
         [ContextMenu("Drop")]
-        private void Drop()
+        public void Drop()
         {
             RaycastHit hitInfo;
 
-            bool raycastHit = Physics.Raycast(this.transform.position, Vector3.down, out hitInfo, float.PositiveInfinity, layerMask);
+            bool raycastHit = Physics.Raycast(this.transform.position, Vector3.down, out hitInfo, float.PositiveInfinity, colliderLayerMask);
 
             if (raycastHit)
             {
