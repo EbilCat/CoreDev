@@ -21,7 +21,9 @@ namespace CoreDev.DataObjectInspector
         private Color pulseInactiveColor = Color.gray;
         [SerializeField] private float fadeDurationSecs = 0.5f;
         private float fadeProgress01 = 0.0f;
-
+        private const float fadeSteps = 5;
+        private int currentStep = 0;
+        
 
 //*====================
 //* IHasTimeElapsedHandler
@@ -30,11 +32,19 @@ namespace CoreDev.DataObjectInspector
         {
             fadeProgress01 += (unscaledDeltaTime / fadeDurationSecs);
             fadeProgress01 = Mathf.Clamp01(fadeProgress01);
-            this.image.color = Color.Lerp(activePulseColor, pulseInactiveColor, fadeProgress01);
 
-            if (Mathf.Approximately(fadeProgress01, 1.0f))
+            float stepSize = 1.0f / fadeSteps;
+            int newStep = Mathf.RoundToInt(fadeProgress01 / stepSize);
+
+            if (this.currentStep != newStep)
             {
-                UniversalTimer.UnregisterFromTimeElapsed(TimeElapsed);
+                this.currentStep = newStep;
+                this.image.color = Color.Lerp(activePulseColor, pulseInactiveColor, currentStep * stepSize);
+
+                if (Mathf.Approximately(fadeProgress01, 1.0f))
+                {
+                    UniversalTimer.UnregisterFromTimeElapsed(TimeElapsed);
+                }
             }
         }
 
@@ -133,6 +143,7 @@ namespace CoreDev.DataObjectInspector
         private void StartFade()
         {
             this.fadeProgress01 = 0.0f;
+            this.currentStep = 0;
             this.image.color = activePulseColor;
             UniversalTimer.RegisterForTimeElapsed(TimeElapsed);
         }
@@ -140,6 +151,7 @@ namespace CoreDev.DataObjectInspector
         private void ResetFadeToInactive()
         {
             this.fadeProgress01 = 1.0f;
+            this.currentStep = (int)fadeSteps;
             this.image.color = pulseInactiveColor;
             UniversalTimer.UnregisterFromTimeElapsed(TimeElapsed);
         }
