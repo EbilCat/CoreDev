@@ -144,6 +144,7 @@ namespace CoreDev.DataObjectInspector
 
             if (this.inputField.gameObject.activeInHierarchy)
             {
+                this.inputField.text = this.observableVarInstance.ToString();
                 this.inputField.Select();
                 this.inputField.ActivateInputField();
             }
