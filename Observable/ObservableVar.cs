@@ -16,9 +16,9 @@ namespace CoreDev.Observable
         void SetValueFromString(string strVal);
     }
 
-    //*====================
-    //* SByte
-    //*====================
+//*====================
+//* SByte
+//*====================
     [Serializable]
     public class OSByte : ObservableVar<SByte>
     {
@@ -713,7 +713,7 @@ namespace CoreDev.Observable
         protected override bool AreEqual(Transform var, Transform value) { return var == value; }
     }
 
-    
+
 //*====================
 //* RectTransform
 //*====================
@@ -739,9 +739,9 @@ namespace CoreDev.Observable
         protected override bool AreEqual(Bounds var, Bounds value) { return var.Equals(value); }
     }
 
-    //*====================
-    //* InputButton
-    //*====================
+//*====================
+//* InputButton
+//*====================
     [Serializable]
     public class OInputButton : ObservableVar<PointerEventData.InputButton>
     {
@@ -761,6 +761,108 @@ namespace CoreDev.Observable
             {
                 Debug.Log("Error converting ToInputButton");
             }
+        }
+    }
+
+
+//*====================
+//* RenderTextureFormat
+//*====================
+    [Serializable]
+    public class ORenderTextureFormat : ObservableVar<RenderTextureFormat>
+    {
+        public ORenderTextureFormat() : base(default(RenderTextureFormat)) { }
+        public ORenderTextureFormat(RenderTextureFormat initValue) : base(initValue) { }
+        public ORenderTextureFormat(RenderTextureFormat initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(RenderTextureFormat var, RenderTextureFormat value) { return (var == value); }
+
+        public override void SetValueFromString(string strVal)
+        {
+            try
+            {
+                object enumVal = Enum.Parse(typeof(RenderTextureFormat), strVal, true);
+                this.Value = (RenderTextureFormat)enumVal;
+            }
+            catch
+            {
+                Debug.Log("Error converting ToRenderTextureFormat");
+            }
+        }
+    }
+
+
+//*====================
+//* FilterMode
+//*====================
+    [Serializable]
+    public class OFilterMode : ObservableVar<FilterMode>
+    {
+        public OFilterMode() : base(default(FilterMode)) { }
+        public OFilterMode(FilterMode initValue) : base(initValue) { }
+        public OFilterMode(FilterMode initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(FilterMode var, FilterMode value) { return (var == value); }
+
+        public override void SetValueFromString(string strVal)
+        {
+            try
+            {
+                object enumVal = Enum.Parse(typeof(FilterMode), strVal, true);
+                this.Value = (FilterMode)enumVal;
+            }
+            catch
+            {
+                Debug.Log("Error converting ToFilterMode");
+            }
+        }
+    }
+
+
+//*====================
+//* RenderTexture
+//*====================
+    [Serializable]
+    public class ORenderTexture : ObservableVar<RenderTexture>
+    {
+        public ORenderTexture() : base(default(RenderTexture)) { }
+        public ORenderTexture(RenderTexture initValue) : base(initValue) { }
+        public ORenderTexture(RenderTexture initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(RenderTexture var, RenderTexture value) { return var == value; }
+    }
+
+
+//*====================
+//* TransformDO
+//*====================
+    [Serializable]
+    public class OTransformDO : ObservableVar<TransformDO>
+    {
+        public OTransformDO() : base(default(TransformDO)) { }
+        public OTransformDO(TransformDO initValue) : base(initValue) { }
+        public OTransformDO(TransformDO initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(TransformDO var, TransformDO value)
+        {
+            return var == value;
+        }
+        public override void SetValueFromString(string strVal)
+        {
+            string strValTrimmed = strVal.Trim();
+            if(strValTrimmed.Length == 0)
+            {
+                this.Value = null;
+            }
+            else
+            {
+                this.Value = DataObjectMasterRepository.GetDataObject<TransformDO>(x => x.Name.Value.Equals(strVal));
+            }
+        }
+        public override string ToString()
+        {
+            TransformDO transformDO = this.Value;
+            if (transformDO != null)
+            {
+                return transformDO.Name.Value;
+            }
+            return string.Empty;
         }
     }
 

@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class ScriptExecutionOrder : Attribute
+namespace CoreDev
 {
-    public readonly int executionIndex;
-    public ScriptExecutionOrder(int executionIndex)
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public class ScriptExecutionOrder : Attribute
     {
-        this.executionIndex = executionIndex;
+        public readonly int executionIndex;
+        public ScriptExecutionOrder(int executionIndex)
+        {
+            this.executionIndex = executionIndex;
+        }
     }
 }

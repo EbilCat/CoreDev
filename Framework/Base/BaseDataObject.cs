@@ -57,7 +57,7 @@ namespace CoreDev.Framework
 
     public interface IDataObject
     {
-        public event Action<IDataObject> disposing;
+        event Action<IDataObject> disposing;
 
         void Dispose();
     }

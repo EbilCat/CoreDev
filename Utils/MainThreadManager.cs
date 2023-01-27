@@ -38,11 +38,11 @@ namespace CoreDev.Utils
 
         private void Update()
         {
-            Action action;
             lock (mainThreadActions)
             {
-                while (mainThreadActions.TryDequeue(out action))
+                while (mainThreadActions.Count > 0)
                 {
+                    Action action = mainThreadActions.Dequeue();
                     action?.Invoke();
                 }
             }

@@ -16,5 +16,24 @@ namespace CoreDev.Examples
             bool areEqual = (var == value);
             return areEqual;
         }
+
+        public override string ToString()
+        {
+            AngryCubeDO angryCubeDO = this.Value;
+            return angryCubeDO == null ? "<NULL>" : angryCubeDO.id.ToString();
+        }
+
+        public override void SetValueFromString(string strVal)
+        {
+            if (int.TryParse(strVal, out int id))
+            {
+                AngryCubeDO angryCubeDO = DataObjectMasterRepository.GetDataObject<AngryCubeDO>(x => x.id.Value == id);
+                this.Value = angryCubeDO;
+            }
+            else
+            {
+                this.Value = null;
+            }
+        }
     }
 }

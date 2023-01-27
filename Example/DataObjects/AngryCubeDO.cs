@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreDev.DataObjectInspector;
 using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
@@ -8,9 +9,8 @@ namespace CoreDev.Examples
     [Serializable]
     public class AngryCubeDO : IDataObject
     {
-        
+        [Bookmark] public OUInt id;
         public OInt teamId;
-        public OUInt id;
 
         public OVector3 pos_World;
         public OQuaternion rot_World;
