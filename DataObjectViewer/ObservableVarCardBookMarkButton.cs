@@ -23,6 +23,12 @@ namespace CoreDev.DataObjectInspector
                 UnbindDO(this.inspectedObservableVarDO);
                 this.inspectedObservableVarDO = dataObject as InspectedObservableVarDO;
 
+                if(inspectedObservableVarDO.ObservableVarInfoDO.ValuePropertyInfo == null) //Implies is event thus bookmark does not apply
+                {
+                    this.gameObject.SetActive(false);
+                    return;
+                }
+
                 this.image = this.GetComponent<Image>();
                 this.button = this.GetComponent<Button>();
                 this.button.onClick.RemoveListener(OnButtonClicked);

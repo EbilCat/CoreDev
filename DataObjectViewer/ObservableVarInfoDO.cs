@@ -24,9 +24,9 @@ namespace CoreDev.DataObjectInspector
         public Type EnclosedValueType { get; private set; }
         public bool IsCollection { get; private set; }
 
-        public string Name { get { return fieldInfo.Name; } }
-        public Type FieldType { get { return fieldInfo.FieldType; } }
-
+        public string Name => fieldInfo.Name;
+        public Type FieldType => fieldInfo.FieldType;
+        public PropertyInfo ValuePropertyInfo => valuePropertyInfo;
         public OBool isExpandedView;
         public OBool isBookedMarked;
         public OInt orderIndex;
@@ -45,7 +45,7 @@ namespace CoreDev.DataObjectInspector
             this.moderatorsChangedEventInfo = this.FieldType.GetEvent("ModeratorsChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             this.callbacksChangedEventInfo = this.FieldType.GetEvent("CallbacksChanged", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
-            this.EnclosedValueType = this.valuePropertyInfo.PropertyType;
+            this.EnclosedValueType = this.valuePropertyInfo?.PropertyType;
             this.IsCollection = typeof(ICollection).IsAssignableFrom(this.EnclosedValueType);
 
             this.isExpandedView = new OBool(false, this);
@@ -101,11 +101,16 @@ namespace CoreDev.DataObjectInspector
             valueChangeBlockedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
         }
 
-        public void RegisterForValueChanges(IObservableVar observableVarInstance, Action callback)
+        public void RegisterForValueChanges(IObservableVar observableVarInstance, Action callback, bool fireCallbackOnRegistration = true)
         {
             eventHandlerHolder[0] = callback;
             valueChangedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
             valueChangedEventInfo.GetAddMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
+
+            if(fireCallbackOnRegistration)
+            {
+                callback?.Invoke();
+            }
         }
         
         public void UnregisterFromValueChanges(IObservableVar observableVarInstance, Action callback)
@@ -114,13 +119,18 @@ namespace CoreDev.DataObjectInspector
             valueChangedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
         }
 
-        public void RegisterForModeratorsChanges(IObservableVar observableVarInstance, Action callback)
+        public void RegisterForModeratorsChanges(IObservableVar observableVarInstance, Action callback, bool fireCallbackOnRegistration = true)
         {
             if (moderatorsChangedEventInfo != null)
             {
                 eventHandlerHolder[0] = callback;
                 moderatorsChangedEventInfo.GetRemoveMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
                 moderatorsChangedEventInfo.GetAddMethod(true).Invoke(observableVarInstance, eventHandlerHolder);
+
+                if(fireCallbackOnRegistration)
+                {
+                    callback?.Invoke();
+                }
             }
         }
 

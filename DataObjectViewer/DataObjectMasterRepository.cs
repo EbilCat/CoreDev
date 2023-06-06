@@ -1,23 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using CoreDev.Extensions;
 using UnityEngine;
 
 namespace CoreDev.Framework
 {
     public class DataObjectMasterRepository
     {
-//* Static
+        //* Static
         protected static List<IDataObject> dataObjects = new List<IDataObject>();
         protected static Dictionary<Type, List<IDataObject>> typeSegregatedDOs = new Dictionary<Type, List<IDataObject>>();
         protected static event Action<IDataObject> CreatedDO = delegate { };
         protected static event Action<IDataObject> DisposingDO = delegate { };
         public static int DataObjectCount { get { return dataObjects.Count; } }
+        public static List<Type> typeList = new List<Type>();
 
 
-//*===========================
-//* PUBLIC
-//*===========================
+        //*===========================
+        //* PUBLIC
+        //*===========================
         public static void RegisterForCreation(Action<IDataObject> callback, bool fireCallbackForExistingDOs = true)
         {
             if (IsCreationCallbackRegistered(callback) == false)
@@ -94,37 +96,17 @@ namespace CoreDev.Framework
             return exists;
         }
 
-        public static bool DestroyDataObject(IDataObject dataObject)
+        private static void DestroyDataObject(IDataObject dataObject)
         {
             if (IsDataObjectRegistered(dataObject))
             {
                 Type dataObjectType = dataObject.GetType();
-                UnregisterDataObjectByType(dataObject, dataObjectType);
-
-                Type[] interfaces = dataObjectType.GetInterfaces();
-
-                foreach (Type interfaceType in interfaces)
-                {
-                    UnregisterDataObjectByType(dataObject, interfaceType);
-                }
+                dataObjectType.GetTypes(typeList);
+                UnregisterDataObjectByTypes(dataObject, typeList);
 
                 DisposingDO(dataObject);
+                dataObject.disposing -= DestroyDataObject;
                 dataObjects.Remove(dataObject);
-                dataObject.Dispose();
-                return true;
-            }
-            return false;
-        }
-
-        public static void DestroyAllDataObjects()
-        {
-            int lastDataObjIndex = dataObjects.Count - 1;
-
-            while (lastDataObjIndex > 0)
-            {
-                IDataObject dataObject = dataObjects[lastDataObjIndex];
-                DestroyDataObject(dataObject);
-                lastDataObjIndex = dataObjects.Count - 1;
             }
         }
 
@@ -190,7 +172,7 @@ namespace CoreDev.Framework
             }
         }
 
-        public static bool RegisterDataObject(IDataObject dataObject)
+        public static bool RegisterDataObject(IDataObject dataObject, bool destroyOnSceneEnd = true)
         {
             if (dataObject == null)
             {
@@ -198,20 +180,18 @@ namespace CoreDev.Framework
                 return false;
             }
 
-            DataObjectDestroyer.Instance?.RegisterForDestruction(DestroyAllDataObjects);
-
             if (!IsDataObjectRegistered(dataObject))
             {
-                Type dataObjectType = dataObject.GetType();
-                RegisterDataObjectByType(dataObject, dataObjectType);
-
-                Type[] interfaces = dataObjectType.GetInterfaces();
-
-                foreach (Type interfaceType in interfaces)
+                if (destroyOnSceneEnd)
                 {
-                    RegisterDataObjectByType(dataObject, interfaceType);
+                    DataObjectDestroyer.Instance.RegisterForDestructionOnSceneEnd(dataObject);
                 }
 
+                Type dataObjectType = dataObject.GetType();
+                dataObjectType.GetTypes(typeList);
+                RegisterDataObjectByTypes(dataObject, typeList);
+
+                dataObject.disposing += DestroyDataObject;
                 dataObjects.Add(dataObject);
                 CreatedDO(dataObject);
                 return true;
@@ -219,26 +199,32 @@ namespace CoreDev.Framework
             return false;
         }
 
-        private static void RegisterDataObjectByType(IDataObject dataObject, Type currentType)
+        private static void RegisterDataObjectByTypes(IDataObject dataObject, List<Type> typeList)
         {
-            List<IDataObject> typeSpecificList = null;
-            bool listExists = typeSegregatedDOs.TryGetValue(currentType, out typeSpecificList);
-            if (listExists == false)
+            foreach (Type currentType in typeList)
             {
-                typeSpecificList = new List<IDataObject>();
-                typeSegregatedDOs.Add(currentType, typeSpecificList);
+                List<IDataObject> typeSpecificList = null;
+                bool listExists = typeSegregatedDOs.TryGetValue(currentType, out typeSpecificList);
+                if (listExists == false)
+                {
+                    typeSpecificList = new List<IDataObject>();
+                    typeSegregatedDOs.Add(currentType, typeSpecificList);
+                }
+                typeSpecificList.Add(dataObject);
             }
-            typeSpecificList.Add(dataObject);
         }
 
-        private static void UnregisterDataObjectByType(IDataObject dataObject, Type currentType)
+        private static void UnregisterDataObjectByTypes(IDataObject dataObject, List<Type> typeList)
         {
-            List<IDataObject> typeSpecificList = null;
-            bool listExists = typeSegregatedDOs.TryGetValue(currentType, out typeSpecificList);
-
-            if (listExists == true)
+            foreach (Type currentType in typeList)
             {
-                typeSpecificList.Remove(dataObject);
+                List<IDataObject> typeSpecificList = null;
+                bool listExists = typeSegregatedDOs.TryGetValue(currentType, out typeSpecificList);
+
+                if (listExists == true)
+                {
+                    typeSpecificList.Remove(dataObject);
+                }
             }
         }
     }

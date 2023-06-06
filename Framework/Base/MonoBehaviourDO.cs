@@ -35,7 +35,7 @@ namespace CoreDev.Framework
         protected virtual void BindAndRegister(object obj)
         {
             this.BindAspect(this);
-            DataObjectMasterRepository.RegisterDataObject(this);
+            DataObjectMasterRepository.RegisterDataObject(this, false);
         }
 
         protected virtual void OnDestroy()
@@ -43,10 +43,10 @@ namespace CoreDev.Framework
             this.transformName?.UnregisterFromChanges(OnTransformNameChanged);
             this.isActive?.UnregisterFromChanges(OnIsActiveChanged);
 
-            DataObjectMasterRepository.DestroyDataObject(this);
             this.disposing?.Invoke(this);
             this.UnbindAspect(this);
         }
+        
 
 
 //*====================

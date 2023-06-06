@@ -206,5 +206,5 @@ namespace CoreDev.Framework
 
         Vector3 Forward_World { get; }
         Vector3 Right_World { get; }
-    }
+    }    
 }

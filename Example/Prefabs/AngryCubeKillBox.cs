@@ -40,7 +40,7 @@ namespace CoreDev.Examples
         {
             foreach (AngryCubeDO cube in cubesSlatedForDestruction)
             {
-                DataObjectMasterRepository.DestroyDataObject(cube);
+                cube.Dispose();
             }
             cubesSlatedForDestruction.Clear();
         }

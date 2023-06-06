@@ -75,5 +75,15 @@ namespace CoreDev.Extensions
             double meters = cables * 185.2;
             return meters;
         }
+
+        public static float MetresToNauticalMiles(this float metres)
+        {
+            return metres / 1852.0f;
+        }
+
+        public static float NauticalMilesToMetres(this float nauticalMiles)
+        {
+            return nauticalMiles * 1852.0f;
+        }
     }
 }

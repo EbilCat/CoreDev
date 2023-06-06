@@ -9,6 +9,7 @@ namespace CoreDev.Framework
     {
         private Action<object[]> startDependencyCheck;
         [SerializeField] private int fulfillmentAttemptLimit = 10;
+        [SerializeField] private bool suppressFulfillmentFailedWarning = false;
         private int fulfillmentAttemptCount = 0;
 
         protected OBool initComplete = new OBool(false);
@@ -46,7 +47,7 @@ namespace CoreDev.Framework
             else
             {
                 if (startDependencyCheck == null) { startDependencyCheck = BeginInit; }
-                UniversalTimer.ScheduleCallback(startDependencyCheck, 0.1f);
+                UniversalTimer.ScheduleCallbackUnscaled(startDependencyCheck);
             }
         }
 
@@ -61,7 +62,7 @@ namespace CoreDev.Framework
         protected virtual bool FulfillDependencies()
         {
             fulfillmentAttemptCount++;
-            if (fulfillmentAttemptCount >= fulfillmentAttemptLimit)
+            if (fulfillmentAttemptCount >= fulfillmentAttemptLimit && suppressFulfillmentFailedWarning == false)
             {
                 Debug.LogWarning($"{this.name} ({this.GetType().Name}) failed to initialize after {fulfillmentAttemptCount} tries", this.gameObject);
             }

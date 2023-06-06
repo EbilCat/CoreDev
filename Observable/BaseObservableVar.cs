@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CoreDev.Extensions;
 using CoreDev.Framework;
 using UnityEngine;
 
@@ -20,16 +21,18 @@ namespace CoreDev.Observable
         protected event Action CallbacksChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
 
         private const bool warnOnRecursion = true;
+        private bool equalityChecksEnabled = true;
+        public bool EqualityChecksEnabled => equalityChecksEnabled;
         public delegate bool ModerationCheck(ref T incomingValue);
-        private event Action<ObservableVar<T>> FireCallbacks;
-        private Delegate[] invocationList;
+        private event Action<IObservableVar> Callbacks_Interface;
+        private event Action<ObservableVar<T>> Callbacks_Derived;
 
         [SerializeField] protected T currentValue;
         protected T previousValue;
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
         protected IEnumerator<KeyValuePair<int, List<ModerationCheck>>> moderatorEnumerator;
-        protected int recursionCount = 0;
-        protected const int recursionLimit = 1000;
+        protected byte recursionCount = 0;
+        protected const byte recursionLimit = 100;
 
         protected IDataObject dataObject;
         public IDataObject DataObject
@@ -51,49 +54,12 @@ namespace CoreDev.Observable
             get { return previousValue; }
         }
 
-        public T Value
+        public virtual T Value
         {
             get { return currentValue; }
             set
             {
-                if (recursionCount >= recursionLimit)
-                {
-                    throw new InfiniteRecursionException($"Possible infinite recursion. This variable has been edited {recursionCount} in a single call. \r\nIf this was intentional, please raise the value of \"RecursionLimit\" in BaseObservableVar.cs to avoid this Exception\r\n");
-                }
-
-                this.recursionCount++;
-
-                T moderatedValue = value;
-                bool isValueAcceptable = ModerateIncomingValue(ref moderatedValue);
-
-                if (isValueAcceptable)
-                {
-                    if (AreEqual(currentValue, moderatedValue) == false)
-                    {
-                        previousValue = currentValue;
-                        currentValue = moderatedValue;
-
-                        this.ValueChanged();
-
-                        if (invocationList != null)
-                        {
-                            foreach (Delegate invocation in invocationList)
-                            {
-                                Action<ObservableVar<T>> action = invocation as Action<ObservableVar<T>>;
-                                try
-                                {
-                                    action.Invoke(this);
-                                }
-                                catch (Exception e)
-                                {
-                                    Debug.LogException(new Exception("ObservableVarCallbackException", e));
-                                }
-                            }
-                        }
-                    }
-                }
-
-                this.recursionCount = 0;
+                this.FireCallbacks_Moderated(value);
             }
         }
 
@@ -115,13 +81,12 @@ namespace CoreDev.Observable
 
 
 //*====================
-//* REGISTRATION FOR CHANGES
+//* PUBLIC
 //*====================
         public virtual void RegisterForChanges(Action<ObservableVar<T>> callback, bool fireCallbackOnRegistration = true)
         {
-            FireCallbacks -= callback;
-            FireCallbacks += callback;
-            this.invocationList = FireCallbacks?.GetInvocationList();
+            Callbacks_Derived -= callback;
+            Callbacks_Derived += callback;
 
             if (fireCallbackOnRegistration)
             {
@@ -137,23 +102,43 @@ namespace CoreDev.Observable
             this.CallbacksChanged();
         }
 
-        public void UnregisterFromChanges(Action<ObservableVar<T>> callback)
+        public virtual void UnregisterFromChanges(Action<ObservableVar<T>> callback)
         {
-            FireCallbacks -= callback;
-            this.invocationList = FireCallbacks?.GetInvocationList();
+            Callbacks_Derived -= callback;
+            this.CallbacksChanged();
+        }
+        
+        public virtual void RegisterForChanges(Action<IObservableVar> callback, bool fireCallbackOnRegistration = true)
+        {
+            Callbacks_Interface -= callback;
+            Callbacks_Interface += callback;
 
+            if (fireCallbackOnRegistration)
+            {
+                try
+                {
+                    callback(this);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                }
+            }
+            this.CallbacksChanged();
+        }
+
+        public virtual void UnregisterFromChanges(Action<IObservableVar> callback)
+        {
+            Callbacks_Interface -= callback;
             this.CallbacksChanged();
         }
 
 
-//*====================
-//* MODERATORS
-//*====================
         public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0, bool applyModeratorImmediately = true)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
-            
-            if(moderationChecks.Contains(acceptanceCheck) == false)
+
+            if (moderationChecks.Contains(acceptanceCheck) == false)
             {
                 moderationChecks.Add(acceptanceCheck);
                 this.ModeratorsChanged();
@@ -175,13 +160,115 @@ namespace CoreDev.Observable
             }
         }
 
+        public void EnableEqualityChecks(bool enable)
+        {
+            this.equalityChecksEnabled = enable;
+        }
+
+        public bool IsEquals(ObservableVar<T> other)
+        {
+            return AreEqual(currentValue, other.Value);
+        }
+
+        public bool IsValueEquals(T other)
+        {
+            return AreEqual(currentValue, other);
+        }
+
+        public override string ToString()
+        {
+            if (Value == null)
+            {
+                return "<NULL>";
+            }
+            else
+            {
+                return Value.ToString();
+            }
+        }
+
+        public virtual void SetValueFromString(string strVal)
+        {
+            Debug.LogWarning($"No override for SetValueFromString for type {this.GetType()}");
+        }
+
+        public virtual byte[] ToBytes()
+        {
+            byte[] bytes = SerializationHelper.Serialize(this.Value);
+            if(bytes==null) 
+            {
+                Debug.Log(this.GetType().ToString());
+            bytes = new byte[0];
+            }
+            return bytes;
+        }
+
+        public virtual void SetValueFromBytes(byte[] bytes)
+        {
+            this.Value = SerializationHelper.Deserialize<T>(bytes);
+        }
+
+        public string GetCallbacks()
+        {
+            string callbackStr = string.Empty;
+            callbackStr = AppendToCallbackString(callbackStr, this.Callbacks_Derived?.GetInvocationList());
+            callbackStr = AppendToCallbackString(callbackStr, this.Callbacks_Interface?.GetInvocationList());
+            return callbackStr;
+        }
+
+        public void GetCallbacks(List<string> callbacks)
+        {
+            callbacks.Clear();
+            AppendToCallbackList(callbacks, this.Callbacks_Derived?.GetInvocationList());
+            AppendToCallbackList(callbacks, this.Callbacks_Interface?.GetInvocationList());
+        }
+
 
 //*====================
-//* UTILS
+//* PRIVATE
 //*====================
-        private bool ModerateIncomingValue(ref T value)
+        protected void FireCallbacks_Moderated(T value)
         {
-            while(moderatorEnumerator != null && moderatorEnumerator.MoveNext())
+            if (recursionCount >= recursionLimit)
+            {
+                throw new InfiniteRecursionException($"Possible infinite recursion. This variable has been edited {recursionCount} in a single call. \r\nIf this was intentional, please raise the value of \"RecursionLimit\" in BaseObservableVar.cs to avoid this Exception\r\n");
+            }
+
+            this.recursionCount++;
+
+            T moderatedValue = value;
+            bool isValueAcceptable = ModerateIncomingValue(ref moderatedValue);
+
+            if (isValueAcceptable)
+            {
+                if (equalityChecksEnabled == false || AreEqual(currentValue, moderatedValue) == false)
+                {
+                    previousValue = currentValue;
+                    currentValue = moderatedValue;
+                    FireCallbacks();
+                }
+            }
+
+            this.recursionCount = 0;
+        }
+
+        protected void FireCallbacks()
+        {
+            this.ValueChanged();
+            try
+            {
+                this.Callbacks_Derived?.Invoke(this);
+                this.Callbacks_Interface?.Invoke(this);
+            }
+            catch(Exception e)
+            {
+                Debug.LogException(new Exception("ObservableVarCallbackException", e));
+            }
+        }
+
+        protected bool ModerateIncomingValue(ref T value)
+        {
+            while (moderatorEnumerator != null && moderatorEnumerator.MoveNext())
             {
                 KeyValuePair<int, List<ModerationCheck>> kvp = moderatorEnumerator.Current;
                 List<ModerationCheck> moderatorList = kvp.Value;
@@ -214,33 +301,6 @@ namespace CoreDev.Observable
             return moderationChecks;
         }
 
-        public bool IsEquals(ObservableVar<T> other)
-        {
-            return AreEqual(currentValue, other.Value);
-        }
-
-        public bool IsValueEquals(T other)
-        {
-            return AreEqual(currentValue, other);
-        }
-
-        public override string ToString()
-        {
-            if (Value == null)
-            {
-                return "<NULL>";
-            }
-            else
-            {
-                return Value.ToString();
-            }
-        }
-
-        public virtual void SetValueFromString(string strVal)
-        {
-            Debug.LogWarning($"No override for SetValueFromString for type {this.GetType()}");
-        }
-
         protected abstract bool AreEqual(T var, T value);
 
         protected virtual T ModerateValue(T input)
@@ -248,10 +308,8 @@ namespace CoreDev.Observable
             return input;
         }
 
-        public string GetCallbacks()
+        private static string AppendToCallbackString(string callbacks, Delegate[] invocationList)
         {
-            string callbacks = string.Empty;
-
             if (invocationList != null)
             {
                 for (int i = 0; i < invocationList.Length; i++)
@@ -274,18 +332,17 @@ namespace CoreDev.Observable
                     }
                 }
             }
+
             return callbacks;
         }
 
-        public void GetCallbacks(List<string> callbacks)
+        private void AppendToCallbackList(List<string> callbacks, Delegate[] delegates)
         {
-            callbacks.Clear();
-
-            if (invocationList != null)
+            if (delegates != null)
             {
-                for (int i = 0; i < invocationList.Length; i++)
+                for (int i = 0; i < delegates.Length; i++)
                 {
-                    Delegate invocation = invocationList[i];
+                    Delegate invocation = delegates[i];
 
                     if (invocation.Target is MonoBehaviour)
                     {

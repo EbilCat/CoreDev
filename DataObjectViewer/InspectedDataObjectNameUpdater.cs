@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.ObjectModel;
 using CoreDev.Framework;
 using CoreDev.Observable;
@@ -13,9 +12,26 @@ namespace CoreDev.DataObjectInspector
         private ReadOnlyCollection<ObservableVarInfoDO> observableVarInfos;
 
 
-//*====================
-//* BINDING
-//*====================
+        //*====================
+        //* UNITY
+        //*====================
+        private void OnDestroy()
+        {
+            if (observableVarInfos != null)
+            {
+                foreach (ObservableVarInfoDO observableVarInfoDO in observableVarInfos)
+                {
+                    IObservableVar observableVarInstance = observableVarInfoDO.GetObservableVarInstance(this.inspectedDataObjectDO.DataObjectInstance);
+                    observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshName);
+                    observableVarInfoDO.isBookedMarked.UnregisterFromChanges(OnIsBookedMarkedChanged);
+                }
+            }
+        }
+
+
+        //*====================
+        //* BINDING
+        //*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is InspectedDataObjectDO)
@@ -46,9 +62,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* CALLBACKS - ObservableVarInfoDO
-//*====================
+        //*====================
+        //* CALLBACKS - ObservableVarInfoDO
+        //*====================
         private void OnIsBookedMarkedChanged(ObservableVar<bool> oIsBookedMarked)
         {
             ObservableVarInfoDO observableVarInfoDO = oIsBookedMarked.DataObject as ObservableVarInfoDO;
@@ -81,17 +97,7 @@ namespace CoreDev.DataObjectInspector
 
                     if (observableVarInstance != null)
                     {
-                        if (observableVarInfoDO.IsCollection)
-                        {
-                            ICollection collection = observableVarInfoDO.GetValue(observableVarInstance) as ICollection;
-                            name += $"{Environment.NewLine}{observableVarInfoDO.Name}:{collection.Count}";
-                        }
-                        else
-                        {
-                            object val = observableVarInfoDO.GetValue(observableVarInstance);
-                            string varStr = (val == null) ? "<NULL>" : val.ToString();
-                            name += $"{Environment.NewLine}{observableVarInfoDO.Name}:{varStr}";
-                        }
+                        name += $"{Environment.NewLine}{observableVarInfoDO.Name}:{observableVarInstance}";
                     }
                 }
             }

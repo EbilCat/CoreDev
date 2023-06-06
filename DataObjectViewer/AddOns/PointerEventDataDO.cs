@@ -116,15 +116,6 @@ namespace CoreDev.DataObjectInspector.AddOns
             this.useDragThreshold = new OBool(pointerEventData.useDragThreshold, this);
             this.dragging = new OBool(pointerEventData.dragging, this);
             this.button = new OInputButton(pointerEventData.button, this);
-            this.pressure = new OFloat(pointerEventData.pressure, this);
-            this.tangentialPressure = new OFloat(pointerEventData.tangentialPressure, this);
-            this.altitudeAngle = new OFloat(pointerEventData.altitudeAngle, this);
-            this.azimuthAngle = new OFloat(pointerEventData.azimuthAngle, this);
-            this.twist = new OFloat(pointerEventData.twist, this);
-            this.radius = new OVector2(pointerEventData.radius, this);
-            this.radiusVariance = new OVector2(pointerEventData.radiusVariance, this);
-            this.fullyExited = new OBool(pointerEventData.fullyExited, this);
-            this.reentered = new OBool(pointerEventData.reentered, this);
             this.enterEventCamera = new OCamera(pointerEventData.enterEventCamera, this);
             this.pressEventCamera = new OCamera(pointerEventData.pressEventCamera, this);
             this.pointerPress = new OGameObject(pointerEventData.pointerPress, this);
@@ -137,7 +128,6 @@ namespace CoreDev.DataObjectInspector.AddOns
             this.pointerDrag = new OGameObject(pointerEventData.pointerDrag, this);
             this.pointerCurrentRaycast = new ORaycastResult(pointerEventData.pointerCurrentRaycast, this);
             this.pointerPressRaycast = new ORaycastResult(pointerEventData.pointerPressRaycast, this);
-            this.pointerClick = new OGameObject(pointerEventData.pointerClick, this);
             this.position = new OVector2(pointerEventData.position, this);
             this.delta = new OVector2(pointerEventData.delta, this);
             this.pressPosition = new OVector2(pointerEventData.pressPosition, this);
@@ -154,15 +144,6 @@ namespace CoreDev.DataObjectInspector.AddOns
             this.useDragThreshold.Value = pointerEventData.useDragThreshold;
             this.dragging.Value = pointerEventData.dragging;
             this.button.Value = pointerEventData.button;
-            this.pressure.Value = pointerEventData.pressure;
-            this.tangentialPressure.Value = pointerEventData.tangentialPressure;
-            this.altitudeAngle.Value = pointerEventData.altitudeAngle;
-            this.azimuthAngle.Value = pointerEventData.azimuthAngle;
-            this.twist.Value = pointerEventData.twist;
-            this.radius.Value = pointerEventData.radius;
-            this.radiusVariance.Value = pointerEventData.radiusVariance;
-            this.fullyExited.Value = pointerEventData.fullyExited;
-            this.reentered.Value = pointerEventData.reentered;
             this.enterEventCamera.Value = pointerEventData.enterEventCamera;
             this.pressEventCamera.Value = pointerEventData.pressEventCamera;
             this.pointerPress.Value = pointerEventData.pointerPress;
@@ -175,7 +156,6 @@ namespace CoreDev.DataObjectInspector.AddOns
             this.pointerDrag.Value = pointerEventData.pointerDrag;
             this.pointerCurrentRaycast.Value = pointerEventData.pointerCurrentRaycast;
             this.pointerPressRaycast.Value = pointerEventData.pointerPressRaycast;
-            this.pointerClick.Value = pointerEventData.pointerClick;
             this.position.Value = pointerEventData.position;
             this.delta.Value = pointerEventData.delta;
             this.pressPosition.Value = pointerEventData.pressPosition;

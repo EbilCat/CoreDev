@@ -41,7 +41,7 @@ namespace CoreDev.Utils
                 {
                     bool hasExecutionAttr = false;
                     int newExecutionIndex = 0;
-                    foreach (Attribute attr in Attribute.GetCustomAttributes(type, typeof(ScriptExecutionOrder)))
+                    foreach (Attribute attr in Attribute.GetCustomAttributes(type, typeof(CoreDev.ScriptExecutionOrder)))
                     {
                         hasExecutionAttr = true;
                         newExecutionIndex = (attr as ScriptExecutionOrder).executionIndex;

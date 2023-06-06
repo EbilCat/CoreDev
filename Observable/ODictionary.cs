@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CoreDev.Extensions;
 using CoreDev.Framework;
 using UnityEngine;
 
@@ -34,10 +35,15 @@ namespace CoreDev.Observable
             }
         }
 
+        public ODictionary(IDataObject dataObject = null) : base()
+        {
+            this.DataObject = dataObject;
+        }
 
-        //*====================
-        //* MODERATORS
-        //*====================
+
+//*====================
+//* MODERATORS
+//*====================
         public void AddModerator(ModerationCheck acceptanceCheck, int priority = 0)
         {
             List<ModerationCheck> moderationChecks = GetModerationChecks(priority);
@@ -54,11 +60,38 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* EVENT REGISTRATION
-        //*====================
-        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementAddedCallback = delegate { };
-        public void RegisterForElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback, bool fireCallbackForExistingElements = true)
+//*====================
+//* EVENT REGISTRATION
+//*====================
+        private event Action<IObservableVar> ListeningCallbacks;
+        public virtual void RegisterForChanges(Action<IObservableVar> callback, bool fireCallbackOnRegistration = true)
+        {
+            ListeningCallbacks -= callback;
+            ListeningCallbacks += callback;
+
+            if (fireCallbackOnRegistration)
+            {
+                try
+                {
+                    callback(this);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                }
+            }
+            this.CallbacksChanged();
+        }
+
+        public virtual void UnregisterFromChanges(Action<IObservableVar> callback)
+        {
+            ListeningCallbacks -= callback;
+            this.CallbacksChanged();
+        }
+
+
+        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementAddedCallback;
+        public virtual void RegisterForElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback, bool fireCallbackForExistingElements = true)
         {
             if (fireCallbackForExistingElements)
             {
@@ -72,32 +105,39 @@ namespace CoreDev.Observable
             this.CallbacksChanged();
         }
 
-        public void UnregisterFromElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
+        public virtual void UnregisterFromElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
         {
             FireElementAddedCallback -= callback;
             this.CallbacksChanged();
         }
 
 
-        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementRemovedCallback = delegate { };
-        public void RegisterForElementRemoved(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
+        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementRemovedCallback;
+        public virtual void RegisterForElementRemoved(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
         {
             FireElementRemovedCallback -= callback;
             FireElementRemovedCallback += callback;
             this.CallbacksChanged();
         }
 
-        public void UnregisterFromElementRemoved(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
+        public virtual void UnregisterFromElementRemoved(Action<ODictionary<TKey, TValue>, TKey, TValue> callback, bool fireCallbackForExistingElements = true)
         {
+            if (fireCallbackForExistingElements)
+            {
+                foreach (KeyValuePair<TKey, TValue> element in this)
+                {
+                    callback(this, element.Key, element.Value);
+                }
+            }
             FireElementRemovedCallback -= callback;
             this.CallbacksChanged();
         }
 
 
 
-        //*====================
-        //* ACTIONS
-        //*====================
+//*====================
+//* ACTIONS
+//*====================
         public new bool Add(TKey key, TValue value)
         {
             bool moderationPassed = this.ModerateIncomingValue(ref key, ref value, ODictionaryOperation.ADD);
@@ -105,7 +145,15 @@ namespace CoreDev.Observable
             {
                 base.Add(key, value);
                 this.ValueChanged();
-                this.FireElementAddedCallback?.Invoke(this, key, value);
+                try
+                {
+                    this.ListeningCallbacks?.Invoke(this);
+                    this.FireElementAddedCallback?.Invoke(this, key, value);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                }
             }
             return moderationPassed;
         }
@@ -126,7 +174,15 @@ namespace CoreDev.Observable
                     if (isRemoved)
                     {
                         this.ValueChanged();
-                        this.FireElementRemovedCallback?.Invoke(this, key, value);
+                        try
+                        {
+                            this.ListeningCallbacks?.Invoke(this);
+                            this.FireElementRemovedCallback?.Invoke(this, key, value);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                        }
                     }
                 }
             }
@@ -179,9 +235,9 @@ namespace CoreDev.Observable
         // }
 
 
-        //*====================
-        //* QUERIES
-        //*====================
+//*====================
+//* QUERIES
+//*====================
         public new TValue this[TKey key]
         {
             get
@@ -196,10 +252,18 @@ namespace CoreDev.Observable
 
                 if (removalModerationPassed && additionModerationPassed)
                 {
-                    this.FireElementRemovedCallback?.Invoke(this, key, itemToRemove);
-                    base[key] = value;
-                    this.ValueChanged();
-                    this.FireElementAddedCallback?.Invoke(this, key, value);
+                    try
+                    {
+                        this.FireElementRemovedCallback?.Invoke(this, key, itemToRemove);
+                        base[key] = value;
+                        this.ValueChanged();
+                        this.ListeningCallbacks?.Invoke(this);
+                        this.FireElementAddedCallback?.Invoke(this, key, value);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                    }
                 }
             }
         }
@@ -213,9 +277,9 @@ namespace CoreDev.Observable
         }
 
 
-        //*====================
-        //* PRIVATE
-        //*====================
+//*====================
+//* PRIVATE
+//*====================
         private bool ModerateIncomingValue(ref TKey key, ref TValue value, ODictionaryOperation operation)
         {
             foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)
@@ -248,6 +312,23 @@ namespace CoreDev.Observable
         public string GetCallbacks()
         {
             string callbacks = string.Empty;
+
+            Delegate[] anyChangeCallbackInvocationList = ListeningCallbacks?.GetInvocationList();
+            if (anyChangeCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in anyChangeCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks += $"ANY: {invocation.Target.GetType().Name} ({monoBehaviour.name})\r\n";
+                    }
+                    else
+                    {
+                        callbacks += $"ANY: {invocation.Target.GetType().Name}\r\n";
+                    }
+                }
+            }
 
             Delegate[] elementAddedCallbackInvocationList = FireElementAddedCallback?.GetInvocationList();
             if (elementAddedCallbackInvocationList != null)
@@ -290,6 +371,24 @@ namespace CoreDev.Observable
         {
             callbacks.Clear();
 
+            Delegate[] anyChangeCallbackInvocationList = ListeningCallbacks?.GetInvocationList();
+            if (anyChangeCallbackInvocationList != null)
+            {
+                foreach (Delegate invocation in anyChangeCallbackInvocationList)
+                {
+                    if (invocation.Target is MonoBehaviour)
+                    {
+                        MonoBehaviour monoBehaviour = invocation.Target as MonoBehaviour;
+                        callbacks.Add($"ANY: {invocation.Target.GetType().Name} ({monoBehaviour.name})\r\n");
+                    }
+                    else
+                    {
+                        callbacks.Add($"ANY: {invocation.Target.GetType().Name}\r\n");
+                    }
+                }
+            }
+
+
             Delegate[] elementAddedCallbackInvocationList = FireElementAddedCallback?.GetInvocationList();
             if (elementAddedCallbackInvocationList != null)
             {
@@ -328,6 +427,37 @@ namespace CoreDev.Observable
         public virtual void SetValueFromString(string strVal)
         {
             Debug.LogWarning($"No override for SetValueFromString for type {this.GetType()}");
+            if(strVal.ToLower().Contains("clear")||strVal.ToLower().Contains("clr"))
+            {
+                this.Clear();
+            }
+        }
+
+        public byte[] ToBytes()
+        {
+            object[] kvps = new object[this.Count * 2];
+            int count = 0;
+
+            foreach (KeyValuePair<TKey, TValue> kvp in this)
+            {
+                kvps[count++] = kvp.Key;
+                kvps[count++] = kvp.Value;
+            }
+
+            return SerializationHelper.Serialize(kvps);
+        }
+
+        public void SetValueFromBytes(byte[] bytes)
+        {
+            this.Clear();
+            object[] objs = SerializationHelper.Deserialize<object[]>(bytes);
+
+            for (int i = 0; i < objs.Length;)
+            {
+                TKey key = (TKey)objs[i++];
+                TValue value = (TValue)objs[i++];
+                this.Add(key, value);
+            }
         }
     }
 }

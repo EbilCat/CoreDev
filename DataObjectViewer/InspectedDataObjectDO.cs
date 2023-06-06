@@ -22,7 +22,7 @@ namespace CoreDev.DataObjectInspector
         public OList<InspectedObservableVarDO> inspectedOVarDOs;
         public OBool matchesFilter;
         public OBool isInspected;
-        public OAction activateFilterTextField;
+        public OEvent activateFilterTextField;
 
 
         public InspectedDataObjectDO(IDataObject dataObjectInstance)
@@ -34,7 +34,7 @@ namespace CoreDev.DataObjectInspector
             this.inspectedOVarDOs = new OList<InspectedObservableVarDO>(this);
             this.matchesFilter = new OBool(true, this);
             this.isInspected = new OBool(false, this);
-            this.activateFilterTextField = new OAction(this);
+            this.activateFilterTextField = new OEvent(this);
 
             Type dataObjectType = dataObjectInstance.GetType();
             if (dataObjectInfoDOs.ContainsKey(dataObjectType) == false)

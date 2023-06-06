@@ -11,18 +11,18 @@ namespace CoreDev.DataObjectInspector
         private DataObjectInspectorDO dataObjectInspectorDO;
 
 
-        //*====================
-        //* UNITY
-        //*====================
+//*====================
+//* UNITY
+//*====================
         protected virtual void OnDestroy()
         {
             this.UnbindDO(this.dataObjectInspectorDO);
         }
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is DataObjectInspectorDO)
@@ -48,9 +48,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* IHasTimeElapsedHandler
-        //*====================
+//*====================
+//* IHasTimeElapsedHandler
+//*====================
         public void TimeElapsed(float deltaTime, float unscaledDeltaTime, int executionOrder)
         {
             if (Input.GetKeyDown(activationKey))
@@ -61,9 +61,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS
-        //*====================
+//*====================
+//* CALLBACKS
+//*====================
         private void OnIsOnChanged(ObservableVar<bool> oIsOn)
         {
             bool isOn = oIsOn.Value;

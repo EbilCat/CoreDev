@@ -2,7 +2,6 @@
 using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 
 namespace CoreDev.DataObjectInspector
@@ -14,7 +13,6 @@ namespace CoreDev.DataObjectInspector
         private ObservableVarInfoDO observableVarInfoDO;
         private IObservableVar observableVarInstance;
         private RearrangeableScrollViewItem rearrangeableScrollViewItem;
-        private Text text;
 
 
 //*====================
@@ -40,7 +38,6 @@ namespace CoreDev.DataObjectInspector
             fulfilled &= inspectedObservableVarDO != null;
             fulfilled &= inspectedDataObjectDO != null;
             fulfilled &= this.rearrangeableScrollViewItem = this.GetComponentInChildren<RearrangeableScrollViewItem>();
-            fulfilled &= this.text = this.GetComponentInChildren<Text>();
             return fulfilled;
         }
 
@@ -50,7 +47,6 @@ namespace CoreDev.DataObjectInspector
             this.ClearDependency(ref inspectedObservableVarDO);
             this.ClearDependency(ref inspectedDataObjectDO);
             this.rearrangeableScrollViewItem = null;
-            this.text = null;
         }
 
         protected override void RegisterCallbacks()
@@ -61,18 +57,20 @@ namespace CoreDev.DataObjectInspector
 
             this.rearrangeableScrollViewItem.RegisterForSiblingIndexChanged(OnSiblingIndexChanged);
             this.inspectedObservableVarDO.matchesFilter.RegisterForChanges(OnMatchesFilterChanged);
-            this.inspectedObservableVarDO.cardText.RegisterForChanges(OnCardTextChanged);
+            this.inspectedObservableVarDO.basicText.RegisterForChanges(RunTextMatchFilter);
+            this.inspectedObservableVarDO.expandedText.RegisterForChanges(RunTextMatchFilter);
             this.observableVarInfoDO.orderIndex.RegisterForChanges(OnOrderIndexChanged);
-            this.inspectedDataObjectDO.observableVarFilterString.RegisterForChanges(OnObservableVarFilterString);
+            this.inspectedDataObjectDO.observableVarFilterString.RegisterForChanges(RunTextMatchFilter);
         }
 
         protected override void UnregisterCallbacks()
         {
             this.rearrangeableScrollViewItem?.UnregisterFromSiblingIndexChanged(OnSiblingIndexChanged);
             this.inspectedObservableVarDO?.matchesFilter.UnregisterFromChanges(OnMatchesFilterChanged);
-            this.inspectedObservableVarDO?.cardText.UnregisterFromChanges(OnCardTextChanged);
+            this.inspectedObservableVarDO?.basicText.UnregisterFromChanges(RunTextMatchFilter);
+            this.inspectedObservableVarDO?.expandedText.UnregisterFromChanges(RunTextMatchFilter);
             this.observableVarInfoDO?.orderIndex?.UnregisterFromChanges(OnOrderIndexChanged);
-            this.inspectedDataObjectDO.observableVarFilterString?.UnregisterFromChanges(OnObservableVarFilterString);
+            this.inspectedDataObjectDO.observableVarFilterString?.UnregisterFromChanges(RunTextMatchFilter);
 
             this.name = string.Empty;
             this.observableVarInfoDO = null;
@@ -102,13 +100,14 @@ namespace CoreDev.DataObjectInspector
 //*====================
 //* CALLBACKS
 //*====================
-        private void OnObservableVarFilterString(ObservableVar<string> obj)
+        private void RunTextMatchFilter(IObservableVar obj)
         {
             try
             {
                 string observableVarFilterString = this.inspectedDataObjectDO.observableVarFilterString.Value;
-                Match result = Regex.Match(this.text.text, observableVarFilterString, RegexOptions.Singleline | RegexOptions.IgnoreCase);
-                this.inspectedObservableVarDO.matchesFilter.Value = result.Success;
+                Match basicTextMatch = Regex.Match(this.inspectedObservableVarDO.basicText.Value, observableVarFilterString, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                Match expandedTextMatch = Regex.Match(this.inspectedObservableVarDO.expandedText.Value, observableVarFilterString, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                this.inspectedObservableVarDO.matchesFilter.Value = basicTextMatch.Success || expandedTextMatch.Success;
             }
             catch
             {
@@ -119,11 +118,6 @@ namespace CoreDev.DataObjectInspector
         private void OnMatchesFilterChanged(ObservableVar<bool> obj)
         {
             this.gameObject.SetActive(obj.Value);
-        }
-
-        private void OnCardTextChanged(ObservableVar<string> obj)
-        {
-            this.text.text = obj.Value;
         }
 
 
@@ -149,9 +143,14 @@ namespace CoreDev.DataObjectInspector
         {
             if (eventData.button == PointerEventData.InputButton.Left && potentialClick)
             {
-                bool isExpandedView = this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value;
-                this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value = !isExpandedView;
+                bool isExpandedView = !this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value;
+                this.inspectedObservableVarDO.ObservableVarInfoDO.isExpandedView.Value = isExpandedView;
                 potentialClick = false;
+
+                if (isExpandedView)
+                {
+                    inspectedObservableVarDO.Focus.Fire();
+                }
             }
         }
     }

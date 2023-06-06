@@ -113,7 +113,7 @@ namespace CoreDev.DataObjectInspector
 //*====================
 //* PRIVATE
 //*====================
-        private void ActivateFilterTextField(object obj = null)
+        private void ActivateFilterTextField(ObservableVar<object> obj = null)
         {
             //Have to delay a frame otherwise select won't work
             UniversalTimer.ScheduleCallback((x) =>

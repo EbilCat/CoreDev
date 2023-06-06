@@ -66,7 +66,7 @@ namespace CoreDev.Sequencing
         {
             foreach (TimeElapsedHandler timeElapsedHandler in timeElapsedHandlers)
             {
-                Debug.Log($"  {timeElapsedHandler.GetType()}");
+                Debug.Log($"  {timeElapsedHandler.Target}: {timeElapsedHandler.Method.Name}");
             }
         }
     }

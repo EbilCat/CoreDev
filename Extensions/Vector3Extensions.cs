@@ -169,6 +169,5 @@ namespace CoreDev.Extensions
             float distance = Vector3.Distance(fromPos_World, toPos_World);
             return distance;
         }
-
     }
 }

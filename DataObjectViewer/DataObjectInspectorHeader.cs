@@ -6,30 +6,32 @@ namespace CoreDev.DataObjectInspector
 {
     public class DataObjectInspectorHeader : MonoBehaviour, IInitializePotentialDragHandler, IDragHandler
     {
+        [SerializeField] private RectTransform dataObjectInspectorCanvas;
         [SerializeField] private RectTransform dataObjectInspectorWindow;
-        private Vector2 lastFrameDragPos_Screen;
+        private Vector2 lastFrameDragPos_Canvas;
 
         public void OnInitializePotentialDrag(PointerEventData eventData)
         {
-            lastFrameDragPos_Screen = eventData.position;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(this.dataObjectInspectorCanvas, eventData.position, null, out lastFrameDragPos_Canvas);
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            Vector2 moveDelta = eventData.position - this.lastFrameDragPos_Screen;
-            Vector2 newPos = (Vector2)dataObjectInspectorWindow.position + moveDelta;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(this.dataObjectInspectorCanvas, eventData.position, null, out Vector2 currentFrameDragPos_Canvas);
+            Vector2 moveDelta_Canvas = currentFrameDragPos_Canvas - this.lastFrameDragPos_Canvas;
+            Vector2 newPos = (Vector2)dataObjectInspectorWindow.anchoredPosition + moveDelta_Canvas;
             newPos = ClampToScreen(newPos);
-            dataObjectInspectorWindow.position = newPos;
-            lastFrameDragPos_Screen = eventData.position;
+            dataObjectInspectorWindow.anchoredPosition = newPos;
+            lastFrameDragPos_Canvas = currentFrameDragPos_Canvas;
         }
 
         private Vector2 ClampToScreen(Vector2 newPos)
         {
-            float width = Screen.width - this.dataObjectInspectorWindow.rect.width;
-            float height = Screen.height;
+            float width = this.dataObjectInspectorCanvas.rect.width - this.dataObjectInspectorWindow.rect.width;
+            float height = this.dataObjectInspectorCanvas.rect.height - this.dataObjectInspectorWindow.rect.height;
 
             newPos.x = Mathf.Clamp(newPos.x, 0, width);
-            newPos.y = Mathf.Clamp(newPos.y, this.dataObjectInspectorWindow.rect.height, height);
+            newPos.y = Mathf.Clamp(newPos.y, -height, 0);
 
             return newPos;
         }

@@ -20,6 +20,10 @@ namespace CoreDev.Examples
         [SerializeField] private OFloat turnSpeed = new OFloat(45.0f);
         public OFloat TurnSpeed => turnSpeed;
 
+        public void ScreenPointToLocalPointInRectangle_HS(RectTransform rect, Vector2 screenPoint, Camera cam, out Vector2 convertedPoint)
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, screenPoint, cam, out convertedPoint);
+        }
         protected override void Awake()
         {
             this.Claim(this.moveSpeed);

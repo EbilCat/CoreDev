@@ -36,6 +36,7 @@ namespace CoreDev.Sequencing
 //*====================
         protected void Start()
         {
+            DontDestroyOnLoad(this.gameObject);
             foreach (KeyValuePair<int, InitExecutor> kvp in initExecutors)
             {
                 InitExecutor initExecutor = kvp.Value;
