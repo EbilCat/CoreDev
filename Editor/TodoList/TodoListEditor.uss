@@ -1,0 +1,10 @@
+.Section {
+    flex-shrink: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.HeaderText {
+    -unity-font-style: bold;
+    height: auto;
+}
