@@ -30,7 +30,8 @@ namespace CoreDev.Sequencing
                     }
                     catch (Exception e)
                     {
-                        Debug.LogException(e);
+                        UnityEngine.Object obj = timeElapsedHandler.Target as UnityEngine.Object;
+                        Debug.LogException(e, obj);
                     }
                 }
             }

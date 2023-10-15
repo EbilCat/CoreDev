@@ -42,7 +42,6 @@ namespace CoreDev.Framework
 
         public Vector3 Right_World => this.transform.right;
 
-
 //*====================
 //* UNITY
 //*====================

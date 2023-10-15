@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using CoreDev.Framework;
+using UnityEngine;
 
 public class WeaponSpawner : BaseSpawner<WeaponDO, Transform>
 {

@@ -64,7 +64,7 @@ namespace CoreDev.Framework
             fulfillmentAttemptCount++;
             if (fulfillmentAttemptCount >= fulfillmentAttemptLimit && suppressFulfillmentFailedWarning == false)
             {
-                Debug.LogWarning($"{this.name} ({this.GetType().Name}) failed to initialize after {fulfillmentAttemptCount} tries", this.gameObject);
+                // Debug.LogWarning($"{this.name} ({this.GetType().Name}) failed to initialize after {fulfillmentAttemptCount} tries", this.gameObject);
             }
 
             bool fufilledDependencies = true;
@@ -106,6 +106,7 @@ namespace CoreDev.Framework
             if (dataObject is T && target == dataObject as T)
             {
                 this.ClearDependencies();
+                target = null;
             }
         }
 

@@ -24,8 +24,10 @@ namespace CoreDev.Observable
         private bool equalityChecksEnabled = true;
         public bool EqualityChecksEnabled => equalityChecksEnabled;
         public delegate bool ModerationCheck(ref T incomingValue);
-        private event Action<IObservableVar> Callbacks_Interface;
         private event Action<ObservableVar<T>> Callbacks_Derived;
+        private event Action<IObservableVar> Callbacks_Interface;
+        private Delegate[] callbacks_Derived_Invocations = null;
+        private Delegate[] callbacks_Interface_Invocations = null;
 
         [SerializeField] protected T currentValue;
         protected T previousValue;
@@ -35,6 +37,7 @@ namespace CoreDev.Observable
         protected const byte recursionLimit = 100;
 
         protected IDataObject dataObject;
+
         public IDataObject DataObject
         {
             get { return dataObject; }
@@ -64,9 +67,9 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* CONSTRUCTORS
-//*====================
+        //*====================
+        //* CONSTRUCTORS
+        //*====================
         public ObservableVar() : this(default(T)) { }
 
         public ObservableVar(T startValue) : this(startValue, default(IDataObject)) { }
@@ -80,13 +83,14 @@ namespace CoreDev.Observable
         }
 
 
-//*====================
-//* PUBLIC
-//*====================
+        //*====================
+        //* PUBLIC
+        //*====================
         public virtual void RegisterForChanges(Action<ObservableVar<T>> callback, bool fireCallbackOnRegistration = true)
         {
             Callbacks_Derived -= callback;
             Callbacks_Derived += callback;
+            this.callbacks_Derived_Invocations = Callbacks_Derived?.GetInvocationList();
 
             if (fireCallbackOnRegistration)
             {
@@ -105,13 +109,15 @@ namespace CoreDev.Observable
         public virtual void UnregisterFromChanges(Action<ObservableVar<T>> callback)
         {
             Callbacks_Derived -= callback;
+            this.callbacks_Derived_Invocations = Callbacks_Derived?.GetInvocationList();
             this.CallbacksChanged();
         }
-        
+
         public virtual void RegisterForChanges(Action<IObservableVar> callback, bool fireCallbackOnRegistration = true)
         {
             Callbacks_Interface -= callback;
             Callbacks_Interface += callback;
+            this.callbacks_Interface_Invocations = Callbacks_Interface?.GetInvocationList();
 
             if (fireCallbackOnRegistration)
             {
@@ -130,6 +136,7 @@ namespace CoreDev.Observable
         public virtual void UnregisterFromChanges(Action<IObservableVar> callback)
         {
             Callbacks_Interface -= callback;
+            this.callbacks_Interface_Invocations = Callbacks_Interface?.GetInvocationList();
             this.CallbacksChanged();
         }
 
@@ -195,10 +202,10 @@ namespace CoreDev.Observable
         public virtual byte[] ToBytes()
         {
             byte[] bytes = SerializationHelper.Serialize(this.Value);
-            if(bytes==null) 
+            if (bytes == null)
             {
                 Debug.Log(this.GetType().ToString());
-            bytes = new byte[0];
+                bytes = new byte[0];
             }
             return bytes;
         }
@@ -211,22 +218,22 @@ namespace CoreDev.Observable
         public string GetCallbacks()
         {
             string callbackStr = string.Empty;
-            callbackStr = AppendToCallbackString(callbackStr, this.Callbacks_Derived?.GetInvocationList());
-            callbackStr = AppendToCallbackString(callbackStr, this.Callbacks_Interface?.GetInvocationList());
+            callbackStr = AppendToCallbackString(callbackStr, callbacks_Derived_Invocations);
+            callbackStr = AppendToCallbackString(callbackStr, callbacks_Interface_Invocations);
             return callbackStr;
         }
 
         public void GetCallbacks(List<string> callbacks)
         {
             callbacks.Clear();
-            AppendToCallbackList(callbacks, this.Callbacks_Derived?.GetInvocationList());
-            AppendToCallbackList(callbacks, this.Callbacks_Interface?.GetInvocationList());
+            AppendToCallbackList(callbacks, callbacks_Derived_Invocations);
+            AppendToCallbackList(callbacks, callbacks_Interface_Invocations);
         }
 
 
-//*====================
-//* PRIVATE
-//*====================
+        //*====================
+        //* PRIVATE
+        //*====================
         protected void FireCallbacks_Moderated(T value)
         {
             if (recursionCount >= recursionLimit)
@@ -255,14 +262,45 @@ namespace CoreDev.Observable
         protected void FireCallbacks()
         {
             this.ValueChanged();
-            try
+
+            if (callbacks_Derived_Invocations != null)
             {
-                this.Callbacks_Derived?.Invoke(this);
-                this.Callbacks_Interface?.Invoke(this);
+                Delegate[] iter_callbacks_Derived_Invocations = callbacks_Derived_Invocations;
+
+                for (int i = 0; i < iter_callbacks_Derived_Invocations.Length; i++)
+                {
+                    Delegate invocation = iter_callbacks_Derived_Invocations[i];
+                    try
+                    {
+                        Action<ObservableVar<T>> action = (Action<ObservableVar<T>>)invocation;
+                        action.Invoke(this);
+                    }
+                    catch (Exception e)
+                    {
+                        UnityEngine.Object obj = invocation?.Target as UnityEngine.Object;
+                        Debug.LogException(e, obj);
+                    }
+                }
             }
-            catch(Exception e)
+
+            if (callbacks_Interface_Invocations != null)
             {
-                Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                Delegate[] iter_callbacks_Interface_Invocations = callbacks_Interface_Invocations;
+
+                for (int i = 0; i < iter_callbacks_Interface_Invocations.Length; i++)
+                {
+                    Delegate invocation = iter_callbacks_Interface_Invocations[i];
+                    try
+                    {
+                        Action<IObservableVar> action = invocation as Action<IObservableVar>;
+                        action.Invoke(this);
+                    }
+                    catch (Exception e)
+                    {
+                        UnityEngine.Object obj = invocation?.Target as UnityEngine.Object;
+                        Debug.LogException(e, obj);
+                    }
+                }
             }
         }
 

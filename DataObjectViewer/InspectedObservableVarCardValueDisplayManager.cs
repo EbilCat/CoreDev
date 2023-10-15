@@ -59,7 +59,7 @@ namespace CoreDev.DataObjectInspector
 
         protected override void UnregisterCallbacks()
         {
-            if (this.observableVarInfoDO.IsCollection)
+            if (this.observableVarInfoDO != null && this.observableVarInfoDO.IsCollection)
             {
                 this.observableVarInfoDO?.isExpandedView.UnregisterFromChanges(OnExpandedChanged);
             }

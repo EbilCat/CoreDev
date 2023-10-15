@@ -15,6 +15,15 @@ namespace CoreDev.DataObjectInspector
 
 
 //*====================
+//* UNITY
+//*====================
+        private void OnDestroy()
+        {
+            this.UnbindDO(this.inspectedDataObjectDO);
+        }
+        
+
+//*====================
 //* BINDING
 //*====================
         public void BindDO(IDataObject dataObject)

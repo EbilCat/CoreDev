@@ -9,13 +9,20 @@ namespace CoreDev.DataObjectInspector
 {
     public class InspectedDataObjectCardSpawner : MonoBehaviour
     {
+        private static InspectedDataObjectCardSpawner singleton;
+        public static InspectedDataObjectCardSpawner Singleton => singleton;
+
         [SerializeField] private InspectedDataObjectCard prefab;
         private Dictionary<InspectedDataObjectDO, InspectedDataObjectCard> inspectedDataObjectCards = new Dictionary<InspectedDataObjectDO, InspectedDataObjectCard>();
 
         protected void Awake()
         {
-            DataObjectInspectorMasterRepository.RegisterForCreation(DataObjectCreated);
-            DataObjectInspectorMasterRepository.RegisterForDisposing(DataObjectDisposing);
+            if (singleton == null)
+            {
+                singleton = this;
+                DataObjectInspectorMasterRepository.RegisterForCreation(DataObjectCreated);
+                DataObjectInspectorMasterRepository.RegisterForDisposing(DataObjectDisposing);
+            }
         }
 
         protected void OnDestroy()
@@ -36,7 +43,7 @@ namespace CoreDev.DataObjectInspector
         private void DataObjectDisposing(InspectedDataObjectDO inspectedDataObjectDO)
         {
             inspectedDataObjectDO?.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
-            
+
             this.DisposePrefab(inspectedDataObjectDO);
         }
 
@@ -64,9 +71,9 @@ namespace CoreDev.DataObjectInspector
 
 
 //*====================
-//* PRIVATE
+//* PUBLIC
 //*====================
-        private void InstantiatePrefab(InspectedDataObjectDO inspectedDataObjectDO)
+        public void Inspect(InspectedDataObjectDO inspectedDataObjectDO)
         {
             InspectedDataObjectCard prefabInstance = Instantiate<InspectedDataObjectCard>(prefab);
 
@@ -75,6 +82,15 @@ namespace CoreDev.DataObjectInspector
 
             inspectedDataObjectCards.Add(inspectedDataObjectDO, prefabInstance);
             inspectedDataObjectDO.BindAspect(prefabInstance);
+        }
+
+
+//*====================
+//* PRIVATE
+//*====================
+        private void InstantiatePrefab(InspectedDataObjectDO inspectedDataObjectDO)
+        {
+            Inspect(inspectedDataObjectDO);
         }
 
         private void DisposePrefab(InspectedDataObjectDO inspectedDataObjectDO)

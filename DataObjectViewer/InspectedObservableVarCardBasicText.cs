@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Reflection;
 using CoreDev.Framework;
 using CoreDev.Observable;
@@ -62,6 +63,7 @@ namespace CoreDev.DataObjectInspector
             this.inspectedObservableVarDO?.basicText.UnregisterFromChanges(OnCardTextChanged);
 
             this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshCardText);
+            this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, EvaluateInspectButton);
             this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshCardText);
 
             this.name = string.Empty;
@@ -79,38 +81,37 @@ namespace CoreDev.DataObjectInspector
             if (obj.Value)
             {
                 this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, RefreshCardText, false);
+                this.observableVarInfoDO.RegisterForValueChanges(observableVarInstance, EvaluateInspectButton);
                 this.observableVarInfoDO.RegisterForModeratorsChanges(observableVarInstance, RefreshCardText);
-
-                IDataObject dataObject = this.observableVarInfoDO.GetValue(this.observableVarInstance) as IDataObject;
-                if (dataObject != null)
-                {
-                    InspectedDataObjectDO enclosedInspectedDataObjectDO = DataObjectInspectorMasterRepository.GetInspectedDataObjectDO(dataObject);
-                    if (enclosedInspectedDataObjectDO != null)
-                    {
-                        this.inspectButton.gameObject.SetActive(true);
-                        this.inspectButton.onClick.AddListener(() => enclosedInspectedDataObjectDO.isInspected.Value = true);
-                    }
-                    else
-                    {
-                        this.inspectButton.gameObject.SetActive(false);
-                    }
-                }
-                else
-                {
-                    this.inspectButton.gameObject.SetActive(false);
-                }
             }
             else
             {
                 this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, RefreshCardText);
+                this.observableVarInfoDO?.UnregisterFromValueChanges(observableVarInstance, EvaluateInspectButton);
                 this.observableVarInfoDO?.UnregisterFromModeratorsChanges(observableVarInstance, RefreshCardText);
-                this.inspectButton.gameObject.SetActive(false);
             }
         }
 
         private void OnCardTextChanged(ObservableVar<string> obj)
         {
             this.basicText.text = obj.Value;
+        }
+
+        private void OnInspectButtonClicked()
+        {
+            IDataObject dataObject = this.observableVarInfoDO?.GetValue(this.observableVarInstance) as IDataObject;
+            InspectedDataObjectDO enclosedInspectedDataObjectDO = DataObjectInspectorMasterRepository.GetInspectedDataObjectDO(dataObject);
+            if (enclosedInspectedDataObjectDO != null)
+            {
+                enclosedInspectedDataObjectDO.isInspected.Value = true;
+            }
+            else
+            {
+                InspectedDataObjectDO inspectedDataObjectDO = new InspectedDataObjectDO(dataObject);
+                inspectedDataObjectDO.isInspected.Value = true;
+                inspectedDataObjectDO.Inspect();
+                InspectedDataObjectCardSpawner.Singleton.Inspect(inspectedDataObjectDO);
+            }
         }
 
 
@@ -165,6 +166,23 @@ namespace CoreDev.DataObjectInspector
             }
 
             this.inspectedObservableVarDO.basicText.Value = displayText;
+        }
+
+        private void EvaluateInspectButton()
+        {
+            this.inspectButton.onClick.RemoveAllListeners();
+            IDataObject dataObject = this.observableVarInfoDO?.GetValue(this.observableVarInstance) as IDataObject;
+
+            if (dataObject != null)
+            {
+                this.inspectButton.gameObject.SetActive(true);
+                this.inspectButton.onClick.AddListener(OnInspectButtonClicked);
+            }
+            else
+            {
+                this.inspectButton.gameObject.SetActive(false);
+                this.inspectButton.onClick.RemoveListener(OnInspectButtonClicked);
+            }
         }
     }
 }

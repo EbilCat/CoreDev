@@ -1,68 +1,70 @@
 ﻿using System.Collections.Generic;
-using CoreDev.Framework;
 using UnityEngine;
 
-public abstract class BaseSpawner<DO, PrefabType> : MonoBehaviour 
-    where DO : class, IDataObject
-    where PrefabType : Component
+namespace CoreDev.Framework
 {
-    protected Dictionary<DO, PrefabType> prefabInstances = new Dictionary<DO, PrefabType>();
-
-    [SerializeField]
-    protected PrefabType prefab;
-
-
-//*===========================
-//* UNITY
-//*===========================
-    protected virtual void Awake()
+    public abstract class BaseSpawner<DO, PrefabType> : MonoBehaviour
+        where DO : class, IDataObject
+        where PrefabType : Component
     {
-        DataObjectMasterRepository.RegisterForCreation(DataObjectCreated);
-        DataObjectMasterRepository.RegisterForDisposing(DataObjectDisposing);
-    }
+        protected Dictionary<DO, PrefabType> prefabInstances = new Dictionary<DO, PrefabType>();
 
-    protected virtual void OnDestroy()
-    {
-        DataObjectMasterRepository.UnregisterFromCreation(DataObjectCreated);
-        DataObjectMasterRepository.UnregisterFromDisposing(DataObjectDisposing);
-    }
+        [SerializeField]
+        protected PrefabType prefab;
 
 
-//*===========================
-//* PRIVATE
-//*===========================
-    private void DataObjectCreated(IDataObject dataObject)
-    {
-        DO expectedDO = dataObject as DO;
-        
-        if (expectedDO != null && ShouldProcessDataObject(expectedDO))
+        //*===========================
+        //* UNITY
+        //*===========================
+        protected virtual void Awake()
         {
-            PrefabType prefabinstance = InstantiatePrefab(expectedDO);
-            expectedDO.BindAspect(prefabinstance);
-            prefabInstances.Add(expectedDO, prefabinstance);
+            DataObjectMasterRepository.RegisterForCreation(DataObjectCreated);
+            DataObjectMasterRepository.RegisterForDisposing(DataObjectDisposing);
         }
-    }
 
-    private void DataObjectDisposing(IDataObject dataObject)
-    {
-        DO expectedDO = dataObject as DO;
-
-        if (expectedDO != null && prefabInstances.ContainsKey(expectedDO))
+        protected virtual void OnDestroy()
         {
-            if (ShouldProcessDataObject(expectedDO))
+            DataObjectMasterRepository.UnregisterFromCreation(DataObjectCreated);
+            DataObjectMasterRepository.UnregisterFromDisposing(DataObjectDisposing);
+        }
+
+
+        //*===========================
+        //* PRIVATE
+        //*===========================
+        protected virtual void DataObjectCreated(IDataObject dataObject)
+        {
+            DO expectedDO = dataObject as DO;
+
+            if (expectedDO != null && ShouldProcessDataObject(expectedDO))
             {
-                PrefabType prefabInstance = prefabInstances[expectedDO];
-                if (prefabInstance != null)
+                PrefabType prefabinstance = InstantiatePrefab(expectedDO);
+                expectedDO.BindAspect(prefabinstance);
+                prefabInstances.Add(expectedDO, prefabinstance);
+            }
+        }
+
+        protected virtual void DataObjectDisposing(IDataObject dataObject)
+        {
+            DO expectedDO = dataObject as DO;
+
+            if (expectedDO != null && prefabInstances.ContainsKey(expectedDO))
+            {
+                if (ShouldProcessDataObject(expectedDO))
                 {
-                    expectedDO.UnbindAspect(prefabInstance);
-                    prefabInstances.Remove(expectedDO);
-                    DisposePrefabInstance(prefabInstance);
+                    PrefabType prefabInstance = prefabInstances[expectedDO];
+                    if (prefabInstance != null)
+                    {
+                        expectedDO.UnbindAspect(prefabInstance);
+                        prefabInstances.Remove(expectedDO);
+                        DisposePrefabInstance(prefabInstance);
+                    }
                 }
             }
         }
-    }
 
-    protected abstract bool ShouldProcessDataObject(DO dataObject);
-    protected abstract PrefabType InstantiatePrefab(DO dataObject);
-    protected abstract void DisposePrefabInstance(PrefabType prefabInstance);
+        protected abstract bool ShouldProcessDataObject(DO dataObject);
+        protected abstract PrefabType InstantiatePrefab(DO dataObject);
+        protected abstract void DisposePrefabInstance(PrefabType prefabInstance);
+    }
 }

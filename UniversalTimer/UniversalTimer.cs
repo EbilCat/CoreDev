@@ -8,6 +8,7 @@ namespace CoreDev.Sequencing
 
     public class UniversalTimer : MonoBehaviour
     {
+        private enum CountDownType { DELTA_TIME, UNSCALED_DELTA_TIME, FRAMES }
         private static UniversalTimer universalTimerInstance;
         private static void InitDriverGO()
         {
@@ -24,16 +25,17 @@ namespace CoreDev.Sequencing
 
         private static List<Action<object[]>> timedCallbacks = new List<Action<object[]>>();
         private static List<float> countDowns = new List<float>();
-        private static List<bool> useUnscaledTime = new List<bool>();
+        private static List<CountDownType> countdownType = new List<CountDownType>();
         private static List<object[]> payloads = new List<object[]>();
+        private static List<int> frameAdded = new List<int>();
         private static List<Action<object[]>> unschedulingCallbacks = new List<Action<object[]>>();
 
         private static bool initPhaseCompleted = false;
 
 
-//*====================
-//* UNITY
-//*====================
+        //*====================
+        //* UNITY
+        //*====================
         protected void Start()
         {
             DontDestroyOnLoad(this.gameObject);
@@ -58,8 +60,9 @@ namespace CoreDev.Sequencing
             timeElapsedExecutors.Clear();
             timedCallbacks.Clear();
             countDowns.Clear();
-            useUnscaledTime.Clear();
+            countdownType.Clear();
             payloads.Clear();
+            frameAdded.Clear();
             unschedulingCallbacks.Clear();
             initPhaseCompleted = false;
 
@@ -69,9 +72,9 @@ namespace CoreDev.Sequencing
         }
 
 
-//*====================
-//* PUBLIC
-//*====================
+        //*====================
+        //* PUBLIC
+        //*====================
         /// <summary>
         /// Registers a callback which is fired during Universal Timer's Start() function
         /// </summary>
@@ -146,7 +149,7 @@ namespace CoreDev.Sequencing
             InitDriverGO();
 
             int index = timedCallbacks.IndexOf(callback);
-            UpdateCallback(callback, countDownSecs, false, payload, index);
+            UpdateCallback(callback, countDownSecs, CountDownType.DELTA_TIME, payload, index);
         }
 
 
@@ -162,7 +165,23 @@ namespace CoreDev.Sequencing
             InitDriverGO();
 
             int index = timedCallbacks.IndexOf(callback);
-            UpdateCallback(callback, countDownSecs, true, payload, index);
+            UpdateCallback(callback, countDownSecs, CountDownType.UNSCALED_DELTA_TIME, payload, index);
+        }
+
+
+        /// <summary>
+        /// Schedules a callback to be fired after a specified amount of frames have passed. Registering a callback more than once
+        /// replaces the previous callback.
+        /// </summary>
+        /// <param name="callback">Callback to be fired</param>
+        /// <param name="frames">Frames after which callback will be fired (Default value fires callback in the next frame)</param>
+        /// <param name="payload">Any params to be passed back through the callback</param>
+        public static void ScheduleCallbackFrames(Action<object[]> callback, int frames = 1, params object[] payload)
+        {
+            InitDriverGO();
+
+            int index = timedCallbacks.IndexOf(callback);
+            UpdateCallback(callback, frames, CountDownType.FRAMES, payload, index);
         }
 
         /// <summary>
@@ -176,9 +195,9 @@ namespace CoreDev.Sequencing
         }
 
 
-//*====================
-//* PRIVATE
-//*====================
+        //*====================
+        //* PRIVATE
+        //*====================
         private static void ProcessTimeElapsedExecutors()
         {
             foreach (KeyValuePair<int, TimeElapsedExecutor> kvp in timeElapsedExecutors)
@@ -192,10 +211,14 @@ namespace CoreDev.Sequencing
         private static void ProcessScheduledCallbacks()
         {
             //Process scheduled callbacks
-            for (int i = timedCallbacks.Count - 1; i >= 0; i--)
+            int timedCallbackCount = timedCallbacks.Count;
+            for (int i = timedCallbackCount - 1; i >= 0; i--)
             {
-                FireCallbackIfCountdownReached(i);
-                RemoveCallbackIfCountdownReached(i);
+                if (frameAdded[i] != Time.frameCount)
+                {
+                    FireCallbackIfCountdownReached(i);
+                    RemoveCallbackIfCountdownReached(i);
+                }
             }
 
             //Clear any callbacks slated for unscheduling
@@ -217,13 +240,35 @@ namespace CoreDev.Sequencing
             if (unschedulingCallbacks.Contains(timedCallback) == false)
             {
                 float countDownSecs = countDowns[callbackIndex];
-                float timeElapsed = useUnscaledTime[callbackIndex] ? Time.unscaledDeltaTime : Time.deltaTime;
+                float timeElapsed = 0.0f;
+
+                switch (countdownType[callbackIndex])
+                {
+                    case CountDownType.DELTA_TIME:
+                        timeElapsed = Time.deltaTime;
+                        break;
+                    case CountDownType.UNSCALED_DELTA_TIME:
+                        timeElapsed = Time.unscaledDeltaTime;
+                        break;
+                    case CountDownType.FRAMES:
+                        timeElapsed = 1.0f;
+                        break;
+                }
+
                 countDownSecs -= timeElapsed;
 
                 countDowns[callbackIndex] = countDownSecs;
                 if (countDownSecs <= 0.0f)
                 {
-                    timedCallback(payloads[callbackIndex]);
+                    try
+                    {
+                        timedCallback(payloads[callbackIndex]);
+                    }
+                    catch (Exception e)
+                    {
+                        UnityEngine.Object obj = timedCallback.Target as UnityEngine.Object;
+                        Debug.LogException(e, obj);
+                    }
                 }
             }
         }
@@ -238,24 +283,25 @@ namespace CoreDev.Sequencing
         }
 
 
-//*====================
-//* PRIVATE
-//*====================
-        private static void UpdateCallback(Action<object[]> callback, float countDownSecs, bool usesUnscaledTime, object[] payload, int index = -1)
+        //*====================
+        //* PRIVATE
+        //*====================
+        private static void UpdateCallback(Action<object[]> callback, float countDownSecs, CountDownType countDownType, object[] payload, int index = -1)
         {
             if (index != -1)
             {
                 timedCallbacks[index] = callback;
                 countDowns[index] = countDownSecs;
-                useUnscaledTime[index] = usesUnscaledTime;
+                countdownType[index] = countDownType;
                 payloads[index] = payload;
             }
             else
             {
                 timedCallbacks.Add(callback);
                 countDowns.Add(countDownSecs);
-                useUnscaledTime.Add(usesUnscaledTime);
+                countdownType.Add(countDownType);
                 payloads.Add(payload);
+                frameAdded.Add(Time.frameCount);
             }
         }
 
@@ -263,8 +309,9 @@ namespace CoreDev.Sequencing
         {
             timedCallbacks.RemoveAt(callbackIndex);
             countDowns.RemoveAt(callbackIndex);
-            useUnscaledTime.RemoveAt(callbackIndex);
+            countdownType.RemoveAt(callbackIndex);
             payloads.RemoveAt(callbackIndex);
+            frameAdded.RemoveAt(callbackIndex);
         }
 
         [ContextMenu("PrintAllRegistered")]

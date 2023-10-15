@@ -12,9 +12,9 @@ namespace CoreDev.DataObjectInspector
         private ReadOnlyCollection<ObservableVarInfoDO> observableVarInfos;
 
 
-        //*====================
-        //* UNITY
-        //*====================
+//*====================
+//* UNITY
+//*====================
         private void OnDestroy()
         {
             if (observableVarInfos != null)
@@ -29,9 +29,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is InspectedDataObjectDO)
@@ -53,6 +53,8 @@ namespace CoreDev.DataObjectInspector
             {
                 foreach (ObservableVarInfoDO observableVarInfoDO in observableVarInfos)
                 {
+                    IObservableVar observableVarInstance = observableVarInfoDO.GetObservableVarInstance(this.inspectedDataObjectDO.DataObjectInstance);
+                    observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshName);
                     observableVarInfoDO.isBookedMarked.UnregisterFromChanges(OnIsBookedMarkedChanged);
                 }
 
@@ -62,9 +64,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS - ObservableVarInfoDO
-        //*====================
+//*====================
+//* CALLBACKS - ObservableVarInfoDO
+//*====================
         private void OnIsBookedMarkedChanged(ObservableVar<bool> oIsBookedMarked)
         {
             ObservableVarInfoDO observableVarInfoDO = oIsBookedMarked.DataObject as ObservableVarInfoDO;
@@ -80,9 +82,8 @@ namespace CoreDev.DataObjectInspector
                 {
                     observableVarInfoDO.UnregisterFromValueChanges(observableVarInstance, RefreshName);
                 }
-
-                this.RefreshName();
             }
+            this.RefreshName();
         }
 
         private void RefreshName()

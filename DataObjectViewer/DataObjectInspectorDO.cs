@@ -33,7 +33,7 @@ namespace CoreDev.DataObjectInspector
         private void OnDestroy()
         {
             this.UnbindAspect(this);
-            if(singleton = this)
+            if(singleton == this)
             {
                 singleton = null;
             }

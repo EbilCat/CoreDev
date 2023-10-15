@@ -17,7 +17,15 @@ namespace CoreDev.Observable
         protected event Action ModeratorsChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
         protected event Action CallbacksChanged = delegate { }; //This exists only for benefit of InspectedObservableVar
 
+        private event Action<IObservableVar> AnyChangeCallback;
+        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementAddedCallback;
+        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementRemovedCallback;
+        private Delegate[] anyChangeCallback_Invocations = null;
+        private Delegate[] fireElementAddedCallback_Invocations = null;
+        private Delegate[] fireElementRemovedCallback_Invocations = null;
+
         protected SortedList<int, List<ModerationCheck>> moderators = new SortedList<int, List<ModerationCheck>>();
+        protected IEnumerator<KeyValuePair<int, List<ModerationCheck>>> moderatorsKvp;
 
         protected IDataObject dataObject;
 
@@ -63,11 +71,11 @@ namespace CoreDev.Observable
 //*====================
 //* EVENT REGISTRATION
 //*====================
-        private event Action<IObservableVar> ListeningCallbacks;
         public virtual void RegisterForChanges(Action<IObservableVar> callback, bool fireCallbackOnRegistration = true)
         {
-            ListeningCallbacks -= callback;
-            ListeningCallbacks += callback;
+            AnyChangeCallback -= callback;
+            AnyChangeCallback += callback;
+            anyChangeCallback_Invocations = AnyChangeCallback?.GetInvocationList();
 
             if (fireCallbackOnRegistration)
             {
@@ -85,12 +93,12 @@ namespace CoreDev.Observable
 
         public virtual void UnregisterFromChanges(Action<IObservableVar> callback)
         {
-            ListeningCallbacks -= callback;
+            AnyChangeCallback -= callback;
+            anyChangeCallback_Invocations = AnyChangeCallback?.GetInvocationList();
             this.CallbacksChanged();
         }
 
 
-        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementAddedCallback;
         public virtual void RegisterForElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback, bool fireCallbackForExistingElements = true)
         {
             if (fireCallbackForExistingElements)
@@ -102,21 +110,22 @@ namespace CoreDev.Observable
             }
             FireElementAddedCallback -= callback;
             FireElementAddedCallback += callback;
+            fireElementAddedCallback_Invocations = FireElementAddedCallback?.GetInvocationList();
             this.CallbacksChanged();
         }
 
         public virtual void UnregisterFromElementAdded(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
         {
             FireElementAddedCallback -= callback;
+            fireElementAddedCallback_Invocations = FireElementAddedCallback?.GetInvocationList();
             this.CallbacksChanged();
         }
 
-
-        private event Action<ODictionary<TKey, TValue>, TKey, TValue> FireElementRemovedCallback;
         public virtual void RegisterForElementRemoved(Action<ODictionary<TKey, TValue>, TKey, TValue> callback)
         {
             FireElementRemovedCallback -= callback;
             FireElementRemovedCallback += callback;
+            fireElementRemovedCallback_Invocations = FireElementRemovedCallback?.GetInvocationList();
             this.CallbacksChanged();
         }
 
@@ -130,6 +139,7 @@ namespace CoreDev.Observable
                 }
             }
             FireElementRemovedCallback -= callback;
+            fireElementRemovedCallback_Invocations = FireElementRemovedCallback?.GetInvocationList();
             this.CallbacksChanged();
         }
 
@@ -147,8 +157,8 @@ namespace CoreDev.Observable
                 this.ValueChanged();
                 try
                 {
-                    this.ListeningCallbacks?.Invoke(this);
-                    this.FireElementAddedCallback?.Invoke(this, key, value);
+                    this.InvokeCallback_AnyChange();
+                    this.InvokeCallback_ElementAdded(key, value);
                 }
                 catch (Exception e)
                 {
@@ -176,8 +186,8 @@ namespace CoreDev.Observable
                         this.ValueChanged();
                         try
                         {
-                            this.ListeningCallbacks?.Invoke(this);
-                            this.FireElementRemovedCallback?.Invoke(this, key, value);
+                            this.InvokeCallback_AnyChange();
+                            this.InvokeCallback_ElementRemoved(key, value);
                         }
                         catch (Exception e)
                         {
@@ -254,11 +264,11 @@ namespace CoreDev.Observable
                 {
                     try
                     {
-                        this.FireElementRemovedCallback?.Invoke(this, key, itemToRemove);
+                        this.InvokeCallback_ElementRemoved(key, itemToRemove);
                         base[key] = value;
                         this.ValueChanged();
-                        this.ListeningCallbacks?.Invoke(this);
-                        this.FireElementAddedCallback?.Invoke(this, key, value);
+                        this.InvokeCallback_AnyChange();
+                        this.InvokeCallback_ElementAdded(key, value);
                     }
                     catch (Exception e)
                     {
@@ -278,12 +288,86 @@ namespace CoreDev.Observable
 
 
 //*====================
+//* INVOCATIONS
+//*====================
+        private void InvokeCallback_AnyChange()
+        {
+            if (anyChangeCallback_Invocations != null)
+            {
+                Delegate[] iter_anyChangeCallback_Invocations = anyChangeCallback_Invocations;
+
+                for (int i = iter_anyChangeCallback_Invocations.Length - 1; i >= 0 ; i--)
+                {
+                    Delegate invocation = iter_anyChangeCallback_Invocations[i];
+                    try
+                    {
+                        Action<IObservableVar> action = invocation as Action<IObservableVar>;
+                        action.Invoke(this);
+                    }
+                    catch (Exception e)
+                    {
+                        UnityEngine.Object obj = invocation?.Target as UnityEngine.Object;
+                        Debug.LogException(e, obj);
+                    }
+                }
+            }
+        }
+
+        private void InvokeCallback_ElementAdded(TKey key, TValue value)
+        {
+            if (fireElementAddedCallback_Invocations != null)
+            {
+                Delegate[] iter_fireElementAddedCallback_Invocations = fireElementAddedCallback_Invocations;
+
+                for (int i = iter_fireElementAddedCallback_Invocations.Length - 1; i >= 0 ; i--)
+                {
+                    Delegate invocation = iter_fireElementAddedCallback_Invocations[i];
+                    try
+                    {
+                        Action<ODictionary<TKey, TValue>, TKey, TValue> action = invocation as Action<ODictionary<TKey, TValue>, TKey, TValue>;
+                        action.Invoke(this, key, value);
+                    }
+                    catch (Exception e)
+                    {
+                        UnityEngine.Object obj = invocation?.Target as UnityEngine.Object;
+                        Debug.LogException(e, obj);
+                    }
+                }
+            }
+        }
+
+        private void InvokeCallback_ElementRemoved(TKey key, TValue value)
+        {
+            if (fireElementRemovedCallback_Invocations != null)
+            {
+                Delegate[] iter_fireElementRemovedCallback_Invocations = fireElementRemovedCallback_Invocations;
+
+                for (int i = iter_fireElementRemovedCallback_Invocations.Length - 1; i >= 0 ; i--)
+                {
+                    Delegate invocation = iter_fireElementRemovedCallback_Invocations[i];
+                    try
+                    {
+                        Action<ODictionary<TKey, TValue>, TKey, TValue> action = invocation as Action<ODictionary<TKey, TValue>, TKey, TValue>;
+                        action.Invoke(this, key, value);
+                    }
+                    catch (Exception e)
+                    {
+                        UnityEngine.Object obj = invocation?.Target as UnityEngine.Object;
+                        Debug.LogException(e, obj);
+                    }
+                }
+            }
+        }
+
+
+//*====================
 //* PRIVATE
 //*====================
         private bool ModerateIncomingValue(ref TKey key, ref TValue value, ODictionaryOperation operation)
         {
-            foreach (KeyValuePair<int, List<ModerationCheck>> kvp in moderators)
+            while(moderatorsKvp != null && moderatorsKvp.MoveNext())
             {
+                KeyValuePair<int, List<ModerationCheck>> kvp = moderatorsKvp.Current;
                 List<ModerationCheck> moderatorList = kvp.Value;
 
                 for (int i = 0; i < moderatorList.Count; i++)
@@ -291,10 +375,12 @@ namespace CoreDev.Observable
                     bool isAcceptable = moderatorList[i](ref key, ref value, operation);
                     if (isAcceptable == false)
                     {
+                        moderatorsKvp?.Reset();
                         return false;
                     }
                 }
             }
+            moderatorsKvp?.Reset();
             return true;
         }
 
@@ -303,6 +389,7 @@ namespace CoreDev.Observable
             if (moderators.ContainsKey(priority) == false)
             {
                 this.moderators.Add(priority, new List<ModerationCheck>());
+                this.moderatorsKvp = this.moderators.GetEnumerator();
             }
 
             List<ModerationCheck> moderationChecks = this.moderators[priority];
@@ -313,10 +400,9 @@ namespace CoreDev.Observable
         {
             string callbacks = string.Empty;
 
-            Delegate[] anyChangeCallbackInvocationList = ListeningCallbacks?.GetInvocationList();
-            if (anyChangeCallbackInvocationList != null)
+            if (anyChangeCallback_Invocations != null)
             {
-                foreach (Delegate invocation in anyChangeCallbackInvocationList)
+                foreach (Delegate invocation in anyChangeCallback_Invocations)
                 {
                     if (invocation.Target is MonoBehaviour)
                     {
@@ -330,10 +416,9 @@ namespace CoreDev.Observable
                 }
             }
 
-            Delegate[] elementAddedCallbackInvocationList = FireElementAddedCallback?.GetInvocationList();
-            if (elementAddedCallbackInvocationList != null)
+            if (fireElementAddedCallback_Invocations != null)
             {
-                foreach (Delegate invocation in elementAddedCallbackInvocationList)
+                foreach (Delegate invocation in fireElementAddedCallback_Invocations)
                 {
                     if (invocation.Target is MonoBehaviour)
                     {
@@ -347,10 +432,9 @@ namespace CoreDev.Observable
                 }
             }
 
-            Delegate[] elementRemovedCallbackInvocationList = FireElementRemovedCallback?.GetInvocationList();
-            if (elementRemovedCallbackInvocationList != null)
+            if (fireElementRemovedCallback_Invocations != null)
             {
-                foreach (Delegate invocation in elementRemovedCallbackInvocationList)
+                foreach (Delegate invocation in fireElementRemovedCallback_Invocations)
                 {
                     if (invocation.Target is MonoBehaviour)
                     {
@@ -371,10 +455,9 @@ namespace CoreDev.Observable
         {
             callbacks.Clear();
 
-            Delegate[] anyChangeCallbackInvocationList = ListeningCallbacks?.GetInvocationList();
-            if (anyChangeCallbackInvocationList != null)
+            if (anyChangeCallback_Invocations != null)
             {
-                foreach (Delegate invocation in anyChangeCallbackInvocationList)
+                foreach (Delegate invocation in anyChangeCallback_Invocations)
                 {
                     if (invocation.Target is MonoBehaviour)
                     {
@@ -389,10 +472,9 @@ namespace CoreDev.Observable
             }
 
 
-            Delegate[] elementAddedCallbackInvocationList = FireElementAddedCallback?.GetInvocationList();
-            if (elementAddedCallbackInvocationList != null)
+            if (fireElementAddedCallback_Invocations != null)
             {
-                foreach (Delegate invocation in elementAddedCallbackInvocationList)
+                foreach (Delegate invocation in fireElementAddedCallback_Invocations)
                 {
                     if (invocation.Target is MonoBehaviour)
                     {
@@ -406,10 +488,9 @@ namespace CoreDev.Observable
                 }
             }
 
-            Delegate[] elementRemovedCallbackInvocationList = FireElementRemovedCallback?.GetInvocationList();
-            if (elementRemovedCallbackInvocationList != null)
+            if (fireElementRemovedCallback_Invocations != null)
             {
-                foreach (Delegate invocation in elementRemovedCallbackInvocationList)
+                foreach (Delegate invocation in fireElementRemovedCallback_Invocations)
                 {
                     if (invocation.Target is MonoBehaviour)
                     {
