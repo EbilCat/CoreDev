@@ -1,4 +1,5 @@
 using CoreDev.Framework;
+using TMPro;
 using UnityEngine.UI;
 
 namespace CoreDev.DataObjectInspector
@@ -6,7 +7,7 @@ namespace CoreDev.DataObjectInspector
     public class InspectedDataObjectCardHeaderText : BaseSpawnee
     {
         private InspectedDataObjectDO inspectedDataObjectDO;
-        private Text text;
+        private TextMeshProUGUI text;
 
 
 //*====================
@@ -28,7 +29,7 @@ namespace CoreDev.DataObjectInspector
         {
             bool fulfilled = base.FulfillDependencies();
             fulfilled &= inspectedDataObjectDO != null;
-            fulfilled &= this.text = this.GetComponent<Text>();
+            fulfilled &= this.text = this.GetComponent<TextMeshProUGUI>();
             return fulfilled;
         }
 

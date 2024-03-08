@@ -2,9 +2,9 @@
 using CoreDev.Framework;
 using CoreDev.Observable;
 using CoreDev.Sequencing;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 
 namespace CoreDev.DataObjectInspector
@@ -12,7 +12,7 @@ namespace CoreDev.DataObjectInspector
     public class DataObjectFilterTextField : MonoBehaviour, ISpawnee
     {
         private DataObjectInspectorDO dataObjectInspectorDO;
-        private InputField inputField;
+        private TMP_InputField inputField;
 
 
 //*====================
@@ -22,7 +22,7 @@ namespace CoreDev.DataObjectInspector
         {
             if (dataObject is DataObjectInspectorDO)
             {
-                this.inputField = this.GetComponent<InputField>();
+                this.inputField = this.GetComponent<TMP_InputField>();
                 this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
                 this.inputField.onEndEdit.AddListener(OnEndEdit);
 

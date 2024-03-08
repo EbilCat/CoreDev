@@ -4,69 +4,57 @@ using UnityEngine.EventSystems;
 
 namespace CoreDev.DataObjectInspector
 {
-    public class DataObjectInspectorHeader : MonoBehaviour, IInitializePotentialDragHandler, IDragHandler, IPointerClickHandler
+    public class DataObjectInspectorHeader : MonoBehaviour, IInitializePotentialDragHandler, IDragHandler
     {
-        [SerializeField] private RectTransform dataObjectInspectorCanvas;
-        [SerializeField] private RectTransform dataObjectInspectorWindow;
-        [SerializeField] private RectTransform rootRectTransform;
-        private Vector2 lastFrameDragPos_Canvas;
-        private bool fullScreen = false;
-        private Vector2 cachedAnchoredPosition = Vector2.zero;
-        private Vector2 cachedSizeDelta = Vector2.zero;
-        
+        private Vector2 leftDragInitPos_Screen = Vector2.zero;
+        private Vector2 posDragInitPos_Screen = Vector2.zero;
+        private Vector2 rightDragInitPos_Screen = Vector2.zero;
+        private Vector2 resizeInitSize = Vector2.zero;
+        private RectTransform windowRecTransform;
+
+
+//*====================
+//* UNITY
+//*====================
         private void Awake()
         {
-            DataObjectInspectorDO dataObjectInspectorDO = this.GetComponentInParent<DataObjectInspectorDO>();
-            this.rootRectTransform = dataObjectInspectorDO.transform as RectTransform;
+            this.windowRecTransform = this.transform.parent.GetComponent<DataObjectInspectorWindow>().transform as RectTransform;
         }
 
 
+//*====================
+//* POINTER HANDLERS
+//*====================
         public void OnInitializePotentialDrag(PointerEventData eventData)
         {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(this.dataObjectInspectorCanvas, eventData.position, null, out lastFrameDragPos_Canvas);
+            PointerEventData.InputButton button = eventData.button;
+
+            if (button == PointerEventData.InputButton.Left)
+            {
+                leftDragInitPos_Screen = eventData.position;
+                posDragInitPos_Screen = this.windowRecTransform.anchoredPosition;
+            }
+            else
+            if (button == PointerEventData.InputButton.Right)
+            {
+                rightDragInitPos_Screen = eventData.position;
+                resizeInitSize = this.windowRecTransform.sizeDelta;
+            }
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(this.dataObjectInspectorCanvas, eventData.position, null, out Vector2 currentFrameDragPos_Canvas);
-            Vector2 moveDelta_Canvas = currentFrameDragPos_Canvas - this.lastFrameDragPos_Canvas;
-            Vector2 newPos = (Vector2)dataObjectInspectorWindow.anchoredPosition + moveDelta_Canvas;
-            newPos = ClampToScreen(newPos);
-            dataObjectInspectorWindow.anchoredPosition = newPos;
-            lastFrameDragPos_Canvas = currentFrameDragPos_Canvas;
-        }
-
-        private Vector2 ClampToScreen(Vector2 newPos)
-        {
-            float width = this.dataObjectInspectorCanvas.rect.width - this.dataObjectInspectorWindow.rect.width;
-            float height = this.dataObjectInspectorCanvas.rect.height - this.dataObjectInspectorWindow.rect.height;
-
-            newPos.x = Mathf.Clamp(newPos.x, 0, width);
-            newPos.y = Mathf.Clamp(newPos.y, -height, 0);
-
-            return newPos;
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if(eventData.clickCount == 2)
+            PointerEventData.InputButton button = eventData.button;
+            if (button == PointerEventData.InputButton.Left)
             {
-                if(fullScreen)
-                {
-                    this.dataObjectInspectorWindow.anchoredPosition = this.cachedAnchoredPosition;
-                    this.dataObjectInspectorWindow.sizeDelta = this.cachedSizeDelta;
-                    fullScreen = false;
-                }
-                else
-                {
-                    this.cachedAnchoredPosition = this.dataObjectInspectorWindow.anchoredPosition;
-                    this.cachedSizeDelta = this.dataObjectInspectorWindow.sizeDelta;
-
-                    this.dataObjectInspectorWindow.anchoredPosition = Vector2.zero;
-                    RectTransform parentRectTransform = (this.transform.parent) as RectTransform;
-                    this.dataObjectInspectorWindow.sizeDelta = rootRectTransform.sizeDelta;
-                    fullScreen = true;
-                }
+                this.windowRecTransform.anchoredPosition = posDragInitPos_Screen + (eventData.position - leftDragInitPos_Screen);
+            }
+            else
+            if (button == PointerEventData.InputButton.Right)
+            {
+                Vector2 pointerPosDelta_Screen = (eventData.position - rightDragInitPos_Screen);
+                pointerPosDelta_Screen.y *= -1;
+                this.windowRecTransform.sizeDelta = resizeInitSize + pointerPosDelta_Screen;
             }
         }
     }

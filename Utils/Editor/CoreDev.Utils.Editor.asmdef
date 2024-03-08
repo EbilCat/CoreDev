@@ -2,7 +2,7 @@
     "name": "CoreDev.Utils.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:50ab0b848c65ccf41b98c7497f8c4762"
+        "GUID:b03874bdc672d47b085499d87907852f"
     ],
     "includePlatforms": [
         "Editor"

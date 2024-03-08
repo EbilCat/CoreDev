@@ -1,6 +1,7 @@
 ﻿using System;
 using CoreDev.Framework;
 using CoreDev.Observable;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -14,8 +15,8 @@ namespace CoreDev.DataObjectInspector
         private ObservableVarInfoDO observableVarInfoDO;
         private IObservableVar observableVarInstance;
         [SerializeField] private Button fireEventButton;
-        [SerializeField] private Dropdown dropDown;
-        [SerializeField] private InputField inputField;
+        [SerializeField] private TMP_Dropdown dropDown;
+        [SerializeField] private TMP_InputField inputField;
 
 
 //*====================
@@ -33,7 +34,7 @@ namespace CoreDev.DataObjectInspector
 
                 this.inspectedObservableVarDO.Focus.RegisterForChanges(FocusInputField);
 
-                this.dropDown.options.Add(new Dropdown.OptionData("--Select Value--"));
+                this.dropDown.options.Add(new TMP_Dropdown.OptionData("--Select Value--"));
 
                 if (observableVarInfoDO.FieldType == typeof(OEvent))
                 {
@@ -54,7 +55,7 @@ namespace CoreDev.DataObjectInspector
                     string[] names = Enum.GetNames(observableVarInfoDO.EnclosedValueType);
                     for (int i = 0; i < names.Length; i++)
                     {
-                        this.dropDown.options.Add(new Dropdown.OptionData(names[i]));
+                        this.dropDown.options.Add(new TMP_Dropdown.OptionData(names[i]));
                     }
                     this.dropDown.onValueChanged.AddListener(OnDropDownValueChanged);
                 }
@@ -65,8 +66,8 @@ namespace CoreDev.DataObjectInspector
                     this.inputField.gameObject.SetActive(false);
                     this.dropDown.gameObject.SetActive(true);
 
-                    this.dropDown.options.Add(new Dropdown.OptionData("True"));
-                    this.dropDown.options.Add(new Dropdown.OptionData("False"));
+                    this.dropDown.options.Add(new TMP_Dropdown.OptionData("True"));
+                    this.dropDown.options.Add(new TMP_Dropdown.OptionData("False"));
 
                     this.dropDown.onValueChanged.AddListener(OnDropDownValueChanged);
                 }

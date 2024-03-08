@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using CoreDev.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ namespace CoreDev.DataObjectInspector
 {
     public class InspectedObservableVarCardCollectionItem : MonoBehaviour
     {
-        [SerializeField] private Text text;
+        [SerializeField] private TextMeshProUGUI text;
         [SerializeField] private Button inspectKeyButton;
         [SerializeField] private Button inspectValueButton;
 

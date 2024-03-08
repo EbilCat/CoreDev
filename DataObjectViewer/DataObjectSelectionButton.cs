@@ -1,5 +1,6 @@
 ﻿using CoreDev.Framework;
 using CoreDev.Observable;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ namespace CoreDev.DataObjectInspector
     {
         private InspectedDataObjectDO inspectedDataObjectDO;
         private Button button;
-        private Text buttonText;
+        private TextMeshProUGUI buttonText;
         private Image image;
         public string ButtonText { get { return buttonText.text; } }
 
@@ -32,7 +33,7 @@ namespace CoreDev.DataObjectInspector
             {
                 this.button = this.GetComponent<Button>();
                 this.image = this.GetComponent<Image>();
-                this.buttonText = this.GetComponentInChildren<Text>();
+                this.buttonText = this.GetComponentInChildren<TextMeshProUGUI>();
 
                 this.button.onClick.AddListener(OnButtonClicked);
 
@@ -78,7 +79,7 @@ namespace CoreDev.DataObjectInspector
 
         private void OnIsInspectedChanged(ObservableVar<bool> oIsInspected)
         {
-            this.image.color = (oIsInspected.Value) ? Color.gray : Color.white;
+            this.image.color = (oIsInspected.Value) ? this.GetComponent<Button>().colors.selectedColor: Color.white;
         }
 
 

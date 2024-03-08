@@ -1,5 +1,4 @@
-﻿using System;
-using CoreDev.Framework;
+﻿using CoreDev.Framework;
 using CoreDev.Observable;
 using UnityEngine;
 

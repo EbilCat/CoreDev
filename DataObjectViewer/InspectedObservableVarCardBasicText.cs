@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Reflection;
 using CoreDev.Framework;
 using CoreDev.Observable;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +14,7 @@ namespace CoreDev.DataObjectInspector
         private InspectedDataObjectDO inspectedDataObjectDO;
         private ObservableVarInfoDO observableVarInfoDO;
         private IObservableVar observableVarInstance;
-        [SerializeField] private Text basicText;
+        [SerializeField] private TextMeshProUGUI basicText;
         [SerializeField] private Button inspectButton;
 
 

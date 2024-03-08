@@ -1,9 +1,9 @@
 ﻿using CoreDev.Framework;
 using CoreDev.Observable;
 using CoreDev.Sequencing;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 
 namespace CoreDev.DataObjectInspector
@@ -11,7 +11,7 @@ namespace CoreDev.DataObjectInspector
     public class ObservableVarFilterTextField : BaseSpawnee
     {
         private InspectedDataObjectDO inspectedDataObjectDO;
-        private InputField inputField;
+        private TMP_InputField inputField;
 
 
 //*====================
@@ -33,7 +33,7 @@ namespace CoreDev.DataObjectInspector
         {
             bool fulfilled = base.FulfillDependencies();
             fulfilled &= inspectedDataObjectDO != null;
-            fulfilled &= this.inputField = this.GetComponent<InputField>();
+            fulfilled &= this.inputField = this.GetComponent<TMP_InputField>();
             return fulfilled;
         }
 

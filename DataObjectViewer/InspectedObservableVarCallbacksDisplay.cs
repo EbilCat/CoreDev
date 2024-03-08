@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using CoreDev.Framework;
 using CoreDev.Observable;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace CoreDev.DataObjectInspector
 {
     public class InspectedObservableVarCallbacksDisplay : MonoBehaviour, ISpawnee
     {
         private InspectedObservableVarDO inspectedObservableVarDO;
-        [SerializeField] private InputField callbackFilter;
-        [SerializeField] private Text text;
+        [SerializeField] private TMP_InputField callbackFilter;
+        [SerializeField] private TextMeshProUGUI callbackText;
 
 
 //*====================
@@ -75,7 +75,7 @@ namespace CoreDev.DataObjectInspector
             {
                 this.inspectedObservableVarDO.ObservableVarInfoDO.UnregisterFromCallbackChanges(this.inspectedObservableVarDO.ObservableVarInstance, RefreshCallbacksDisplay);
                 this.gameObject.SetActive(false);
-                this.text.text = string.Empty;
+                this.callbackText.text = string.Empty;
             }
         }
 
@@ -95,7 +95,7 @@ namespace CoreDev.DataObjectInspector
                     text += $"\t{callback}\r\n";
                 }
             }
-            this.text.text = (text.Length == 0) ? "\tNONE" : text.TrimEnd();
+            this.callbackText.text = (text.Length == 0) ? "\tNONE" : text.TrimEnd();
         }
     }
 }
