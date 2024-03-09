@@ -35,7 +35,7 @@ namespace CoreDev.Extensions
             rectTransform.SetParent(parent);
             rectTransform.localPosition = Vector3.zero;
             rectTransform.localEulerAngles = Vector3.zero;
-            rectTransform.localScale = Vector2.one;
+            rectTransform.localScale = Vector3.one;
             rectTransform.anchoredPosition = Vector2.zero;
 
             if (maximizeToFitParent)
