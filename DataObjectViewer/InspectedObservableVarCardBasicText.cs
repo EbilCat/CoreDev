@@ -128,7 +128,14 @@ namespace CoreDev.DataObjectInspector
             {
                 object currentValue = observableVarInfoDO.ValuePropertyInfo.GetValue(this.observableVarInstance);
                 ICollection collection = currentValue as ICollection;
-                displayText = $"(COLLECTION) {this.inspectedObservableVarDO.varName.Value} Count: {collection.Count}";
+                if (collection != null)
+                {
+                    displayText = $"(COLLECTION) {this.inspectedObservableVarDO.varName.Value} Count: {collection.Count}";
+                }
+                else
+                {
+                    displayText = "<NULL>";
+                }
             }
             else
             {

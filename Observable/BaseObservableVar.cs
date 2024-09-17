@@ -261,7 +261,14 @@ namespace CoreDev.Observable
 
         protected void FireCallbacks()
         {
-            this.ValueChanged();
+            try
+            {
+                this.ValueChanged();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
 
             if (callbacks_Derived_Invocations != null)
             {

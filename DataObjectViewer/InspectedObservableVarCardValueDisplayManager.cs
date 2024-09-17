@@ -101,6 +101,11 @@ namespace CoreDev.DataObjectInspector
 
             string expandedText = string.Empty;
 
+            if(collection == null)
+            {
+                return;
+            }
+
             int index = 0;
             foreach (object obj in collection)
             {

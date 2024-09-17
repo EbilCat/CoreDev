@@ -154,7 +154,16 @@ namespace CoreDev.Observable
             if (moderationPassed)
             {
                 base.Add(key, value);
-                this.ValueChanged();
+
+                try
+                {
+                    this.ValueChanged();
+                }
+                catch(Exception e)
+                {
+                    Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                }
+                
                 try
                 {
                     this.InvokeCallback_AnyChange();

@@ -289,7 +289,16 @@ namespace CoreDev.Observable
             if (moderationPassed)
             {
                 base.RemoveAt(index);
-                this.ValueChanged();
+                
+                try
+                {
+                    this.ValueChanged();
+                }
+                catch(Exception e)
+                {
+                    Debug.LogException(new Exception("ObservableVarCallbackException", e));
+                }
+
                 try
                 {
                     this.InvokeCallback_AnyChange();
