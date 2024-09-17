@@ -20,7 +20,7 @@ namespace CoreDev.Sequencing
             }
         }
 
-        private static SortedList<int, InitExecutor> initExecutors = new SortedList<int, InitExecutor>();
+        private static List<InitExecutor> initExecutors = new List<InitExecutor>();
         private static List<TimeElapsedExecutor> timeElapsedExecutors = new List<TimeElapsedExecutor>();
 
         private static List<Action<object[]>> timedCallbacks = new List<Action<object[]>>();
@@ -39,10 +39,9 @@ namespace CoreDev.Sequencing
         protected void Start()
         {
             DontDestroyOnLoad(this.gameObject);
-            foreach (KeyValuePair<int, InitExecutor> kvp in initExecutors)
+            for (int i = 0; i < initExecutors.Count; i++)
             {
-                InitExecutor initExecutor = kvp.Value;
-                initExecutor.Init();
+                initExecutors[i].Init();
             }
             initExecutors.Clear();
             initPhaseCompleted = true;
@@ -85,11 +84,21 @@ namespace CoreDev.Sequencing
             InitDriverGO();
 
             InitExecutor initExecutor = null;
-            initExecutors.TryGetValue(executionOrder, out initExecutor);
+            for (int i = 0; i < initExecutors.Count; i++)
+            {
+                InitExecutor current = initExecutors[i];
+                if (current.executionOrder == executionOrder)
+                {
+                    initExecutor = current;
+                    break;
+                }
+            }
+
             if (initExecutor == null)
             {
-                initExecutor = new InitExecutor();
-                initExecutors.Add(executionOrder, initExecutor);
+                initExecutor = new InitExecutor(executionOrder);
+                initExecutors.Add(initExecutor);
+                initExecutors.Sort(SortInitExecutors);
             }
 
             if (initPhaseCompleted)
@@ -100,6 +109,11 @@ namespace CoreDev.Sequencing
             {
                 initExecutor.RegisterForInit(initHandler);
             }
+        }
+
+        private static int SortInitExecutors(InitExecutor x, InitExecutor y)
+        {
+            return x.executionOrder.CompareTo(y.executionOrder);
         }
 
         /// <summary>

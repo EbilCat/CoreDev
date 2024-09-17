@@ -7,10 +7,17 @@ namespace CoreDev.Sequencing
     {
         private List<IHasInitHandler> initHandlers = new List<IHasInitHandler>();
 
+        public int executionOrder { get; private set; }
 
-        //*====================
-        //* PUBLIC
-        //*====================
+
+//*====================
+//* PUBLIC
+//*====================
+        public InitExecutor(int executionOrder)
+        {
+            this.executionOrder = executionOrder;
+        }
+
         public void Init()
         {
             for (int i = initHandlers.Count - 1; i >= 0; i--)
