@@ -446,8 +446,8 @@ namespace CoreDev.Observable
     [Serializable]
     public class OString : ObservableVar<string>
     {
-        public OString() : base(default(string)) { }
-        public OString(IDataObject dataObject) : base(default(string), dataObject) { }
+        public OString() : base(string.Empty) { }
+        public OString(IDataObject dataObject) : base(string.Empty, dataObject) { }
         public OString(string initValue) : base(initValue) { }
         public OString(string initValue, IDataObject dataObject) : base(initValue, dataObject) { }
         protected override bool AreEqual(string var, string value) { return var == value; }

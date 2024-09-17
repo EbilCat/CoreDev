@@ -1,9 +1,10 @@
 ﻿using System;
 using CoreDev.Framework;
 using CoreDev.Observable;
+using CoreDev.Sequencing;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 
@@ -17,11 +18,12 @@ namespace CoreDev.DataObjectInspector
         [SerializeField] private Button fireEventButton;
         [SerializeField] private TMP_Dropdown dropDown;
         [SerializeField] private TMP_InputField inputField;
+        [SerializeField] private Button submitInputFieldButton;
 
 
-//*====================
-//* BINDING
-//*====================
+        //*====================
+        //* BINDING
+        //*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is InspectedObservableVarDO)
@@ -40,16 +42,17 @@ namespace CoreDev.DataObjectInspector
                 {
                     this.fireEventButton.gameObject.SetActive(true);
                     this.inputField.gameObject.SetActive(true);
+                    this.submitInputFieldButton.gameObject.SetActive(false);
                     this.dropDown.gameObject.SetActive(false);
 
                     this.fireEventButton.onClick.AddListener(OnFireEventButtonClicked);
-                    this.inputField.onEndEdit.AddListener(OnSubmit);
                 }
                 else
                 if (observableVarInfoDO.EnclosedValueType.IsEnum)
                 {
                     this.fireEventButton.gameObject.SetActive(false);
                     this.inputField.gameObject.SetActive(false);
+                    this.submitInputFieldButton.gameObject.SetActive(false);
                     this.dropDown.gameObject.SetActive(true);
 
                     string[] names = Enum.GetNames(observableVarInfoDO.EnclosedValueType);
@@ -64,6 +67,7 @@ namespace CoreDev.DataObjectInspector
                 {
                     this.fireEventButton.gameObject.SetActive(false);
                     this.inputField.gameObject.SetActive(false);
+                    this.submitInputFieldButton.gameObject.SetActive(false);
                     this.dropDown.gameObject.SetActive(true);
 
                     this.dropDown.options.Add(new TMP_Dropdown.OptionData("True"));
@@ -76,7 +80,7 @@ namespace CoreDev.DataObjectInspector
                     this.fireEventButton.gameObject.SetActive(false);
                     this.dropDown.gameObject.SetActive(false);
                     this.inputField.gameObject.SetActive(true);
-                    this.inputField.onEndEdit.AddListener(OnSubmit);
+                    this.submitInputFieldButton.gameObject.SetActive(true);
                 }
             }
         }
@@ -85,7 +89,8 @@ namespace CoreDev.DataObjectInspector
         {
             if (dataObject is InspectedObservableVarDO && this.inspectedObservableVarDO == dataObject)
             {
-                this.inputField?.onEndEdit.RemoveListener(OnSubmit);
+                this.fireEventButton?.onClick.RemoveListener(OnFireEventButtonClicked);
+                this.dropDown?.onValueChanged.RemoveListener(OnDropDownValueChanged);
 
                 this.inspectedObservableVarDO?.Focus.UnregisterFromChanges(FocusInputField);
                 this.inspectedObservableVarDO = null;
@@ -95,23 +100,28 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-//*====================
-//* CALLBACKS
-//*====================
-        private void OnSubmit(string text)
+        //*====================
+        //* PUBLIC
+        //*====================
+        public void Submit()
         {
-            if (Input.GetKeyDown(KeyCode.Return))
-            {
-                this.observableVarInfoDO.SetValue(observableVarInstance, text);
-                FocusInputField();
-            }
-            else
-            {
-                if (EventSystem.current.alreadySelecting == false)
-                {
-                    EventSystem.current.SetSelectedGameObject(null);
-                }
-            }
+            this.observableVarInfoDO.SetValue(observableVarInstance, this.inputField.text);
+            this.FocusInputField();
+        }
+
+
+        //*====================
+        //* CALLBACKS
+        //*====================
+        private void OnSubmitPerformed(InputAction.CallbackContext context)
+        {
+            this.Submit();
+        }
+
+        private void OnSubmitInputFieldButton()
+        {
+            this.observableVarInfoDO.SetValue(observableVarInstance, this.inputField.text);
+            FocusInputField();
         }
 
         private void OnFireEventButtonClicked()
@@ -162,7 +172,11 @@ namespace CoreDev.DataObjectInspector
 
             if (this.dropDown.gameObject.activeInHierarchy)
             {
-                this.dropDown.Select();
+                //Have to delay a frame otherwise select won't work
+                UniversalTimer.ScheduleCallback((x) =>
+                {
+                    this.dropDown.Select();
+                });
             }
         }
     }

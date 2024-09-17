@@ -21,7 +21,7 @@ namespace CoreDev.Sequencing
         }
 
         private static SortedList<int, InitExecutor> initExecutors = new SortedList<int, InitExecutor>();
-        private static SortedList<int, TimeElapsedExecutor> timeElapsedExecutors = new SortedList<int, TimeElapsedExecutor>();
+        private static List<TimeElapsedExecutor> timeElapsedExecutors = new List<TimeElapsedExecutor>();
 
         private static List<Action<object[]>> timedCallbacks = new List<Action<object[]>>();
         private static List<float> countDowns = new List<float>();
@@ -111,15 +111,30 @@ namespace CoreDev.Sequencing
         {
             InitDriverGO();
 
-            TimeElapsedExecutor timeExecutor = null;
-            timeElapsedExecutors.TryGetValue(executionOrder, out timeExecutor);
-            if (timeExecutor == null)
+            TimeElapsedExecutor timeElapsedExecutor = null;
+            for (int i = 0; i < timeElapsedExecutors.Count; i++)
             {
-                timeExecutor = new TimeElapsedExecutor();
-                timeElapsedExecutors.Add(executionOrder, timeExecutor);
+                TimeElapsedExecutor current = timeElapsedExecutors[i];
+                if (current.executionOrder == executionOrder)
+                {
+                    timeElapsedExecutor = current;
+                    break;
+                }
             }
 
-            timeExecutor.RegisterForTimeElapsed(timeElapsedHandler);
+            if (timeElapsedExecutor == null)
+            {
+                timeElapsedExecutor = new TimeElapsedExecutor(executionOrder);
+                timeElapsedExecutors.Add(timeElapsedExecutor);
+                timeElapsedExecutors.Sort(SortTimeElapsedExecutors);
+            }
+
+            timeElapsedExecutor.RegisterForTimeElapsed(timeElapsedHandler);
+        }
+
+        private static int SortTimeElapsedExecutors(TimeElapsedExecutor x, TimeElapsedExecutor y)
+        {
+            return x.executionOrder.CompareTo(y.executionOrder);
         }
 
         /// <summary>
@@ -130,9 +145,9 @@ namespace CoreDev.Sequencing
         {
             if (universalTimerInstance == null) { return; }
 
-            foreach (KeyValuePair<int, TimeElapsedExecutor> kvp in timeElapsedExecutors)
+            for (int i = 0; i < timeElapsedExecutors.Count; i++)
             {
-                TimeElapsedExecutor timeExecutor = kvp.Value;
+                TimeElapsedExecutor timeExecutor = timeElapsedExecutors[i];
                 timeExecutor.UnregisterFromTimeElapsed(timeElapsedHandler);
             }
         }
@@ -200,11 +215,10 @@ namespace CoreDev.Sequencing
         //*====================
         private static void ProcessTimeElapsedExecutors()
         {
-            foreach (KeyValuePair<int, TimeElapsedExecutor> kvp in timeElapsedExecutors)
+            for (int i = 0; i < timeElapsedExecutors.Count; i++)
             {
-                TimeElapsedExecutor timeExecutor = kvp.Value;
-                int executionOrder = kvp.Key;
-                timeExecutor.TimeElapsed(Time.deltaTime, Time.unscaledDeltaTime, executionOrder);
+                TimeElapsedExecutor timeExecutor = timeElapsedExecutors[i];
+                timeExecutor.TimeElapsed(Time.deltaTime, Time.unscaledDeltaTime);
             }
         }
 
@@ -317,11 +331,11 @@ namespace CoreDev.Sequencing
         [ContextMenu("PrintAllRegistered")]
         protected void PrintAllRegisteredCallbacks()
         {
-            foreach (KeyValuePair<int, TimeElapsedExecutor> kvp in timeElapsedExecutors)
+            for (int i = 0; i < timeElapsedExecutors.Count; i++)
             {
-                TimeElapsedExecutor timeExecutor = kvp.Value;
-                Debug.Log($"Excution Order: {kvp.Key}");
-                timeExecutor.PrintTimeElapsedHandlers();
+                TimeElapsedExecutor timeElapsedExecutor = timeElapsedExecutors[i];
+                Debug.Log($"Excution Order: {timeElapsedExecutor.executionOrder}");
+                timeElapsedExecutor.PrintTimeElapsedHandlers();
             }
         }
     }

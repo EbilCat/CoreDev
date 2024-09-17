@@ -1,18 +1,21 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using CoreDev.Framework;
 using CoreDev.Observable;
 using CoreDev.Sequencing;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 
 namespace CoreDev.DataObjectInspector
 {
-    public class DataObjectFilterTextField : MonoBehaviour, ISpawnee
+    public class DataObjectFilterTextField : MonoBehaviour, ISpawnee, ISelectHandler, IDeselectHandler
     {
         private DataObjectInspectorDO dataObjectInspectorDO;
         private TMP_InputField inputField;
+        [SerializeField] private InputAction submit;
 
 
 //*====================
@@ -24,7 +27,6 @@ namespace CoreDev.DataObjectInspector
             {
                 this.inputField = this.GetComponent<TMP_InputField>();
                 this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
-                this.inputField.onEndEdit.AddListener(OnEndEdit);
 
                 UnbindDO(this.dataObjectInspectorDO);
                 this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
@@ -37,12 +39,47 @@ namespace CoreDev.DataObjectInspector
             if (dataObject is DataObjectInspectorDO && this.dataObjectInspectorDO == (DataObjectInspectorDO)dataObject)
             {
                 this.inputField.onValueChanged.RemoveListener(OnInputFieldValueChanged);
-                this.inputField.onEndEdit.RemoveListener(OnEndEdit);
                 this.inputField = null;
 
                 this.dataObjectInspectorDO?.isOn.UnregisterFromChanges(OnIsOnChanged);
                 this.dataObjectInspectorDO = null;
+
+                this.submit.performed -= OnSubmitPerformed;
+                this.submit.Disable();
             }
+        }
+
+
+//*====================
+//* PUBLIC
+//*====================
+        public void Submit()
+        {
+            ReadOnlyCollection<InspectedDataObjectDO> inspectedDataObjectDOs = DataObjectInspectorMasterRepository.InspectedDataObjectDOs;
+            foreach (var inspectedDataObjectDO in inspectedDataObjectDOs)
+            {
+                if (inspectedDataObjectDO.matchesFilter.Value)
+                {
+                    inspectedDataObjectDO.isInspected.Value = true;
+                    inspectedDataObjectDO.activateFilterTextField.Fire();
+                    break;
+                }
+            }
+        }
+
+//*====================
+//* ISelectHandler
+//*====================
+        public void OnSelect(BaseEventData eventData)
+        {
+            this.submit.Enable();
+            this.submit.performed += OnSubmitPerformed;
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            this.submit.performed -= OnSubmitPerformed;
+            this.submit.Disable();
         }
 
 
@@ -73,26 +110,13 @@ namespace CoreDev.DataObjectInspector
             this.dataObjectInspectorDO.dataObjectFilterString.Value = inputFieldValue;
         }
 
-        private void OnEndEdit(string arg0)
+
+//*====================
+//* PRIVATE
+//*====================
+        private void OnSubmitPerformed(InputAction.CallbackContext context)
         {
-            if (Input.GetKeyDown(KeyCode.Return))
-            {
-                ReadOnlyCollection<InspectedDataObjectDO> inspectedDataObjectDOs = DataObjectInspectorMasterRepository.InspectedDataObjectDOs;
-                foreach (var inspectedDataObjectDO in inspectedDataObjectDOs)
-                {
-                    if (inspectedDataObjectDO.matchesFilter.Value)
-                    {
-                        inspectedDataObjectDO.isInspected.Value = true;
-                        inspectedDataObjectDO.activateFilterTextField.Fire();
-                        break;
-                    }
-                }
-            }
-            else
-            if (EventSystem.current.alreadySelecting == false)
-            {
-                EventSystem.current.SetSelectedGameObject(null);
-            }
+            this.Submit();
         }
     }
 }

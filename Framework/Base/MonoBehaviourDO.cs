@@ -12,7 +12,7 @@ namespace CoreDev.Framework
         [Bookmark]
         private OString transformName;
         public OString Name => transformName;
-        [Bookmark]private OBool isActive;
+        [Bookmark] private OBool isActive;
         public OBool IsActive => isActive;
 
         public event Action<IDataObject> disposing;
@@ -42,13 +42,13 @@ namespace CoreDev.Framework
         {
             this.transformName?.UnregisterFromChanges(OnTransformNameChanged);
             this.isActive?.UnregisterFromChanges(OnIsActiveChanged);
-            
+
             UniversalTimer.UnscheduleCallback(BindAndRegister);
 
             this.disposing?.Invoke(this);
             this.UnbindAspect(this);
         }
-        
+
 
 
 //*====================
@@ -70,7 +70,10 @@ namespace CoreDev.Framework
 //*====================
         public virtual void Dispose()
         {
-            Destroy(this.gameObject);
+            if (this != null)
+            {
+                Destroy(this.gameObject);
+            }
         }
     }
 

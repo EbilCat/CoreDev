@@ -1,0 +1,54 @@
+{
+    "name": "DataObjectInspectorControls",
+    "maps": [
+        {
+            "name": "DataObjectRepository",
+            "id": "78d823a8-ab4d-494b-8a91-a87dbd6611da",
+            "actions": [
+                {
+                    "name": "Activate",
+                    "type": "Button",
+                    "id": "d653569f-c13a-4239-a1ac-18fd83435dce",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Submit",
+                    "type": "Button",
+                    "id": "86af3bcf-1358-4965-ac81-12769c23400d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "a5b4d199-f809-4df8-9233-31e7f5bcb109",
+                    "path": "<Keyboard>/f1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Activate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "373ea19d-04fe-4d8c-9189-98cf9296ba83",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Submit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

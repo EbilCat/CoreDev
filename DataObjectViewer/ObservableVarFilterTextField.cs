@@ -4,14 +4,16 @@ using CoreDev.Sequencing;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 
 namespace CoreDev.DataObjectInspector
 {
-    public class ObservableVarFilterTextField : BaseSpawnee
+    public class ObservableVarFilterTextField : BaseSpawnee, ISelectHandler, IDeselectHandler
     {
         private InspectedDataObjectDO inspectedDataObjectDO;
         private TMP_InputField inputField;
+        [SerializeField] private InputAction submit;
 
 
 //*====================
@@ -47,7 +49,6 @@ namespace CoreDev.DataObjectInspector
         protected override void RegisterCallbacks()
         {
             this.inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
-            this.inputField.onEndEdit.AddListener(OnEndEdit);
             this.inspectedDataObjectDO.isInspected.RegisterForChanges(OnIsInspectedChanged);
             this.inspectedDataObjectDO.activateFilterTextField.RegisterForChanges(ActivateFilterTextField);
             this.inspectedDataObjectDO.observableVarFilterString.RegisterForChanges(OnObservableVarFilterStringChanged);
@@ -56,10 +57,28 @@ namespace CoreDev.DataObjectInspector
         protected override void UnregisterCallbacks()
         {
             this.inputField.onValueChanged.RemoveListener(OnInputFieldValueChanged);
-            this.inputField.onEndEdit.RemoveListener(OnEndEdit);
             this.inspectedDataObjectDO?.isInspected.UnregisterFromChanges(OnIsInspectedChanged);
             this.inspectedDataObjectDO?.activateFilterTextField.UnregisterFromChanges(ActivateFilterTextField);
             this.inspectedDataObjectDO?.observableVarFilterString.UnregisterFromChanges(OnObservableVarFilterStringChanged);
+
+            this.submit.performed -= OnSubmitPerformed;
+            this.submit.Disable();
+        }
+
+
+//*====================
+//* ISelectHandler
+//*====================
+        public void OnSelect(BaseEventData eventData)
+        {
+            this.submit.Enable();
+            this.submit.performed += OnSubmitPerformed;
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            this.submit.performed -= OnSubmitPerformed;
+            this.submit.Disable();
         }
 
 
@@ -79,6 +98,11 @@ namespace CoreDev.DataObjectInspector
             this.inputField.text = obj.Value;
         }
 
+        private void OnSubmitPerformed(InputAction.CallbackContext context)
+        {
+            this.Submit();
+        }
+
 
 //*====================
 //* CALLBACKS - InputField
@@ -88,24 +112,20 @@ namespace CoreDev.DataObjectInspector
             this.inspectedDataObjectDO.observableVarFilterString.Value = inputFieldValue;
         }
 
-        private void OnEndEdit(string arg0)
+
+//*====================
+//* PUBLIC
+//*====================
+        public void Submit()
         {
-            if (Input.GetKeyDown(KeyCode.Return))
+            foreach (var inspectedOVar in inspectedDataObjectDO.inspectedOVarDOs)
             {
-                foreach (var inspectedOVar in inspectedDataObjectDO.inspectedOVarDOs)
+                if (inspectedOVar.matchesFilter.Value)
                 {
-                    if (inspectedOVar.matchesFilter.Value)
-                    {
-                        inspectedOVar.ObservableVarInfoDO.isExpandedView.Value = true;
-                        inspectedOVar.Focus.Fire();
-                        break;
-                    }
+                    inspectedOVar.ObservableVarInfoDO.isExpandedView.Value = true;
+                    inspectedOVar.Focus.Fire();
+                    break;
                 }
-            }
-            else
-            if (EventSystem.current.alreadySelecting == false)
-            {
-                EventSystem.current.SetSelectedGameObject(null);
             }
         }
 

@@ -8,13 +8,13 @@ namespace CoreDev.DataObjectInspector
 {
     public class InspectedDataObjectDO : IDataObject
     {
-        private static Dictionary<Type, DataObjectInfoDO> dataObjectInfoDOs = new Dictionary<Type, DataObjectInfoDO>();
+        private static readonly Dictionary<Type, DataObjectInfoDO> dataObjectInfoDOs = new();
         private const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
 
-        private IDataObject dataObjectInstance;
+        private readonly IDataObject dataObjectInstance;
         public IDataObject DataObjectInstance { get { return dataObjectInstance; } }
 
-        private DataObjectInfoDO dataObjectInfoDO;
+        private readonly DataObjectInfoDO dataObjectInfoDO;
         public DataObjectInfoDO DataObjectInfoDO { get { return dataObjectInfoDO; } }
 
         public OString name;

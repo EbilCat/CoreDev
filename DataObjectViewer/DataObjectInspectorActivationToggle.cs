@@ -1,19 +1,15 @@
 ﻿using CoreDev.Framework;
 using CoreDev.Observable;
-using CoreDev.Sequencing;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CoreDev.DataObjectInspector
 {
     public class DataObjectInspectorActivationToggle : MonoBehaviour, ISpawnee
     {
-        [SerializeField] private KeyCode activationKey = KeyCode.F1;
         private DataObjectInspectorDO dataObjectInspectorDO;
+        [SerializeField] private InputAction activationKey;
 
-
-//*====================
-//* UNITY
-//*====================
         protected virtual void OnDestroy()
         {
             this.UnbindDO(this.dataObjectInspectorDO);
@@ -31,8 +27,9 @@ namespace CoreDev.DataObjectInspector
 
                 this.dataObjectInspectorDO = dataObject as DataObjectInspectorDO;
                 this.dataObjectInspectorDO.isOn.RegisterForChanges(OnIsOnChanged);
-
-                UniversalTimer.RegisterForTimeElapsed(TimeElapsed);
+            
+                activationKey.Enable();
+                activationKey.performed += OnActivationKeyPerformed;
             }
         }
 
@@ -42,21 +39,9 @@ namespace CoreDev.DataObjectInspector
             {
                 this.dataObjectInspectorDO?.isOn.UnregisterFromChanges(OnIsOnChanged);
                 this.dataObjectInspectorDO = null;
-
-                UniversalTimer.UnregisterFromTimeElapsed(TimeElapsed);
-            }
-        }
-
-
-//*====================
-//* IHasTimeElapsedHandler
-//*====================
-        public void TimeElapsed(float deltaTime, float unscaledDeltaTime, int executionOrder)
-        {
-            if (Input.GetKeyDown(activationKey))
-            {
-                bool isInspectorOn = this.dataObjectInspectorDO.isOn.Value;
-                this.dataObjectInspectorDO.isOn.Value = !isInspectorOn;
+            
+                activationKey.Disable();
+                activationKey.performed -= OnActivationKeyPerformed;
             }
         }
 
@@ -68,6 +53,12 @@ namespace CoreDev.DataObjectInspector
         {
             bool isOn = oIsOn.Value;
             this.gameObject.SetActive(oIsOn.Value);
+        }
+
+        private void OnActivationKeyPerformed(InputAction.CallbackContext context)
+        {
+            bool isOn = this.dataObjectInspectorDO.isOn.Value;
+            this.dataObjectInspectorDO.isOn.Value = !isOn;
         }
     }
 }
