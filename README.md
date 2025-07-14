@@ -97,8 +97,26 @@ public override void BindDO(IDataObject dataObject)
 ### 🧬 Spawner
 Watches for new `DataObjects` and spawns corresponding GameObjects.
 
-```csharp
-Spawner.Spawn(new GoblinDO()); // Automatically spawns Goblin prefab
+```csharp    
+    public class PlayerAvatarSpawner : BaseSpawner<PlayerDO, PlayerAvatar>
+    {
+        protected override bool ShouldProcessDataObject(PlayerDO dataObject)
+        {
+            bool shouldProcess = (dataObject.teamId.Value == this.teamId);
+            return shouldProcess;
+        }
+
+        protected override PlayerAvatar InstantiatePrefab(PlayerDO dataObject)
+        {
+            PlayerAvatar prefabInstance = Instantiate(this.prefab);
+            return prefabInstance;
+        }
+
+        protected override void DisposePrefabInstance(PlayerAvatar prefabInstance)
+        {
+            Destroy(prefabInstance.gameObject);
+        }
+    }
 ```
 
 ---
