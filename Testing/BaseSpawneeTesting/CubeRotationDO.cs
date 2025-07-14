@@ -11,9 +11,9 @@ namespace CoreDev.Framework.Testing
         public OFloat RotationSpeed => rotationSpeed;
 
 
-        protected override void Awake()
+        protected override void Init()
         {
-            base.Awake();
+            base.Init();
             this.Claim(rotationSpeed);
         }
     }

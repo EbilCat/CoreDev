@@ -1,7 +1,6 @@
 ﻿using System;
 using CoreDev.Framework;
 using CoreDev.Observable;
-using CoreDev.Sequencing;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -21,9 +20,9 @@ namespace CoreDev.DataObjectInspector
         [SerializeField] private Button submitInputFieldButton;
 
 
-        //*====================
-        //* BINDING
-        //*====================
+//*====================
+//* BINDING
+//*====================
         public void BindDO(IDataObject dataObject)
         {
             if (dataObject is InspectedObservableVarDO)
@@ -100,9 +99,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* PUBLIC
-        //*====================
+//*====================
+//* PUBLIC
+//*====================
         public void Submit()
         {
             this.observableVarInfoDO.SetValue(observableVarInstance, this.inputField.text);
@@ -110,9 +109,9 @@ namespace CoreDev.DataObjectInspector
         }
 
 
-        //*====================
-        //* CALLBACKS
-        //*====================
+//*====================
+//* CALLBACKS
+//*====================
         private void OnSubmitPerformed(InputAction.CallbackContext context)
         {
             this.Submit();
@@ -172,11 +171,7 @@ namespace CoreDev.DataObjectInspector
 
             if (this.dropDown.gameObject.activeInHierarchy)
             {
-                //Have to delay a frame otherwise select won't work
-                UniversalTimer.ScheduleCallback((x) =>
-                {
-                    this.dropDown.Select();
-                });
+                this.dropDown.Select();
             }
         }
     }

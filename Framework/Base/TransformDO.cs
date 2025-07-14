@@ -45,9 +45,9 @@ namespace CoreDev.Framework
 //*====================
 //* UNITY
 //*====================
-        protected override void Awake()
+        protected override void Init()
         {
-            base.Awake();
+            base.Init();
             this.transformParent = new OTransform(this.transform.parent, this);
             this.pos_Local = new OVector3(this.transform.localPosition, this);
             this.rot_Local = new OQuaternion(this.transform.localRotation, this);

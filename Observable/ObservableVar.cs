@@ -496,6 +496,43 @@ namespace CoreDev.Observable
         }
     }
 
+//*====================
+//* Vector2Int
+//*====================
+    [Serializable]
+    public class OVector2Int : ObservableVar<Vector2Int>
+    {
+        public OVector2Int() : base(default(Vector2Int)) { }
+        public OVector2Int(IDataObject dataObject) : base(default(Vector2Int), dataObject) { }
+        public OVector2Int(Vector2Int initValue) : base(initValue) { }
+        public OVector2Int(Vector2Int initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(Vector2Int var, Vector2Int value)
+        {
+            bool areEqual = true;
+            areEqual &= var.x == value.x;
+            areEqual &= var.y == value.y;
+            return areEqual;
+        }
+
+        public override void SetValueFromString(string strVal)
+        {
+            try
+            {
+                strVal = strVal.Replace("(", string.Empty);
+                strVal = strVal.Replace(")", string.Empty);
+
+                string[] splitArr = strVal.Split(',');
+                int x = int.Parse(splitArr[0]);
+                int y = int.Parse(splitArr[1]);
+                this.Value = new Vector2Int(x, y);
+            }
+            catch
+            {
+                Debug.Log("Error converting to Vector2");
+            }
+        }
+    }
+
 
 //*====================
 //* Vector3
@@ -532,6 +569,46 @@ namespace CoreDev.Observable
             catch
             {
                 Debug.Log("Error converting to Vector3");
+            }
+        }
+    }
+
+
+//*====================
+//* Vector3Int
+//*====================
+    [Serializable]
+    public class OVector3Int : ObservableVar<Vector3Int>
+    {
+        public OVector3Int() : base(default(Vector3Int)) { }
+        public OVector3Int(IDataObject dataObject) : base(default(Vector3Int), dataObject) { }
+        public OVector3Int(Vector3Int initValue) : base(initValue) { }
+        public OVector3Int(Vector3Int initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(Vector3Int var, Vector3Int value)
+        {
+            bool areEqual = true;
+            areEqual &= var.x == value.x;
+            areEqual &= var.y == value.y;
+            areEqual &= var.z == value.z;
+            return areEqual;
+        }
+
+        public override void SetValueFromString(string strVal)
+        {
+            try
+            {
+                strVal = strVal.Replace("(", string.Empty);
+                strVal = strVal.Replace(")", string.Empty);
+
+                string[] splitArr = strVal.Split(',');
+                int x = int.Parse(splitArr[0]);
+                int y = int.Parse(splitArr[1]);
+                int z = int.Parse(splitArr[2]);
+                this.Value = new Vector3Int(x, y, z);
+            }
+            catch
+            {
+                Debug.Log("Error converting to Vector3Int");
             }
         }
     }
@@ -668,6 +745,20 @@ namespace CoreDev.Observable
                 Debug.Log("Error converting ToDateTime");
             }
         }
+    }
+
+
+//*====================
+//* Sprite
+//*====================
+    [Serializable]
+    public class OSprite : ObservableVar<Sprite>
+    {
+        public OSprite() : base(default(Sprite)) { }
+        public OSprite(IDataObject dataObject) : base(default(Sprite), dataObject) { }
+        public OSprite(Sprite initValue) : base(initValue) { }
+        public OSprite(Sprite initValue, IDataObject dataObject) : base(initValue, dataObject) { }
+        protected override bool AreEqual(Sprite var, Sprite value) { return var == value; }
     }
 
 

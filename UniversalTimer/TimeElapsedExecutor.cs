@@ -10,24 +10,14 @@ namespace CoreDev.Sequencing
         private List<TimeElapsedHandler> pendingRemoval = new List<TimeElapsedHandler>();
         private List<TimeElapsedHandler> timeElapsedHandlers = new List<TimeElapsedHandler>();
 
-        public int executionOrder { get; private set; }
 
-
-//*====================
-//* PUBLIC
-//*====================
-        public TimeElapsedExecutor(int executionOrder)
+        //*====================
+        //* PUBLIC
+        //*====================
+        public void TimeElapsed(float deltaTime, float unscaledDeltaTime, int executionOrder)
         {
-            this.executionOrder = executionOrder;
-        }
-
-        public void TimeElapsed(float deltaTime, float unscaledDeltaTime)
-        {
-            if (pendingAddition.Count > 0)
-            {
-                timeElapsedHandlers.AddRange(pendingAddition);
-                pendingAddition.Clear();
-            }
+            timeElapsedHandlers.AddRange(pendingAddition);
+            pendingAddition.Clear();
 
             for (int i = timeElapsedHandlers.Count - 1; i >= 0; i--)
             {
@@ -46,11 +36,8 @@ namespace CoreDev.Sequencing
                 }
             }
 
-            if (pendingRemoval.Count > 0)
-            {
-                this.timeElapsedHandlers.RemoveAll(pendingRemoval.Contains);
-                this.pendingRemoval.Clear();
-            }
+            this.timeElapsedHandlers.RemoveAll(pendingRemoval.Contains);
+            this.pendingRemoval.Clear();
         }
 
         public void RegisterForTimeElapsed(TimeElapsedHandler timeElapsedHandler)

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CoreDev.Framework
 {
-    public abstract class BaseSpawner<DO, PrefabType> : MonoBehaviour
+    public abstract class BaseSpawner<DO, PrefabType> : BaseSpawnee
         where DO : class, IDataObject
         where PrefabType : Component
     {
@@ -11,27 +11,29 @@ namespace CoreDev.Framework
 
         [SerializeField]
         protected PrefabType prefab;
-
-
-        //*===========================
-        //* UNITY
-        //*===========================
-        protected virtual void Awake()
+    
+    
+//*====================
+//* BINDING
+//*====================    
+        protected override void RegisterCallbacks()
         {
+            base.RegisterCallbacks();
             DataObjectMasterRepository.RegisterForCreation(DataObjectCreated);
             DataObjectMasterRepository.RegisterForDisposing(DataObjectDisposing);
         }
-
-        protected virtual void OnDestroy()
+    
+        protected override void UnregisterCallbacks()
         {
+            base.UnregisterCallbacks();
             DataObjectMasterRepository.UnregisterFromCreation(DataObjectCreated);
             DataObjectMasterRepository.UnregisterFromDisposing(DataObjectDisposing);
         }
 
 
-        //*===========================
-        //* PRIVATE
-        //*===========================
+//*===========================
+//* PRIVATE
+//*===========================
         protected virtual void DataObjectCreated(IDataObject dataObject)
         {
             DO expectedDO = dataObject as DO;

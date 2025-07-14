@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using CoreDev.DataObjectInspector;
 using CoreDev.Observable;
-using CoreDev.Sequencing;
 using UnityEngine;
 
 
@@ -15,26 +15,35 @@ namespace CoreDev.Framework
         [Bookmark] private OBool isActive;
         public OBool IsActive => isActive;
 
+        [SerializeField] private List<Component> aspects;
+
         public event Action<IDataObject> disposing;
 
 
 //*====================
 //* UNITY
 //*====================
-        protected virtual void Awake()
+        private void Awake()
+        {
+            this.Init();
+            this.BindAndRegister();
+        }
+
+        protected virtual void Init()
         {
             this.transformName = new OString(this.transform.name, this);
             this.isActive = new OBool(this.gameObject.activeSelf, this);
-
             this.transformName.RegisterForChanges(OnTransformNameChanged, false);
             this.isActive.RegisterForChanges(OnIsActiveChanged, false);
-
-            UniversalTimer.ScheduleCallback(BindAndRegister);
         }
 
-        protected virtual void BindAndRegister(object obj)
+        protected virtual void BindAndRegister()
         {
             this.BindAspect(this);
+            for (int i = 0; i < aspects.Count; i++)
+            {
+                this.BindAspect(aspects[i]);
+            }
             DataObjectMasterRepository.RegisterDataObject(this, false);
         }
 
@@ -42,11 +51,13 @@ namespace CoreDev.Framework
         {
             this.transformName?.UnregisterFromChanges(OnTransformNameChanged);
             this.isActive?.UnregisterFromChanges(OnIsActiveChanged);
-
-            UniversalTimer.UnscheduleCallback(BindAndRegister);
-
+            
             this.disposing?.Invoke(this);
             this.UnbindAspect(this);
+            for (int i = 0; i < aspects.Count; i++)
+            {
+                this.UnbindAspect(aspects[i]);
+            }
         }
 
 

@@ -24,11 +24,11 @@ namespace CoreDev.Examples
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, screenPoint, cam, out convertedPoint);
         }
-        protected override void Awake()
+        protected override void Init()
         {
             this.Claim(this.moveSpeed);
             this.Claim(this.turnSpeed);
-            base.Awake();
+            base.Init();
         }
     }
 }

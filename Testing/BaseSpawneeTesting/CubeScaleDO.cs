@@ -9,9 +9,9 @@ namespace CoreDev.Framework.Testing
         [SerializeField] private OFloat scale_World = new OFloat(1.0f);
         public OFloat Scale_World => scale_World;
 
-        protected override void Awake()
+        protected override void Init()
         {
-            base.Awake();
+            base.Init();
             this.Claim(scale_World);
         }
     }
