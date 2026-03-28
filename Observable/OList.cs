@@ -409,10 +409,9 @@ namespace CoreDev.Observable
 
         public new void Clear()
         {
-            int elementCount = this.Count;
-            for (int i = 0; i < elementCount; i++)
+            for (int i = this.Count - 1; i >= 0; i--)
             {
-                this.RemoveAt(0);
+                this.RemoveAt(i);
             }
         }
 
